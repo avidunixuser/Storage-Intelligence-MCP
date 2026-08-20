@@ -715,7 +715,8 @@
             e(MicrosoftMiniLogo),
             e(AzureMiniLogo),
             e(FoundryMiniLogo)
-          )
+          ),
+          e("div", { className: "protocol-enabled" }, "MCP & A2A Enabled")
         )
       ),
       e("main", { className: "main" },

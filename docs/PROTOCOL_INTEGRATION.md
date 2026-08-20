@@ -6,7 +6,7 @@ three interfaces:
 | Interface | Endpoint | Best for |
 |---|---|---|
 | REST API | `/api/query` | Existing application and direct HTTP integrations |
-| MCP Streamable HTTP | `/mcp` | AI hosts that discover and call tools |
+| MCP Streamable HTTP | `/mcp/` | AI hosts that discover and call tools |
 | A2A JSON-RPC | `/a2a` | Agents that exchange messages and track tasks |
 | A2A HTTP+JSON | `/a2a/rest` | REST-oriented A2A clients |
 | A2A Agent Card | `/.well-known/agent-card.json` | Agent discovery |
@@ -14,6 +14,22 @@ three interfaces:
 Every interface delegates to `StorageIntelligenceService` and
 `IntelligenceEngine`. Results therefore have the same scope, evidence, assumptions,
 confidence, and read-only guarantees.
+
+## Deployed endpoints
+
+The current Sweden Central deployment is hosted at:
+
+`https://ca-storage-intel-kxlgam3w.wittyforest-55ec85c1.swedencentral.azurecontainerapps.io`
+
+| Interface | Fully qualified endpoint |
+|---|---|
+| MCP Streamable HTTP | `https://ca-storage-intel-kxlgam3w.wittyforest-55ec85c1.swedencentral.azurecontainerapps.io/mcp/` |
+| A2A Agent Card | `https://ca-storage-intel-kxlgam3w.wittyforest-55ec85c1.swedencentral.azurecontainerapps.io/.well-known/agent-card.json` |
+| A2A JSON-RPC | `https://ca-storage-intel-kxlgam3w.wittyforest-55ec85c1.swedencentral.azurecontainerapps.io/a2a` |
+| A2A HTTP+JSON | `https://ca-storage-intel-kxlgam3w.wittyforest-55ec85c1.swedencentral.azurecontainerapps.io/a2a/rest` |
+
+For another environment, replace the base URL and keep the same paths. MCP clients
+should use the canonical trailing-slash URL `/mcp/`; `/mcp` redirects to it.
 
 ## Authentication
 
@@ -45,7 +61,7 @@ Example client configuration:
   "mcpServers": {
     "storage-intelligence": {
       "type": "http",
-      "url": "https://<container-app-host>/mcp",
+      "url": "https://<container-app-host>/mcp/",
       "headers": {
         "Authorization": "Bearer ${STORAGE_INTELLIGENCE_TOKEN}"
       }
