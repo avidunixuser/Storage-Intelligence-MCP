@@ -903,7 +903,9 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert 'subtitle: "Review Prioritized Risks, Anomalies, Freshness Issues, And Savings Actions."' in app_script
     assert 'subtitle: "Inspect Source Status, Freshness Coverage, Stale Accounts, And Quality Gaps."' in app_script
     assert 'e("div", { className: "authored" }, "Authored by nrp")' in app_script
-    assert 'e("div", { className: "protocol-enabled" }, "MCP & A2A Enabled")' in app_script
+    assert 'className: "protocol-enabled"' in app_script
+    assert '"aria-label": "MCP and A2A protocols enabled"' in app_script
+    assert '}, "MCP & A2A Enabled")' in app_script
     assert '"MCP & A2A Enabled": "MCP y A2A habilitados"' in translations
     assert '{ key: "security", label: "Security"' in app_script
     assert '{ key: "governance", label: "Governance"' in app_script
@@ -939,10 +941,10 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert health_segment.index('className: "source-grid"') < health_segment.index(
         'className: "metrics health-metrics"'
     )
-    assert index_html.index("/static/translations.js?v=20260814-i18n") < index_html.index(
-        "/static/app.js?v=20260814-layout"
+    assert index_html.index("/static/translations.js?v=20260820-protocols") < index_html.index(
+        "/static/app.js?v=20260820-protocols"
     )
-    assert "/static/styles.css?v=20260814-layout" in index_html
+    assert "/static/styles.css?v=20260820-protocols" in index_html
     assert 'localStorage.setItem("storage-intelligence-language", language)' in app_script
     assert "document.documentElement.lang = language" in app_script
     assert 'className: "language-switch"' in app_script

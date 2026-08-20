@@ -73,7 +73,11 @@ button { cursor: pointer; }
 .copyright { color: rgba(80,101,122,.82); font-size: 9px; line-height: 1.4; }
 .authored { color: rgba(80,101,122,.5); font-size: 9px; line-height: 1.4; }
 .powered-logos { display: flex; align-items: center; gap: 8px; min-height: 15px; }
-.protocol-enabled { color: rgba(24,92,146,.78); font-size: 9px; font-weight: 700; line-height: 1.4; letter-spacing: .02em; }
+.protocol-enabled {
+  display: inline-flex; align-items: center; width: max-content; padding: 4px 8px;
+  color: #075985; background: rgba(56,189,248,.12); border: 1px solid rgba(14,116,144,.28);
+  border-radius: 999px; font-size: 11px; font-weight: 800; line-height: 1.4; letter-spacing: .02em;
+}
 .microsoft-mini-logo { display: grid; grid-template-columns: repeat(2, 5px); grid-template-rows: repeat(2, 5px); gap: 1px; }
 .microsoft-mini-tile { width: 5px; height: 5px; }
 .mini-red { background: #f25022; }
