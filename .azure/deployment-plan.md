@@ -460,6 +460,17 @@ interfaces are deployed and healthy in Sweden Central.
 
 ### Commands and results
 
+- 2026-08-20 UI visibility redeployment validation: 87 tests passed,
+  `node --check src/web/static/app.js` passed, `az bicep build --file
+  infra/main.bicep --stdout` passed, managed-identity `AcrPull` was present, and
+  `azd provision --preview --no-prompt` completed successfully against the
+  existing `mcpa2a` Sweden Central environment with no resource deletions.
+- 2026-08-20 UI visibility redeployment: ACR build `dt6` produced image digest
+  `sha256:e9f6b4f2d038fe40f36e8310c82d9c42cf5fa6013daa089f9ae9dbe66179e3a0`;
+  Container App revision `ca-storage-intel-kxlgam3w--0000007` reached healthy
+  status; live assets contained the `20260820-protocols` cache key, visible
+  `MCP & A2A Enabled` label, accessibility status, and badge styling. ACR was
+  restored to private/default-deny with admin credentials disabled.
 - 2026-08-20 `az login --use-device-code` -> authenticated to tenant
   `MngEnvMCAP585394` and subscription `c82406dd-f84c-42df-9586-c6f02abda6df`.
 - 2026-08-20 `azd env new mcpa2a --no-prompt` and `azd env set` -> configured
