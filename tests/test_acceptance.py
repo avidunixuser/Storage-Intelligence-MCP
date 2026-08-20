@@ -903,6 +903,8 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert 'subtitle: "Review Prioritized Risks, Anomalies, Freshness Issues, And Savings Actions."' in app_script
     assert 'subtitle: "Inspect Source Status, Freshness Coverage, Stale Accounts, And Quality Gaps."' in app_script
     assert 'e("div", { className: "authored" }, "Authored by nrp")' in app_script
+    assert 'e("div", { className: "protocol-enabled" }, "MCP & A2A Enabled")' in app_script
+    assert '"MCP & A2A Enabled": "MCP y A2A habilitados"' in translations
     assert '{ key: "security", label: "Security"' in app_script
     assert '{ key: "governance", label: "Governance"' in app_script
     assert 'fetch("/api/questions")' in app_script

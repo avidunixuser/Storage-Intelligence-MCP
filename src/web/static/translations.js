@@ -41,6 +41,7 @@
     "No estate mutations · Entra protected": "Sin cambios en el entorno · Protegido por Entra",
     "Authored by nrp": "Creado por nrp",
     "Powered by Microsoft Azure and Azure AI Foundry": "Con tecnología de Microsoft Azure y Azure AI Foundry",
+    "MCP & A2A Enabled": "MCP y A2A habilitados",
     "Microsoft Entra authenticated": "Autenticado con Microsoft Entra",
     "Application views": "Vistas de la aplicación",
     "Current enterprise hierarchy scope": "Ámbito actual de la jerarquía empresarial",

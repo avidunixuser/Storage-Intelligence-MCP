@@ -9,6 +9,23 @@ Streamable HTTP server, and A2A v1 JSON-RPC/HTTP+JSON endpoints. See
 [MCP and A2A integration](docs/PROTOCOL_INTEGRATION.md) for client configuration,
 authentication, discovery, and request examples.
 
+## Live MCP and A2A endpoints
+
+The Sweden Central deployment uses this Entra-protected base URL:
+
+`https://ca-storage-intel-kxlgam3w.wittyforest-55ec85c1.swedencentral.azurecontainerapps.io`
+
+| Protocol | Endpoint |
+|---|---|
+| MCP Streamable HTTP | `https://ca-storage-intel-kxlgam3w.wittyforest-55ec85c1.swedencentral.azurecontainerapps.io/mcp/` |
+| A2A Agent Card | `https://ca-storage-intel-kxlgam3w.wittyforest-55ec85c1.swedencentral.azurecontainerapps.io/.well-known/agent-card.json` |
+| A2A JSON-RPC | `https://ca-storage-intel-kxlgam3w.wittyforest-55ec85c1.swedencentral.azurecontainerapps.io/a2a` |
+| A2A HTTP+JSON | `https://ca-storage-intel-kxlgam3w.wittyforest-55ec85c1.swedencentral.azurecontainerapps.io/a2a/rest` |
+
+External clients must request a Microsoft Entra token for the web application's
+`api://<WEB_AUTH_CLIENT_ID>` audience and send it as a bearer token. Use `/mcp/`
+as the canonical MCP URL; `/mcp` redirects to the mounted transport path.
+
 ## Product experience
 
 - PepsiCo-branded responsive dashboard with pinned, locally served React assets.
@@ -226,6 +243,7 @@ common Spanish intent phrases for newly authored questions.
 - `src/protocols/service.py`: protocol-neutral read-only agent facade.
 - `src/protocols/mcp_server.py`: MCP tools, resource, prompt, HTTP mount, and stdio entry point.
 - `src/protocols/a2a_server.py`: A2A Agent Card, JSON-RPC/REST routes, task executor, and artifacts.
+- `src/protocols/README.md`: code-adjacent MCP/A2A endpoint, authentication, and usage reference.
 - `src/web`: FastAPI and vendored React 18.3.1 browser UI.
 - `src/function_app.py`: private OpenAPI tools and durable fan-out/fan-in collection.
 - `src/agent`: Foundry instructions, OpenAPI contract, deploy/invoke scripts, and evals.
