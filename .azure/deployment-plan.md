@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Validated
+> **Status:** Deployed
 
 Generated: 2026-08-11
 
@@ -259,7 +259,7 @@ No infrastructure will be synthesized from memory where an official module/templ
 
 | Component | Azure service | SKU/configuration |
 |-----------|---------------|-------------------|
-| Web app | Azure Container Apps | Consumption profile, 1 vCPU/2 GiB per replica, external HTTPS ingress on target port 8000, Entra auth, fixed 3 replicas |
+| Web app | Azure Container Apps | Consumption profile, 1 vCPU/2 GiB, external HTTPS ingress on target port 8000, Entra auth, fixed 1 replica while A2A task state is process-local |
 | Image registry | Azure Container Registry | Premium, admin disabled, private endpoint |
 | Collection and tools | Azure Functions | Flex Consumption FC1, Python 3.13, VNet integration, 0 always-ready instances |
 | Orchestration state | Durable Task Scheduler | Consumption, private endpoint, managed-identity auth |
@@ -311,7 +311,7 @@ Azure quota CLI was attempted first per provider. When a provider returned `BadR
 
 ## 9. Cost Controls
 
-- Three warm Container Apps replicas for reliable demos; Flex Consumption Functions still scale to zero.
+- One warm Container Apps replica preserves process-local A2A task and cancellation state; Flex Consumption Functions still scale to zero.
 - Consumption Durable Task Scheduler.
 - One small DataZoneStandard model deployment with strict token/output limits.
 - Standard AI Search at one search unit; selected after repeated Sweden Central Basic
@@ -376,8 +376,8 @@ Azure quota CLI was attempted first per provider. When a provider returned `BadR
 - Navigation shows PepsiCo copyright and accessible Microsoft/Azure marks at bottom-left.
 - Risk concentration returns and displays every account meeting the score-20 at-risk
   threshold; the chart remains usable through a vertical scrollbar.
-- Container App resources use the supported 1 vCPU/2 GiB Consumption pairing with three
-  warm replicas; application version remains `0.1.0`.
+- Container App resources use the supported 1 vCPU/2 GiB Consumption pairing with one
+  warm replica while A2A task state remains process-local; application version remains `0.1.0`.
 - Web startup is independent from private Function deployment and Foundry smoke tests;
   ingress, probes, Docker, and Uvicorn consistently use port `8000`.
 - Container probes use a 10-second timeout to avoid intermittent one-second timeout failures.
@@ -412,9 +412,9 @@ Azure quota CLI was attempted first per provider. When a provider returned `BadR
 - [x] Re-run `azure-validate` for Sweden Central
 - [x] Resolve all validation failures and record evidence
 - [x] Set status to `Validated`
-- [ ] Invoke `azure-deploy`
-- [ ] Verify network isolation, RBAC, live UI, agent, queries, and health
-- [ ] Set status to `Deployed`
+- [x] Invoke `azure-deploy`
+- [x] Verify network isolation, RBAC, live UI, Function health, MCP, and A2A
+- [x] Set status to `Deployed`
 
 ---
 
@@ -437,9 +437,10 @@ Azure quota CLI was attempted first per provider. When a provider returned `BadR
 
 ## 13. Next Step
 
-> Current: Deployment paused by user
+> Current: Deployment completed in `rg-storage-intel-mcpa2a`.
 
-Resume from the checkpoint described in the paused deployment state below.
+The Entra-protected web application, private Function tools, MCP server, and A2A
+interfaces are deployed and healthy in Sweden Central.
 
 ---
 
@@ -459,6 +460,27 @@ Resume from the checkpoint described in the paused deployment state below.
 
 ### Commands and results
 
+- 2026-08-20 `az login --use-device-code` -> authenticated to tenant
+  `MngEnvMCAP585394` and subscription `c82406dd-f84c-42df-9586-c6f02abda6df`.
+- 2026-08-20 `azd env new mcpa2a --no-prompt` and `azd env set` -> configured
+  the new `mcpa2a` environment for Sweden Central; target resource group
+  `rg-storage-intel-mcpa2a` did not exist.
+- 2026-08-20 `az bicep build --file infra/main.bicep --stdout` -> passed.
+- 2026-08-20 `.venv/Scripts/python -m pytest` -> 85 passed.
+- 2026-08-20 `azd provision --preview --no-prompt` -> passed in 1 minute
+  25 seconds and confirmed a create-only plan for the new resource group and
+  31 workload resources.
+- 2026-08-20 `azd provision --no-prompt` -> provisioned
+  `rg-storage-intel-mcpa2a` in Sweden Central.
+- 2026-08-20 private Function publication -> HTTP 202; deployment completed and
+  `/api/healthz` returned HTTP 200.
+- 2026-08-20 live protocol checks -> web `/healthz` and Agent Card returned HTTP
+  200; MCP `initialize` and `tools/list` returned HTTP 200 with both registered
+  tools; A2A `SendMessage` completed with `TASK_STATE_COMPLETED`.
+- 2026-08-20 unauthenticated public app request -> HTTP 302 to the tenant's
+  Microsoft Entra sign-in endpoint.
+- 2026-08-20 security verification -> ACR public access remained disabled with
+  firewall default `Deny`; Container App revision `0000006` was healthy.
 - `azd version` -> 1.30.0.
 - `azd auth login --check-status` -> authenticated as `admin@MngEnvMCAP585394.onmicrosoft.com`.
 - `azd env get-values` -> `storage-intel-pilot`, target subscription/tenant, `eastus2`, and both Entra app IDs present.
@@ -542,33 +564,32 @@ Resume from the checkpoint described in the paused deployment state below.
 - Startup tolerance update validation passed: Bicep lint, 29 tests, and live preview
   completed without deletes.
 
-### Paused deployment state
+### Deployment result
 
-- Checkpoint environment: `storage-intel-se3`, Sweden Central.
-- Final target infrastructure provisioned successfully, including private template 19
-  Foundry capability hosts, GPT-5.4-mini `2026-03-17` DataZoneStandard at 10K TPM,
-  Standard AI Search, Cosmos DB, private ACR, private Flex Functions, private Durable
-  Task Scheduler, private storage/Key Vault, Container Apps, and private DNS/endpoints.
-- Foundry agent `storage-intelligence-agent` version `1` was created from inside the VNet.
-- Container App revision `ca-storage-intel-7k3npxuf--0000006` reached readiness and is
-  the last healthy web revision.
-- Private SCM publication works from the VNet-integrated web identity and Flex reports
-  the prebuilt deployment as successful.
-- Remaining blocker: the Flex Python worker reports
-  `ModuleNotFoundError: No module named 'azure.durable_functions'` after deployment.
-  The image contains the dependency and the generated zip places dependencies under
-  `.python_packages/lib/site-packages`; resume by verifying the deployed zip layout or
-  packaging the dependency tree at the Function root, then re-run Function health and
-  the private agent-tool smoke invocation.
-- ACR is restored to `publicNetworkAccess=Disabled`, firewall default `Deny`, and admin
-  credentials disabled after each bounded remote-build window.
-- Partial East US 2 and earlier Sweden retry resource groups are intentionally retained.
-  Their removal is destructive and requires separate approval; they incur cost meanwhile.
+- Environment: `mcpa2a`; resource group: `rg-storage-intel-mcpa2a`; region:
+  Sweden Central.
+- Public web endpoint:
+  `https://ca-storage-intel-kxlgam3w.wittyforest-55ec85c1.swedencentral.azurecontainerapps.io`.
+- Private Function endpoint:
+  `https://func-storage-intel-kxlgam3w.azurewebsites.net/api`.
+- Function deployment storage has Blob, Queue, and Table private endpoints and
+  identity-based service URIs.
+- Durable Functions uses extension bundle `[4.32.0, 5.0.0)` and the
+  `azureManaged` Durable Task Scheduler provider.
+- Container App revision `ca-storage-intel-kxlgam3w--0000006` and Function
+  `/api/healthz` are healthy.
+- ACR was restored to `publicNetworkAccess=Disabled`, firewall default `Deny`,
+  and admin credentials disabled after each bounded remote-build window.
 
 ### Role Assignment Verification
 
 - Status: Verified
-- Identities checked: Foundry project SMI, Function UAMI, web UAMI, deploying user
-- Roles confirmed: Foundry Account Owner; official template Search/Storage/Cosmos/App Insights/ACR roles; Function Storage Blob Data Owner; central lake Storage Blob Data Contributor; Durable Task Data Contributor; Key Vault Secrets User; Monitoring Metrics Publisher; web AcrPull; deploying-user Function storage and DTS dashboard roles.
+- Identities checked: Function UAMI, web UAMI, and deploying user
+- Roles confirmed: Function Storage Blob Data Owner, Storage Queue Data
+  Contributor, and Storage Table Data Contributor on Function storage; central
+  lake Storage Blob Data Contributor; Durable Task Data Contributor; Key Vault
+  Secrets User; Monitoring Metrics Publisher; web AcrPull, Foundry User, and
+  Function-scoped Website Contributor.
 - Scope: Service roles are scoped to their individual resources. No workload identity receives subscription-wide data-plane access.
-- Issues: Function creation now explicitly depends on its storage role assignment. No unresolved role gaps.
+- Issues: None. The temporary diagnostic Storage Blob Data Reader assignment was
+  removed from the web identity after verification.

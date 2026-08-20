@@ -211,6 +211,40 @@ resource blobDns 'Microsoft.Network/privateDnsZones@2024-06-01' existing = {
   name: 'privatelink.blob.${environment().suffixes.storage}'
 }
 
+resource queueDns 'Microsoft.Network/privateDnsZones@2024-06-01' = {
+  name: 'privatelink.queue.${environment().suffixes.storage}'
+  location: 'global'
+}
+
+resource queueDnsLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
+  parent: queueDns
+  name: '${vnetName}-queue-link'
+  location: 'global'
+  properties: {
+    virtualNetwork: {
+      id: vnetId
+    }
+    registrationEnabled: false
+  }
+}
+
+resource tableDns 'Microsoft.Network/privateDnsZones@2024-06-01' = {
+  name: 'privatelink.table.${environment().suffixes.storage}'
+  location: 'global'
+}
+
+resource tableDnsLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
+  parent: tableDns
+  name: '${vnetName}-table-link'
+  location: 'global'
+  properties: {
+    virtualNetwork: {
+      id: vnetId
+    }
+    registrationEnabled: false
+  }
+}
+
 resource dfsDns 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: 'privatelink.dfs.${environment().suffixes.storage}'
   location: 'global'
@@ -259,6 +293,80 @@ resource functionStorageDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZ
         name: 'blob'
         properties: {
           privateDnsZoneId: blobDns.id
+        }
+      }
+    ]
+  }
+}
+
+resource functionStorageQueuePe 'Microsoft.Network/privateEndpoints@2024-05-01' = {
+  name: '${functionStorageName}-queue-pe'
+  location: location
+  tags: tags
+  properties: {
+    subnet: {
+      id: peSubnetId
+    }
+    privateLinkServiceConnections: [
+      {
+        name: 'queue'
+        properties: {
+          privateLinkServiceId: functionStorage.id
+          groupIds: [
+            'queue'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+resource functionStorageQueueDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-05-01' = {
+  parent: functionStorageQueuePe
+  name: 'default'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'queue'
+        properties: {
+          privateDnsZoneId: queueDns.id
+        }
+      }
+    ]
+  }
+}
+
+resource functionStorageTablePe 'Microsoft.Network/privateEndpoints@2024-05-01' = {
+  name: '${functionStorageName}-table-pe'
+  location: location
+  tags: tags
+  properties: {
+    subnet: {
+      id: peSubnetId
+    }
+    privateLinkServiceConnections: [
+      {
+        name: 'table'
+        properties: {
+          privateLinkServiceId: functionStorage.id
+          groupIds: [
+            'table'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+resource functionStorageTableDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-05-01' = {
+  parent: functionStorageTablePe
+  name: 'default'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'table'
+        properties: {
+          privateDnsZoneId: tableDns.id
         }
       }
     ]
@@ -549,6 +657,14 @@ resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
         {
           name: 'AzureWebJobsStorage__blobServiceUri'
           value: functionStorage.properties.primaryEndpoints.blob
+        }
+        {
+          name: 'AzureWebJobsStorage__queueServiceUri'
+          value: functionStorage.properties.primaryEndpoints.queue
+        }
+        {
+          name: 'AzureWebJobsStorage__tableServiceUri'
+          value: functionStorage.properties.primaryEndpoints.table
         }
         {
           name: 'AzureWebJobsStorage__credential'

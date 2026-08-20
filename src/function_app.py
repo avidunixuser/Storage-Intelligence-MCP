@@ -24,7 +24,7 @@ def _json(payload: Any, status: int = 200) -> func.HttpResponse:
 
 
 @app.route(route="healthz", methods=["GET"])
-def healthz(_: func.HttpRequest) -> func.HttpResponse:
+def healthz(req: func.HttpRequest) -> func.HttpResponse:
     return _json({"status": "healthy", "service": "storage-intelligence-tools"})
 
 
@@ -94,7 +94,7 @@ def collect_orchestrator(context: df.DurableOrchestrationContext):
 
 
 @app.activity_trigger(input_name="partition")
-def collect_partition(partition: dict[str, Any]) -> dict[str, Any]:
+def collect_partition(partition: dict) -> dict[str, Any]:
     start = int(partition["start"])
     count = int(partition["count"])
     logging.info("Collecting synthetic partition start=%s count=%s", start, count)
