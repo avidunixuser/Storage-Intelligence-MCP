@@ -1,0 +1,8 @@
+.git*
+.venv/
+agent/
+functions/
+web/
+**/__pycache__/
+**/*.pyc
+*.md

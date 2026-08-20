@@ -1,0 +1,10 @@
+React 18.3.1 UMD production assets downloaded from:
+https://unpkg.com/react@18.3.1/umd/react.production.min.js
+https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js
+
+SHA-256:
+react.production.min.js D949F1C3687AEDADCEDAC85261865F29B17CD273997E7F6B2BFC53B2F9D4C4DD
+react-dom.production.min.js 35F4F974F4B2BCD44DA73963347F8952E341F83909E4498227D4E26B98F66F0D
+
+These files are committed and served locally. The application performs no package-manager,
+Node.js, CDN, or browser-time dependency fetch.

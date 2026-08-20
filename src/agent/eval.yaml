@@ -1,0 +1,13 @@
+name: storage-intelligence-smoke
+agent:
+  name: storage-intelligence-agent
+dataset_file: evals/smoke.jsonl
+evaluators:
+  - relevance
+  - task_adherence
+  - intent_resolution
+  - indirect_attack
+options:
+  eval_model: gpt-5.4-mini
+  pass_threshold: 0.8
+  max_samples: 12

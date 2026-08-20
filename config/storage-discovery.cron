@@ -1,0 +1,3 @@
+# Pull authorized tenant-wide storage inventory every six hours.
+# Install with: crontab config/storage-discovery.cron
+0 */6 * * * cd /app && /usr/local/bin/python -m storage_intelligence.discovery --output /app/data/discovered-storage-accounts.json >> /var/log/storage-discovery.log 2>&1
