@@ -716,7 +716,11 @@
             e(AzureMiniLogo),
             e(FoundryMiniLogo)
           ),
-          e("div", { className: "protocol-enabled" }, "MCP & A2A Enabled")
+          e("div", {
+            className: "protocol-enabled",
+            role: "status",
+            "aria-label": "MCP and A2A protocols enabled"
+          }, "MCP & A2A Enabled")
         )
       ),
       e("main", { className: "main" },
