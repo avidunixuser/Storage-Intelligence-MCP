@@ -1,0 +1,11 @@
+.azure/*/
+!.azure/deployment-plan.md
+!.azure/.gitignore
+.pytest_cache/
+.venv/
+__pycache__/
+*.egg-info/
+*.py[cod]
+.coverage
+htmlcov/
+/data/

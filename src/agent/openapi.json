@@ -1,0 +1,108 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Storage Intelligence Deterministic Tools",
+    "version": "1.0.0",
+    "description": "Read-only tools that return scoped analytics and evidence."
+  },
+  "servers": [
+    {
+      "url": "https://FUNCTION_HOST/api"
+    }
+  ],
+  "paths": {
+    "/tools/query": {
+      "post": {
+        "operationId": "investigateStorageEstate",
+        "description": "Answer an approved storage intelligence question using deterministic analytics.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QueryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Scoped answer with per-account reasons, complete matching evidence, assumptions, timestamp, and confidence."
+          }
+        }
+      }
+    },
+    "/tools/portfolio": {
+      "post": {
+        "operationId": "summarizeStoragePortfolio",
+        "description": "Return deterministic portfolio capacity, cost, growth, savings, freshness, and risk.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "filters": {
+                    "$ref": "#/components/schemas/Filters"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Portfolio summary."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "QueryRequest": {
+        "type": "object",
+        "required": [
+          "question"
+        ],
+        "properties": {
+          "question": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          },
+          "filters": {
+            "$ref": "#/components/schemas/Filters"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Filters": {
+        "type": "object",
+        "properties": {
+          "subscription": {
+            "type": "string"
+          },
+          "business_unit": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "tier": {
+            "type": "string"
+          },
+          "databricks": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

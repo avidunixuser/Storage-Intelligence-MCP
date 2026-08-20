@@ -1,0 +1,18 @@
+azure-ai-foundry.png
+Source: user-supplied Azure AI Foundry mark
+SHA-256: E2C39AF95049197F78F9FE1057D99C625E3E997EEBA34754DFC28D771731605D
+
+This asset is committed and served locally. The browser does not fetch external branding.
+
+Self-authored navigation SVGs:
+- nav-overview.svg
+- nav-agent.svg
+- nav-savings.svg
+- nav-findings.svg
+- nav-health.svg
+- nav-admin.svg
+
+Microsoft Entra authentication status:
+- microsoft-entra-id.png
+- Source: https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Microsoft_Entra_ID_color_icon.svg/250px-Microsoft_Entra_ID_color_icon.svg.png
+- SHA-256: 407C905DE2C610918819D3E5138664E902F4F6D097238EC74EDA62F3D7665767
