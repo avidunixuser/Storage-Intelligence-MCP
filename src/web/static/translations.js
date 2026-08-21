@@ -315,7 +315,6 @@
     "AIRGAP account spreadsheet": "Hoja de cálculo de cuentas AIRGAP",
     "Tenant-wide discovery could not be started": "No se pudo iniciar el descubrimiento de todo el inquilino",
     "Tiering adoption percentage": "Porcentaje de adopción de niveles",
-    "Use XLSX or UTF-8 CSV with columns: name, tenant_id, management_group, subscription, environment, subsidiary (or business_unit), region, tier.": "Use XLSX o CSV UTF-8 con columnas: name, tenant_id, management_group, subscription, environment, subsidiary (o business_unit), region, tier.",
     "subsidiaries / business units": "subsidiarias / unidades de negocio",
     "tenant IDs": "ID de inquilino",
     "Added ": "Agregadas ",

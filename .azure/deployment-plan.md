@@ -4,6 +4,26 @@
 
 Generated: 2026-08-11
 
+## Pending Change: AIRGAP Sample Spreadsheet
+
+- **Mode:** Modify the existing Overview UI and redeploy the existing Container App.
+- **Requested capability:** Place a downloadable `Sample.xlsx` link directly below the
+  `Upload account spreadsheet (AIRGAP Accounts if any)` heading.
+- **Workbook contract:** The workbook contains one header row with the 36 requested
+  storage-account attributes, in the supplied order, and no sample account data.
+- **Import compatibility:** The existing authenticated XLSX/CSV upload endpoint remains
+  unchanged. The template uses normalized field names already accepted by the server.
+- **UI cleanup:** Remove the legacy abbreviated column-guidance sentence from the upload tile.
+- **Security and infrastructure:** No authentication, RBAC, networking, data-plane, or Azure
+  infrastructure changes. The workbook is a static, non-sensitive application asset.
+- **Deployment:** Build a fresh image in the existing bounded ACR build window, restore ACR
+  to private/default-deny, deploy a new healthy Container App revision, then commit, push,
+  create a pull request, and merge it.
+- **Preparation proof:** `Sample.xlsx` contains exactly one header row with all 36 requested
+  columns; the static download and completed-template upload path pass automated coverage.
+  The complete suite passes with 93 tests, Python/JavaScript compilation succeeds, and the
+  unchanged Bicep deployment builds cleanly.
+
 ## Pending Change: Project Owner Email Notifications
 
 - **Mode:** Modify the existing application and Azure deployment.
@@ -573,6 +593,25 @@ Invoke `azure-validate`, then hand the validated deployment to `azure-deploy`.
 
 ### Commands and results
 
+- 2026-08-21 AIRGAP sample workbook deployment: `azd provision --no-prompt`
+  confirmed no infrastructure changes. ACR run `dte` published
+  `storage-intelligence:airgap-sample-20260821` with digest
+  `sha256:e553eda8fa4c694a5ddb4150636853c26eca4c4d9f03e8b78f204ac2493a9476`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000015` is Healthy,
+  Provisioned, running one replica, and receives 100% of traffic. The live
+  `Sample.xlsx` route is protected by Microsoft Entra (unauthenticated HTTP
+  401). ACR was restored to public access disabled, firewall default `Deny`,
+  and admin credentials disabled; the web UAMI retains resource-scoped
+  `AcrPull`.
+- 2026-08-21 AIRGAP sample workbook validation: confirmed the approved
+  `mcpa2a` Sweden Central environment and Azure authentication; 93 tests passed;
+  Python compilation, JavaScript syntax checks, Bicep build, and
+  `azd package --no-prompt` passed. The workbook contains exactly the requested
+  36-column header, downloads as a valid XLSX, and imports successfully after an
+  account row is populated. `azd provision --preview --no-prompt` completed
+  without resource deletes. Applicable policies and the existing
+  resource-scoped web-UAMI `AcrPull` assignment were reviewed; no infrastructure
+  or RBAC change is required.
 - 2026-08-21 project-owner notification deployment: `azd provision
   --no-prompt` provisioned Azure Communication Services, the Email Service,
   Azure-managed domain, domain link, app settings, and resource-scoped web-UAMI

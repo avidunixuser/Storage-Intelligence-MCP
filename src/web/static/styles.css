@@ -243,6 +243,11 @@ select:focus, input:focus { border-color: rgba(56,215,231,.58); box-shadow: 0 0 
 .success { color: var(--green); font-size: 12px; margin-top: 10px; }
 .bulk-import { display: flex; align-items: end; justify-content: space-between; gap: 20px; border-top: 1px solid var(--line); margin-top: 18px; padding-top: 17px; }
 .bulk-import-copy { min-width: 240px; }
+.sample-spreadsheet-link {
+  display: inline-block; color: var(--cyan); font-size: 12px; font-weight: 700;
+  margin-top: 8px; text-decoration: underline; text-underline-offset: 3px;
+}
+.sample-spreadsheet-link:hover, .sample-spreadsheet-link:focus-visible { color: var(--green); }
 .import-form { display: grid; grid-template-columns: minmax(260px, 1fr) auto; gap: 10px; align-items: center; width: min(620px, 100%); }
 .file-input { padding: 8px; color: var(--muted); }
 .file-input::file-selector-button {

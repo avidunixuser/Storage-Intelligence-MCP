@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 
 from storage_intelligence import IntelligenceEngine, generate_accounts
 from storage_intelligence.analytics import risk_score, security_findings
@@ -858,6 +858,103 @@ def test_admin_discovery_has_role_gated_navigation():
     assert "Pull Tenant Wide Storage Account Details" in app_script
 
 
+def test_airgap_sample_workbook_has_complete_header_and_imports(monkeypatch):
+    monkeypatch.setenv("AUTH_DISABLED", "true")
+    from web.app import ACCOUNTS, app
+
+    expected_headers = [
+        "account_id",
+        "name",
+        "tenant_id",
+        "subscription_id",
+        "subscription_name",
+        "environment",
+        "management_group",
+        "subsidiary",
+        "business_unit",
+        "region",
+        "tier",
+        "tier_assumed",
+        "kind",
+        "sku",
+        "uses_sas_keys",
+        "shared_key_access_enabled",
+        "public_network_access",
+        "blob_public_access_enabled",
+        "private_endpoint_enabled",
+        "service_principal_access_enabled",
+        "managed_identity_enabled",
+        "network_security_group",
+        "application_security_group",
+        "project_name",
+        "tag_business_unit",
+        "last_accessed_date",
+        "project_defunct",
+        "databricks_workspace",
+        "fabric_lakehouse",
+        "sap_system",
+        "azure_data_factory",
+        "hns_enabled",
+        "sftp_enabled",
+        "application_insights_resource",
+        "azure_function_app",
+        "log_analytics_workspace",
+    ]
+    sample_path = Path(__file__).parents[1] / "src" / "web" / "static" / "Sample.xlsx"
+    workbook = load_workbook(sample_path, read_only=True, data_only=True)
+    try:
+        rows = list(workbook.active.iter_rows(values_only=True))
+    finally:
+        workbook.close()
+
+    assert rows == [tuple(expected_headers)]
+    response = TestClient(app).get("/static/Sample.xlsx")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith(
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    assert response.content.startswith(b"PK")
+
+    import_name = "stairgapsample01"
+    workbook = load_workbook(sample_path)
+    workbook.active.append(
+        [
+            "",
+            import_name,
+            TENANTS[0]["id"],
+            "",
+            "platform-prod",
+            "Prod",
+            SUBSCRIPTIONS[0]["management_group"],
+            SUBSCRIPTIONS[0]["subsidiary"],
+            SUBSCRIPTIONS[0]["subsidiary"],
+            "eastus2",
+            "Hot",
+            False,
+            "StorageV2",
+            "Standard_ZRS",
+        ]
+    )
+    payload = BytesIO()
+    workbook.save(payload)
+    workbook.close()
+    try:
+        imported = TestClient(app).post(
+            "/api/accounts/import",
+            files={
+                "spreadsheet": (
+                    "Sample.xlsx",
+                    payload.getvalue(),
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+            },
+        )
+        assert imported.status_code == 201
+        assert imported.json()["accounts"] == [import_name]
+    finally:
+        ACCOUNTS[:] = [row for row in ACCOUNTS if row["name"] != import_name]
+
+
 def test_hierarchy_controls_and_foundry_mark_are_global():
     static_root = Path(__file__).parents[1] / "src" / "web" / "static"
     app_script = (static_root / "app.js").read_text(encoding="utf-8")
@@ -939,8 +1036,13 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert '"aria-label": "Platform-linked storage accounts"' in app_script
     assert "portfolio.platform_accounts.length.toLocaleString()" in app_script
     assert "Upload account spreadsheet (AIRGAP Accounts if any)" in app_script
+    assert 'href: "/static/Sample.xlsx"' in app_script
+    assert 'download: "Sample.xlsx"' in app_script
+    assert 'className: "sample-spreadsheet-link"' in app_script
+    assert "Use XLSX or UTF-8 CSV with columns:" not in app_script
     assert '"aria-label": "AIRGAP account spreadsheet"' in app_script
     assert '"Upload account spreadsheet (AIRGAP Accounts if any)":' in translations
+    assert "Use XLSX or UTF-8 CSV with columns:" not in translations
     assert "max-height: 560px; overflow-y: scroll;" in styles
     assert ".platform-account-scroll::-webkit-scrollbar-thumb" in styles
     assert 'className: "panel risk-overview-panel"' in app_script
@@ -985,10 +1087,10 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert health_segment.index('className: "source-grid"') < health_segment.index(
         'className: "metrics health-metrics"'
     )
-    assert index_html.index("/static/translations.js?v=20260821-owner-notifications") < index_html.index(
-        "/static/app.js?v=20260821-owner-notifications"
+    assert index_html.index("/static/translations.js?v=20260821-airgap-sample") < index_html.index(
+        "/static/app.js?v=20260821-airgap-sample"
     )
-    assert "/static/styles.css?v=20260821-owner-notifications" in index_html
+    assert "/static/styles.css?v=20260821-airgap-sample" in index_html
     assert 'localStorage.setItem("storage-intelligence-language", language)' in app_script
     assert "document.documentElement.lang = language" in app_script
     assert 'className: "language-switch"' in app_script
