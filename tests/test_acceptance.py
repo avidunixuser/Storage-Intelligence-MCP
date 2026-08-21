@@ -313,6 +313,8 @@ def test_web_api_and_auth_boundary(monkeypatch):
         key=lambda item: item["score"],
         reverse=True,
     )
+    assert len(portfolio_body["platform_accounts"]) == 2500
+    assert len({item["account_id"] for item in portfolio_body["platform_accounts"]}) == 2500
     assert any(item["databricks_workspace"] for item in portfolio_body["platform_accounts"])
     assert any(item["fabric_lakehouse"] for item in portfolio_body["platform_accounts"])
     assert any(item["sap_system"] for item in portfolio_body["platform_accounts"])
@@ -931,6 +933,11 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert "function PostureMetric(props)" in app_script
     assert 'fetch("/api/posture/" + postureSelection' in app_script
     assert 'className: "posture-account-list risk-scroll"' in app_script
+    assert 'className: "platform-account-grid platform-account-scroll"' in app_script
+    assert '"aria-label": "Platform-linked storage accounts"' in app_script
+    assert "portfolio.platform_accounts.length.toLocaleString()" in app_script
+    assert "max-height: 560px; overflow-y: scroll;" in styles
+    assert ".platform-account-scroll::-webkit-scrollbar-thumb" in styles
     assert 'className: "panel priority-findings-panel"' in app_script
     assert 'className: "risk-list priority-findings-scroll"' in app_script
     assert app_script.index('className: "panel priority-findings-panel"') < app_script.index('"Priority findings"')
@@ -967,9 +974,9 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
         'className: "metrics health-metrics"'
     )
     assert index_html.index("/static/translations.js?v=20260821-priority-scroll") < index_html.index(
-        "/static/app.js?v=20260821-priority-scroll"
+        "/static/app.js?v=20260821-platform-account-scroll"
     )
-    assert "/static/styles.css?v=20260821-priority-scroll" in index_html
+    assert "/static/styles.css?v=20260821-platform-account-scroll" in index_html
     assert 'localStorage.setItem("storage-intelligence-language", language)' in app_script
     assert "document.documentElement.lang = language" in app_script
     assert 'className: "language-switch"' in app_script

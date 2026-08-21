@@ -658,19 +658,9 @@ def get_portfolio(
                 "managed_identity_enabled": row.get("managed_identity_enabled"),
             }
             for row in rows
-            if (
-                row.get("databricks_workspace")
-                or row.get("fabric_lakehouse")
-                or row.get("sap_system")
-                or row.get("azure_data_factory")
-                or row.get("sftp_enabled")
-                or row.get("application_insights_resource")
-                or row.get("azure_function_app")
-                or row.get("log_analytics_workspace")
-            )
         ],
         key=lambda account: account["name"],
-    )[:18]
+    )
     return {
         "summary": portfolio_summary(rows),
         "risks": risks(rows, limit=None, minimum_score=AT_RISK_THRESHOLD),
