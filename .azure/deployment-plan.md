@@ -460,6 +460,23 @@ interfaces are deployed and healthy in Sweden Central.
 
 ### Commands and results
 
+- 2026-08-21 Priority Findings UI redeployment validation: 88 tests passed,
+  `node --check src/web/static/app.js` and `az bicep build --file
+  infra/main.bicep --stdout` passed, and `azd provision --preview --no-prompt`
+  completed against the existing `mcpa2a` Sweden Central environment with no
+  resource deletion. Static managed-identity RBAC assignments remain unchanged.
+- 2026-08-21 Priority Findings UI redeployment: `azd provision --no-prompt`
+  confirmed no infrastructure changes; ACR build `dt8` produced
+  `storage-intelligence:priority-scroll-20260821` with digest
+  `sha256:a4c375adfbe22d90c3d1c2b9209db704ddc7397c327d1273ddcdc6d0bc0ff57f`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000009` reached
+  `Healthy`/`Provisioned` with 100% traffic and sustained HTTP 200 health and
+  readiness probes. In-revision inspection confirmed the
+  `priority-findings-panel`, `priority-findings-scroll`, persistent horizontal
+  overflow styling, responsive height rule, and `20260821-priority-scroll`
+  browser cache key. ACR was restored to public access disabled, firewall
+  default `Deny`, and admin credentials disabled; the web identity retained
+  resource-scoped `AcrPull`.
 - 2026-08-21 managed-identity UI redeployment validation: 88 tests passed,
   `node --check src/web/static/app.js` passed, `az bicep build --file
   infra/main.bicep --stdout` passed, `azd package --no-prompt` completed, and
@@ -606,7 +623,7 @@ interfaces are deployed and healthy in Sweden Central.
   identity-based service URIs.
 - Durable Functions uses extension bundle `[4.32.0, 5.0.0)` and the
   `azureManaged` Durable Task Scheduler provider.
-- Container App revision `ca-storage-intel-kxlgam3w--0000008` and Function
+- Container App revision `ca-storage-intel-kxlgam3w--0000009` and Function
   `/api/healthz` are healthy.
 - ACR was restored to `publicNetworkAccess=Disabled`, firewall default `Deny`,
   and admin credentials disabled after each bounded remote-build window.
