@@ -51,6 +51,8 @@ flowchart LR
   A --> E[Evidence and confidence]
   E --> W
   E --> F
+  W -->|UAMI + Entra token; outbound HTTPS| M[Azure Communication Services Email]
+  M --> R[Server-controlled project-owner recipient]
   U -->|Manual form or XLSX/CSV| O[Pilot inventory onboarding]
   O -->|Atomic schema and duplicate validation| A
   U -->|Admin role| X[Tenant-wide CLI discovery]
@@ -76,6 +78,8 @@ private endpoints, Premium ACR, and tracing. The composed workload adds:
   `/subscription_id` partitioning;
 - Function deployment storage with shared-key access disabled;
 - Key Vault RBAC mode and private endpoint.
+- Azure Communication Services plus Email Communication Service in the Europe data
+  geography, linked to an Azure-managed domain for outbound project-owner notifications.
 
 The agent, data services, tools, registry, scheduler, and secrets remain private. DNS
 zones are linked to the single workload VNet. Capability-host networking is not
@@ -95,6 +99,10 @@ during brief CPU or network contention.
 - Functions use a UAMI for storage, ADLS, DTS, Key Vault, and monitoring.
 - The web UAMI receives Cosmos DB Built-in Data Contributor scoped only to the
   `storage-intelligence` database.
+- The web UAMI uses `DefaultAzureCredential` for ACS Email. Azure currently has no
+  send-only managed-identity role, so the required Communication and Email Service Owner
+  role is constrained to the single Communication Services resource. Local/key
+  authentication is disabled.
 - Foundry project system identity receives only the official template's required data roles.
 - Shared storage keys, ACR admin, Cosmos local auth, Search local auth, and public data-plane
   access are disabled.
@@ -204,6 +212,11 @@ the deterministic risk layer derives factor strings and Security/Governance scor
   localhost uses an atomically replaced JSON file.
 - `POST /api/savings/simulate` accepts a bounded adoption percentage and returns the
   selected simulation, fixed comparison scenarios, ranked candidates, and trust metadata.
+- `POST /api/notifications/project-owners` accepts 1-100 unique account IDs from an
+  authenticated user. It resolves trusted account records server-side, rejects unknown IDs
+  and browser-supplied recipient fields, renders escaped HTML and plain-text tables, and
+  submits one email to the server-controlled pilot recipient. A succeeded ACS operation
+  means accepted for delivery, not confirmed mailbox delivery.
 - `GET /api/findings` normalizes risk, MAD growth anomalies, freshness gaps, and savings
   actions into one severity-sorted contract. The five Findings summary tiles select a
   category client-side and render the corresponding records in the bounded scrollable
@@ -222,7 +235,7 @@ the deterministic risk layer derives factor strings and Security/Governance scor
   pilot run reports Healthy status, synced records, mode, and timestamp without pretending
   to be live production data.
 
-All four endpoints apply the same allowlisted portfolio filters and Entra boundary. The
+All view endpoints apply the same allowlisted portfolio filters and Entra boundary. The
 React shell uses explicit desktop/mobile navigation state, so each item is a real view
 rather than an anchor to hidden placeholder content.
 

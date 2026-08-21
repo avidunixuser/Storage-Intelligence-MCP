@@ -985,10 +985,10 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert health_segment.index('className: "source-grid"') < health_segment.index(
         'className: "metrics health-metrics"'
     )
-    assert index_html.index("/static/translations.js?v=20260821-risk-hint") < index_html.index(
-        "/static/app.js?v=20260821-risk-hint"
+    assert index_html.index("/static/translations.js?v=20260821-owner-notifications") < index_html.index(
+        "/static/app.js?v=20260821-owner-notifications"
     )
-    assert "/static/styles.css?v=20260821-risk-hint" in index_html
+    assert "/static/styles.css?v=20260821-owner-notifications" in index_html
     assert 'localStorage.setItem("storage-intelligence-language", language)' in app_script
     assert "document.documentElement.lang = language" in app_script
     assert 'className: "language-switch"' in app_script

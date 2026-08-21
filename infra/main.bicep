@@ -119,3 +119,6 @@ output FUNCTION_STORAGE_NAME string = workload.outputs.functionStorageName
 output KEY_VAULT_NAME string = workload.outputs.keyVaultName
 output WEB_AUTH_CLIENT_ID string = webAuthClientId
 output FUNCTION_AUTH_CLIENT_ID string = functionAuthClientId
+output AZURE_COMMUNICATION_SERVICE_NAME string = workload.outputs.communicationServiceName
+output AZURE_COMMUNICATION_EMAIL_ENDPOINT string = workload.outputs.communicationEmailEndpoint
+output AZURE_COMMUNICATION_EMAIL_SENDER string = workload.outputs.communicationEmailSender

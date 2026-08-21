@@ -103,17 +103,68 @@
     );
   }
 
+  function AccountCheckbox(props) {
+    return e("label", {
+      className: "account-select-control",
+      title: "Select account for owner notification: " + props.name
+    },
+      e("input", {
+        type: "checkbox",
+        checked: props.checked,
+        onChange: (event) => props.onChange(event.target.checked),
+        "aria-label": "Select account for owner notification: " + props.name
+      }),
+      e("span", { className: "account-select-box", "aria-hidden": "true" })
+    );
+  }
+
+  function NotificationToolbar(props) {
+    const status = props.status;
+    return e("div", { className: "notification-toolbar-wrap" },
+      e("div", { className: "notification-toolbar" },
+        e("span", { className: "notification-selection-count" }, props.selectedIds.length + " selected"),
+        e("button", {
+          type: "button",
+          className: "notify-owners-button",
+          disabled: props.busy || props.selectedIds.length === 0,
+          onClick: () => props.onNotify(props.selectedIds),
+          "aria-label": "Notify project owners for selected storage accounts"
+        }, props.busy ? "Sending notification…" : "Notify project owners")
+      ),
+      status && e("div", {
+        className: "notification-status " + status.tone,
+        role: status.tone === "error" ? "alert" : "status",
+        "aria-live": "polite"
+      }, status.message)
+    );
+  }
+
   function PostureDrilldown(props) {
+    const accounts = props.data ? props.data.accounts : [];
+    const selectedIds = props.selectedIds(accounts.map((account) => account.account_id));
     return e("section", { className: "panel posture-drilldown" },
       e("div", { className: "panel-head" },
         e("div", { className: "panel-title" }, props.data ? props.data.label + " accounts" : "Loading posture accounts"),
-        e("div", { className: "panel-meta" }, props.data ? props.data.count + " matches · scrollable" : "Loading…")
+        e("div", { className: "notification-panel-meta" },
+          e("div", { className: "panel-meta" }, props.data ? props.data.count + " matches · scrollable" : "Loading…"),
+          e(NotificationToolbar, {
+            selectedIds: selectedIds,
+            busy: props.notificationBusy,
+            status: props.notificationStatus,
+            onNotify: props.onNotify
+          })
+        )
       ),
       props.busy
         ? e("div", { className: "loading posture-loading" }, "Loading matching accounts…")
         : props.data && e("div", { className: "posture-account-list risk-scroll" },
-            props.data.accounts.map((account) =>
-              e("div", { className: "posture-account-row", key: account.account_id },
+            accounts.map((account) =>
+              e("div", { className: "posture-account-row" + (selectedIds.includes(account.account_id) ? " selected" : ""), key: account.account_id },
+                e(AccountCheckbox, {
+                  name: account.name,
+                  checked: selectedIds.includes(account.account_id),
+                  onChange: (checked) => props.onToggle(account.account_id, checked)
+                }),
                 e("div", { className: "posture-account-identity" },
                   e("strong", null, account.name),
                   e("span", null, account.management_group + " · " + account.subsidiary + " · " + account.subscription + " · " + account.environment)
@@ -297,6 +348,9 @@
     const [postureSelection, setPostureSelection] = useState("");
     const [postureData, setPostureData] = useState(null);
     const [postureBusy, setPostureBusy] = useState(false);
+    const [accountSelections, setAccountSelections] = useState({});
+    const [notificationBusy, setNotificationBusy] = useState({});
+    const [notificationStatuses, setNotificationStatuses] = useState({});
     const [accountDraft, setAccountDraft] = useState({
       name: "",
       tenant_id: "",
@@ -402,6 +456,58 @@
 
     function updateAccountDraft(key, value) {
       setAccountDraft(Object.assign({}, accountDraft, { [key]: value }));
+    }
+
+    function selectedIds(surface, visibleIds) {
+      const selected = accountSelections[surface] || [];
+      if (!visibleIds) return selected;
+      const visible = new Set(visibleIds);
+      return selected.filter((accountId) => visible.has(accountId));
+    }
+
+    function setNotificationStatus(surface, tone, message) {
+      setNotificationStatuses((current) => Object.assign({}, current, {
+        [surface]: { tone: tone, message: message }
+      }));
+    }
+
+    function toggleAccountSelection(surface, accountId, checked) {
+      setAccountSelections((current) => {
+        const next = new Set(current[surface] || []);
+        if (checked && next.size >= 100 && !next.has(accountId)) {
+          setNotificationStatus(surface, "error", "Select no more than 100 accounts per notification.");
+          return current;
+        }
+        if (checked) next.add(accountId);
+        else next.delete(accountId);
+        setNotificationStatuses((statuses) => Object.assign({}, statuses, { [surface]: null }));
+        return Object.assign({}, current, { [surface]: Array.from(next) });
+      });
+    }
+
+    function notifyProjectOwners(surface, accountIds) {
+      if (!accountIds.length || notificationBusy[surface]) return;
+      setNotificationBusy((current) => Object.assign({}, current, { [surface]: true }));
+      setNotificationStatuses((current) => Object.assign({}, current, { [surface]: null }));
+      fetch("/api/notifications/project-owners", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ account_ids: accountIds })
+      })
+        .then((result) => result.json().then((body) => {
+          if (!result.ok) throw new Error(apiError(body, "Project-owner notification could not be sent"));
+          return body;
+        }))
+        .then((body) => {
+          setAccountSelections((current) => Object.assign({}, current, { [surface]: [] }));
+          setNotificationStatus(
+            surface,
+            "success",
+            "Notification accepted for " + body.account_count + " account(s) to " + body.recipient + ". Operation " + body.operation_id + "."
+          );
+        })
+        .catch((err) => setNotificationStatus(surface, "error", err.message))
+        .finally(() => setNotificationBusy((current) => Object.assign({}, current, { [surface]: false })));
     }
 
     function addAccount(event) {
@@ -849,8 +955,16 @@
           portfolio.platform_accounts.length > 0 && e("section", { className: "panel platform-panel" },
             e("div", { className: "panel-head" },
               e("div", { className: "panel-title" }, "Platform-linked storage accounts"),
-              e("div", { className: "panel-meta" },
-                portfolio.platform_accounts.length.toLocaleString() + " scoped accounts · Databricks · Fabric · SAP · ADF · SFTP · App Insights · Functions · Log Analytics"
+              e("div", { className: "notification-panel-meta" },
+                e("div", { className: "panel-meta" },
+                  portfolio.platform_accounts.length.toLocaleString() + " scoped accounts · Databricks · Fabric · SAP · ADF · SFTP · App Insights · Functions · Log Analytics"
+                ),
+                e(NotificationToolbar, {
+                  selectedIds: selectedIds("platform", portfolio.platform_accounts.map((account) => account.account_id)),
+                  busy: notificationBusy.platform,
+                  status: notificationStatuses.platform,
+                  onNotify: (ids) => notifyProjectOwners("platform", ids)
+                })
               )
             ),
             e("div", {
@@ -860,7 +974,15 @@
               "aria-label": "Platform-linked storage accounts"
             },
               portfolio.platform_accounts.map((account) =>
-                e("div", { className: "platform-account", key: account.account_id },
+                e("div", {
+                  className: "platform-account" + (selectedIds("platform").includes(account.account_id) ? " selected" : ""),
+                  key: account.account_id
+                },
+                  e(AccountCheckbox, {
+                    name: account.name,
+                    checked: selectedIds("platform").includes(account.account_id),
+                    onChange: (checked) => toggleAccountSelection("platform", account.account_id, checked)
+                  }),
                   e("div", { className: "platform-account-title" },
                     e("span", { className: "platform-logos" },
                       account.databricks_workspace && e(DatabricksLogo),
@@ -950,7 +1072,15 @@
             e("section", { className: "panel risk-overview-panel" },
               e("div", { className: "panel-head" },
                 e("div", { className: "panel-title" }, "Risk concentration and account findings"),
-                e("div", { className: "panel-meta" }, bars.length + " accounts · score ≥ " + portfolio.risk_threshold)
+                e("div", { className: "notification-panel-meta" },
+                  e("div", { className: "panel-meta" }, bars.length + " accounts · score ≥ " + portfolio.risk_threshold),
+                  e(NotificationToolbar, {
+                    selectedIds: selectedIds("risk", bars.map((row) => row.account_id)),
+                    busy: notificationBusy.risk,
+                    status: notificationStatuses.risk,
+                    onNotify: (ids) => notifyProjectOwners("risk", ids)
+                  })
+                )
               ),
               e("div", { className: "risk-pie-layout" },
                 e("div", {
@@ -1008,41 +1138,51 @@
               ),
               e("div", { className: "risk-account-list risk-scroll" }, bars.map((row) => {
                 const riskType = dominantRisk(row);
-                return e("details", { className: "risk-account-row", key: row.account_id },
-                  e("summary", { className: "risk-account-summary" },
-                    e("div", { className: "risk-account-name" },
-                      e("span", { className: "risk-type-dot", style: { background: riskTypeColors[riskType.key] } }),
-                      e("div", null,
-                        e("span", null, row.name),
-                        e("div", { className: "row-hierarchy" }, row.management_group + " · " + row.subsidiary + " · " + row.subscription + " · " + row.environment)
-                      )
-                    ),
-                    e("span", { className: "risk-account-type" }, riskType.label),
-                    e("span", {
-                      className: "risk-account-score" + (row.score >= 70 ? " high" : ""),
-                      "aria-label": "Overall weighted risk score " + row.score + " out of 100"
-                    }, row.score + "/100"),
-                    e("span", { className: "risk-account-toggle", "aria-hidden": "true" }, "›")
-                  ),
-                  e("div", { className: "risk-account-details" },
-                    e("div", { className: "risk-account-detail-title" }, "Risk component scores"),
-                    e("div", { className: "risk-component-grid" },
-                      riskTypes.map((component) =>
-                        e("div", { className: "risk-component", key: component.key },
-                          e("span", { className: "risk-type-dot", style: { background: component.color } }),
-                          e("span", null, component.label),
-                          e("strong", null, row.components[component.key])
+                return e("div", {
+                  className: "risk-account-selectable" + (selectedIds("risk").includes(row.account_id) ? " selected" : ""),
+                  key: row.account_id
+                },
+                  e(AccountCheckbox, {
+                    name: row.name,
+                    checked: selectedIds("risk").includes(row.account_id),
+                    onChange: (checked) => toggleAccountSelection("risk", row.account_id, checked)
+                  }),
+                  e("details", { className: "risk-account-row" },
+                    e("summary", { className: "risk-account-summary" },
+                      e("div", { className: "risk-account-name" },
+                        e("span", { className: "risk-type-dot", style: { background: riskTypeColors[riskType.key] } }),
+                        e("div", null,
+                          e("span", null, row.name),
+                          e("div", { className: "row-hierarchy" }, row.management_group + " · " + row.subsidiary + " · " + row.subscription + " · " + row.environment)
                         )
-                      )
+                      ),
+                      e("span", { className: "risk-account-type" }, riskType.label),
+                      e("span", {
+                        className: "risk-account-score" + (row.score >= 70 ? " high" : ""),
+                        "aria-label": "Overall weighted risk score " + row.score + " out of 100"
+                      }, row.score + "/100"),
+                      e("span", { className: "risk-account-toggle", "aria-hidden": "true" }, "›")
                     ),
-                    e("div", { className: "risk-account-detail-title" }, "Account findings"),
-                    row.risk_factors && row.risk_factors.length
-                      ? e("ul", { className: "risk-factor-list" },
-                          row.risk_factors.map((factor, index) =>
-                            e("li", { key: row.account_id + "-factor-" + index }, factor)
+                    e("div", { className: "risk-account-details" },
+                      e("div", { className: "risk-account-detail-title" }, "Risk component scores"),
+                      e("div", { className: "risk-component-grid" },
+                        riskTypes.map((component) =>
+                          e("div", { className: "risk-component", key: component.key },
+                            e("span", { className: "risk-type-dot", style: { background: component.color } }),
+                            e("span", null, component.label),
+                            e("strong", null, row.components[component.key])
                           )
                         )
-                      : e("p", { className: "risk-factor-empty" }, row.reason || "No explicit configuration findings were recorded.")
+                      ),
+                      e("div", { className: "risk-account-detail-title" }, "Account findings"),
+                      row.risk_factors && row.risk_factors.length
+                        ? e("ul", { className: "risk-factor-list" },
+                            row.risk_factors.map((factor, index) =>
+                              e("li", { key: row.account_id + "-factor-" + index }, factor)
+                            )
+                          )
+                        : e("p", { className: "risk-factor-empty" }, row.reason || "No explicit configuration findings were recorded.")
+                    )
                   )
                 );
               })),
@@ -1145,9 +1285,25 @@
             response && e("div", { className: "response" },
               e("div", { className: "response-answer" }, response.answer),
               response.account_reasons && response.account_reasons.length > 0 && e("div", { className: "response-reasons" },
-                e("div", { className: "response-reasons-title" }, "Why these accounts were flagged"),
+                e("div", { className: "response-reasons-head" },
+                  e("div", { className: "response-reasons-title" }, "Why these accounts were flagged"),
+                  e(NotificationToolbar, {
+                    selectedIds: selectedIds("agent", response.account_reasons.map((item) => item.account_id)),
+                    busy: notificationBusy.agent,
+                    status: notificationStatuses.agent,
+                    onNotify: (ids) => notifyProjectOwners("agent", ids)
+                  })
+                ),
                 response.account_reasons.map((item) =>
-                  e("div", { className: "response-reason-row", key: item.account_id },
+                  e("div", {
+                    className: "response-reason-row" + (selectedIds("agent").includes(item.account_id) ? " selected" : ""),
+                    key: item.account_id
+                  },
+                    e(AccountCheckbox, {
+                      name: item.name,
+                      checked: selectedIds("agent").includes(item.account_id),
+                      onChange: (checked) => toggleAccountSelection("agent", item.account_id, checked)
+                    }),
                     e("div", null,
                       e("div", { className: "response-reason-account" }, item.name),
                       e("div", { className: "response-reason-hierarchy" }, item.management_group + " · " + item.subsidiary + " · " + item.subscription + " · " + item.environment),
@@ -1231,11 +1387,27 @@
               e("section", { className: "panel" },
                 e("div", { className: "panel-head" },
                   e("div", { className: "panel-title" }, "Top savings candidates"),
-                  e("div", { className: "panel-meta" }, "Net monthly savings")
+                  e("div", { className: "notification-panel-meta" },
+                    e("div", { className: "panel-meta" }, "Net monthly savings"),
+                    e(NotificationToolbar, {
+                      selectedIds: selectedIds("savings", savingsResult.simulation.top_accounts.map((account) => account.account_id)),
+                      busy: notificationBusy.savings,
+                      status: notificationStatuses.savings,
+                      onNotify: (ids) => notifyProjectOwners("savings", ids)
+                    })
+                  )
                 ),
                 e("div", { className: "data-table savings-table" },
                   savingsResult.simulation.top_accounts.map((account) =>
-                    e("div", { className: "data-row", key: account.account_id },
+                    e("div", {
+                      className: "data-row" + (selectedIds("savings").includes(account.account_id) ? " selected" : ""),
+                      key: account.account_id
+                    },
+                      e(AccountCheckbox, {
+                        name: account.account_id.split("/").pop(),
+                        checked: selectedIds("savings").includes(account.account_id),
+                        onChange: (checked) => toggleAccountSelection("savings", account.account_id, checked)
+                      }),
                       e("span", { className: "data-primary" },
                         e("span", null, account.account_id.split("/").pop()),
                         e("small", { className: "row-hierarchy" }, account.management_group + " · " + account.subsidiary + " · " + account.environment)
@@ -1270,13 +1442,31 @@
                   e("section", { className: "panel" },
                     e("div", { className: "panel-head" },
                       e("div", { className: "panel-title" }, selectedFindingLabel),
-                      e("div", { className: "panel-meta" }, filteredFindings.length + " findings · scrollable")
+                      e("div", { className: "notification-panel-meta" },
+                        e("div", { className: "panel-meta" }, filteredFindings.length + " findings · scrollable"),
+                        e(NotificationToolbar, {
+                          selectedIds: selectedIds("findings", filteredFindings.map((finding) => finding.account_id)),
+                          busy: notificationBusy.findings,
+                          status: notificationStatuses.findings,
+                          onNotify: (ids) => notifyProjectOwners("findings", ids)
+                        })
+                      )
                     ),
                     e("div", { className: "finding-inbox" },
                       filteredFindings.map((finding) =>
-                        e("div", { className: "finding-card", key: finding.id },
+                        e("div", {
+                          className: "finding-card" + (selectedIds("findings").includes(finding.account_id) ? " selected" : ""),
+                          key: finding.id
+                        },
                           e("div", { className: "finding-card-head" },
-                            e("span", { className: "finding-category" }, finding.category),
+                            e("span", { className: "finding-card-select" },
+                              e(AccountCheckbox, {
+                                name: finding.title,
+                                checked: selectedIds("findings").includes(finding.account_id),
+                                onChange: (checked) => toggleAccountSelection("findings", finding.account_id, checked)
+                              }),
+                              e("span", { className: "finding-category" }, finding.category)
+                            ),
                             e("span", { className: "severity " + finding.severity }, finding.severity)
                           ),
                           e("div", { className: "finding-title" }, finding.title),
@@ -1349,7 +1539,15 @@
                     e(PostureMetric, { label: "SFTP Enabled", value: dataHealth.summary.sftp_enabled_accounts, note: "File transfer endpoint", active: postureSelection === "sftp-enabled", onClick: () => setPostureSelection("sftp-enabled") }),
                     e(PostureMetric, { label: "AppInsights Data", value: dataHealth.summary.application_insights_accounts, note: "Telemetry-linked storage", active: postureSelection === "app-insights-data", onClick: () => setPostureSelection("app-insights-data") })
                   ),
-                  postureSelection && e(PostureDrilldown, { data: postureData, busy: postureBusy })
+                  postureSelection && e(PostureDrilldown, {
+                    data: postureData,
+                    busy: postureBusy,
+                    selectedIds: (visibleIds) => selectedIds("posture", visibleIds),
+                    notificationBusy: notificationBusy.posture,
+                    notificationStatus: notificationStatuses.posture,
+                    onToggle: (accountId, checked) => toggleAccountSelection("posture", accountId, checked),
+                    onNotify: (ids) => notifyProjectOwners("posture", ids)
+                  })
                 )
               : e("div", { className: "loading" }, "Loading data health…")
           )

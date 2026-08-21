@@ -19,7 +19,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from croniter import croniter
 from openpyxl import load_workbook
-from pydantic import AliasChoices, BaseModel, Field, ValidationError
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from storage_intelligence import IntelligenceEngine, generate_accounts
 from storage_intelligence.analytics import (
@@ -53,6 +53,11 @@ from storage_intelligence.synthetic import dataset_fingerprint
 from protocols.a2a_server import register_a2a_routes
 from protocols.mcp_server import build_mcp_http_app, build_mcp_server
 from protocols.service import StorageIntelligenceService
+from web.notifications import (
+    NotificationConfigurationError,
+    NotificationDeliveryError,
+    send_project_owner_notification,
+)
 
 STATIC = Path(__file__).parent / "static"
 ACCOUNTS = generate_accounts()
@@ -219,6 +224,22 @@ class DiscoveryScheduleRequest(BaseModel):
 class SavingsSimulationRequest(BaseModel):
     adoption_pct: int = Field(ge=1, le=100)
     filters: dict[str, str] = Field(default_factory=dict)
+
+
+class ProjectOwnerNotificationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    account_ids: list[Annotated[str, Field(min_length=1, max_length=512)]] = Field(
+        min_length=1,
+        max_length=100,
+    )
+
+    @field_validator("account_ids")
+    @classmethod
+    def require_unique_account_ids(cls, value: list[str]) -> list[str]:
+        if len(value) != len(set(value)):
+            raise ValueError("account_ids must be unique")
+        return value
 
 
 REQUIRED_IMPORT_COLUMNS = {
@@ -1259,6 +1280,31 @@ def simulate_savings(
         "assumptions": trust["assumptions"],
         "confidence": trust["confidence"],
     }
+
+
+@app.post("/api/notifications/project-owners", status_code=202)
+def notify_project_owners(
+    payload: ProjectOwnerNotificationRequest,
+    _: Annotated[dict[str, Any], Depends(_principal)],
+) -> dict[str, Any]:
+    with ACCOUNT_LOCK:
+        by_id = {row["account_id"]: row for row in ACCOUNTS}
+        unknown = [account_id for account_id in payload.account_ids if account_id not in by_id]
+        accounts = [dict(by_id[account_id]) for account_id in payload.account_ids if account_id in by_id]
+    if unknown:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "Unknown storage account IDs",
+                "errors": unknown,
+            },
+        )
+    try:
+        return send_project_owner_notification(accounts)
+    except NotificationConfigurationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except NotificationDeliveryError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @app.get("/api/findings")
