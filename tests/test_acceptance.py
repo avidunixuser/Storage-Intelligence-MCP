@@ -297,6 +297,7 @@ def test_web_api_and_auth_boundary(monkeypatch):
     assert portfolio_body["summary"]["public_access_accounts"] > 0
     assert portfolio_body["summary"]["missing_private_endpoint_accounts"] > 0
     assert portfolio_body["summary"]["missing_service_principal_access_accounts"] > 0
+    assert portfolio_body["summary"]["managed_identity_accounts"] > 0
     assert portfolio_body["summary"]["non_geo_redundant_accounts"] > 0
     assert portfolio_body["summary"]["nsg_asg_linked_accounts"] > 0
     assert portfolio_body["summary"]["defunct_project_accounts"] > 0
@@ -334,6 +335,7 @@ def test_web_api_and_auth_boundary(monkeypatch):
         ("public-access", "public_access_accounts"),
         ("no-private-endpoint", "missing_private_endpoint_accounts"),
         ("no-service-principal", "missing_service_principal_access_accounts"),
+        ("managed-identity", "managed_identity_accounts"),
         ("no-grs-gzrs", "non_geo_redundant_accounts"),
         ("nsg-asg-linked", "nsg_asg_linked_accounts"),
         ("defunct-projects", "defunct_project_accounts"),
@@ -934,6 +936,7 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
         "Public Access",
         "No Private Endpoint",
         "No Service Principal",
+        "Managed Identity",
         "No GRS/GZRS",
         "NSG/ASG linked",
         "Defunct Projects",
@@ -951,15 +954,15 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert "e(PostureMetric" not in overview_segment
     assert "e(PostureDrilldown" not in overview_segment
     assert "e(PostureDrilldown" in health_segment
-    assert health_segment.count("e(PostureMetric") == 11
+    assert health_segment.count("e(PostureMetric") == 12
     assert "Stale account details" not in health_segment
     assert health_segment.index('className: "source-grid"') < health_segment.index(
         'className: "metrics health-metrics"'
     )
-    assert index_html.index("/static/translations.js?v=20260821-identity-tags") < index_html.index(
-        "/static/app.js?v=20260821-identity-tags"
+    assert index_html.index("/static/translations.js?v=20260821-identity-health") < index_html.index(
+        "/static/app.js?v=20260821-identity-health"
     )
-    assert "/static/styles.css?v=20260821-identity-tags" in index_html
+    assert "/static/styles.css?v=20260821-identity-health" in index_html
     assert 'localStorage.setItem("storage-intelligence-language", language)' in app_script
     assert "document.documentElement.lang = language" in app_script
     assert 'className: "language-switch"' in app_script
@@ -1105,6 +1108,7 @@ def test_functional_view_endpoints(monkeypatch):
     assert health.json()["summary"]["public_access_accounts"] > 0
     assert health.json()["summary"]["missing_private_endpoint_accounts"] > 0
     assert health.json()["summary"]["missing_service_principal_access_accounts"] > 0
+    assert health.json()["summary"]["managed_identity_accounts"] > 0
     assert health.json()["summary"]["non_geo_redundant_accounts"] > 0
     assert health.json()["summary"]["defunct_project_accounts"] > 0
     assert health.json()["summary"]["sftp_enabled_accounts"] > 0

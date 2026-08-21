@@ -78,6 +78,9 @@ def portfolio_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "missing_service_principal_access_accounts": sum(
             row.get("service_principal_access_enabled") is False for row in rows
         ),
+        "managed_identity_accounts": sum(
+            row.get("managed_identity_enabled") is True for row in rows
+        ),
         "non_geo_redundant_accounts": sum(
             row.get("replication") not in {"GRS", "GZRS"} for row in rows
         ),
