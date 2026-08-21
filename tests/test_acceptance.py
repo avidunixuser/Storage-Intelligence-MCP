@@ -956,6 +956,7 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert ".risk-pie-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));" in styles
     assert ".risk-component-grid { display: grid; grid-template-columns: repeat(4, minmax(110px, 1fr));" in styles
     assert "max-height: 640px; overflow-y: auto;" in styles
+    assert "display: grid; place-items: center; min-height: 54px; font-size: 12px;" in styles
     for label in (
         "SAS Key",
         "Public Access",
@@ -984,10 +985,10 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert health_segment.index('className: "source-grid"') < health_segment.index(
         'className: "metrics health-metrics"'
     )
-    assert index_html.index("/static/translations.js?v=20260821-risk-consolidation") < index_html.index(
-        "/static/app.js?v=20260821-risk-consolidation"
+    assert index_html.index("/static/translations.js?v=20260821-risk-hint") < index_html.index(
+        "/static/app.js?v=20260821-risk-hint"
     )
-    assert "/static/styles.css?v=20260821-risk-consolidation" in index_html
+    assert "/static/styles.css?v=20260821-risk-hint" in index_html
     assert 'localStorage.setItem("storage-intelligence-language", language)' in app_script
     assert "document.documentElement.lang = language" in app_script
     assert 'className: "language-switch"' in app_script
