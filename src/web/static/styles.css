@@ -307,6 +307,16 @@ select:focus, input:focus { border-color: rgba(56,215,231,.58); box-shadow: 0 0 
 .posture-account-score { color: var(--amber); font-size: 11px; font-weight: 750; text-align: right; }
 
 .risk-list { display: grid; gap: 9px; max-height: 350px; overflow: auto; }
+.priority-findings-panel { contain: size; display: flex; flex-direction: column; min-height: 0; }
+.priority-findings-scroll {
+  flex: 1 1 auto; min-height: 0; max-height: none; overflow-x: scroll; overflow-y: auto;
+  padding-bottom: 7px; scrollbar-color: rgba(66,111,168,.5) rgba(67,91,116,.08);
+  scrollbar-gutter: stable; scrollbar-width: thin;
+}
+.priority-findings-scroll .risk { min-width: 520px; }
+.priority-findings-scroll::-webkit-scrollbar { width: 8px; height: 9px; }
+.priority-findings-scroll::-webkit-scrollbar-track { background: rgba(67,91,116,.08); border-radius: 99px; }
+.priority-findings-scroll::-webkit-scrollbar-thumb { background: rgba(66,111,168,.5); border-radius: 99px; }
 .finding-explainer {
   border-left: 2px solid var(--amber); color: var(--muted); font-size: 10px; line-height: 1.55;
   margin: -3px 0 13px; padding: 7px 9px; background: rgba(255,190,104,.045);
@@ -412,6 +422,8 @@ pre { margin: 12px 0 0; max-height: 270px; overflow: auto; padding: 12px; color:
   .account-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .bulk-import { align-items: stretch; flex-direction: column; }
   .grid { grid-template-columns: 1fr; }
+  .priority-findings-panel { contain: none; }
+  .priority-findings-scroll { flex: none; max-height: min(620px, 70vh); }
 }
 @media (max-width: 760px) {
   .shell { grid-template-columns: 1fr; }

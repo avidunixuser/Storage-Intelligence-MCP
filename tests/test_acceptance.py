@@ -931,6 +931,13 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert "function PostureMetric(props)" in app_script
     assert 'fetch("/api/posture/" + postureSelection' in app_script
     assert 'className: "posture-account-list risk-scroll"' in app_script
+    assert 'className: "panel priority-findings-panel"' in app_script
+    assert 'className: "risk-list priority-findings-scroll"' in app_script
+    assert app_script.index('className: "panel priority-findings-panel"') < app_script.index('"Priority findings"')
+    assert ".priority-findings-panel { contain: size; display: flex; flex-direction: column; min-height: 0; }" in styles
+    assert "overflow-x: scroll; overflow-y: auto;" in styles
+    assert ".priority-findings-scroll .risk { min-width: 520px; }" in styles
+    assert ".priority-findings-panel { contain: none; }" in styles
     for label in (
         "SAS Key",
         "Public Access",
@@ -959,10 +966,10 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert health_segment.index('className: "source-grid"') < health_segment.index(
         'className: "metrics health-metrics"'
     )
-    assert index_html.index("/static/translations.js?v=20260821-identity-health") < index_html.index(
-        "/static/app.js?v=20260821-identity-health"
+    assert index_html.index("/static/translations.js?v=20260821-priority-scroll") < index_html.index(
+        "/static/app.js?v=20260821-priority-scroll"
     )
-    assert "/static/styles.css?v=20260821-identity-health" in index_html
+    assert "/static/styles.css?v=20260821-priority-scroll" in index_html
     assert 'localStorage.setItem("storage-intelligence-language", language)' in app_script
     assert "document.documentElement.lang = language" in app_script
     assert 'className: "language-switch"' in app_script

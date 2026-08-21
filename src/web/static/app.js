@@ -1016,7 +1016,7 @@
               })),
               bars.length === 0 && e("div", { className: "empty-state" }, "No accounts meet the at-risk threshold in this scope.")
             ),
-            e("div", { className: "panel" },
+            e("div", { className: "panel priority-findings-panel" },
               e("div", { className: "panel-head" }, e("div", { className: "panel-title" }, "Priority findings"), e("div", { className: "panel-meta" }, portfolio.data_as_of.slice(0, 10))),
               e("div", { className: "finding-explainer" },
                 "Top eight accounts by weighted overall risk. Growth, Operations, Security, and Governance are 0–100 component scores. ",
@@ -1027,7 +1027,7 @@
                 e("span", null, "Account and component scores"),
                 e("span", null, "Overall score")
               ),
-              e("div", { className: "risk-list" }, portfolio.risks.slice(0, 8).map((row) =>
+              e("div", { className: "risk-list priority-findings-scroll" }, portfolio.risks.slice(0, 8).map((row) =>
                 e("div", { className: "risk", key: row.account_id },
                   e("div", null,
                     e("div", { className: "risk-name" }, row.name),
