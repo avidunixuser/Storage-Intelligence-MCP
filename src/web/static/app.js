@@ -883,7 +883,9 @@
                     account.log_analytics_workspace && e("span", { className: "platform-link log-analytics-link" },
                       e(LogAnalyticsLogo),
                       e("span", null, account.log_analytics_workspace)
-                    )
+                    ),
+                    account.managed_identity_enabled === true && e("span", { className: "platform-link managed-identity-link enabled" }, "Managed identity enabled"),
+                    account.managed_identity_enabled === false && e("span", { className: "platform-link managed-identity-link disabled" }, "Managed identity disabled")
                   )
                 )
               )

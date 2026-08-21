@@ -256,6 +256,10 @@ def discover_storage_accounts(tenant_ids: list[str] | None = None) -> dict[str, 
                             "spaccess",
                         )
                     ),
+                    "managed_identity_enabled": bool(
+                        (account.get("identity") or {}).get("principalId")
+                        or (account.get("identity") or {}).get("userAssignedIdentities")
+                    ),
                     "network_security_group": _platform_tag(
                         tags,
                         "networksecuritygroup",

@@ -59,6 +59,7 @@ def generate_accounts(count: int = 2500, seed: int = SEED) -> list[dict[str, Any
         blob_public_access_enabled = public_network_access and security_rng.random() < 0.28
         private_endpoint_enabled = security_rng.random() < 0.73
         service_principal_access_enabled = security_rng.random() < 0.66
+        managed_identity_enabled = security_rng.random() < 0.62
         network_security_group = (
             f"nsg-storage-{index % 23:02d}" if security_rng.random() < 0.14 else None
         )
@@ -107,6 +108,7 @@ def generate_accounts(count: int = 2500, seed: int = SEED) -> list[dict[str, Any
                 "blob_public_access_enabled": blob_public_access_enabled,
                 "private_endpoint_enabled": private_endpoint_enabled,
                 "service_principal_access_enabled": service_principal_access_enabled,
+                "managed_identity_enabled": managed_identity_enabled,
                 "network_security_group": network_security_group,
                 "application_security_group": application_security_group,
                 "project_name": project_name,

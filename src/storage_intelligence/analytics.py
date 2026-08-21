@@ -40,6 +40,7 @@ def _hierarchy(row: dict[str, Any]) -> dict[str, Any]:
         "blob_public_access_enabled": row.get("blob_public_access_enabled"),
         "private_endpoint_enabled": row.get("private_endpoint_enabled"),
         "service_principal_access_enabled": row.get("service_principal_access_enabled"),
+        "managed_identity_enabled": row.get("managed_identity_enabled"),
         "network_security_group": row.get("network_security_group"),
         "application_security_group": row.get("application_security_group"),
         "project_name": row.get("project_name"),

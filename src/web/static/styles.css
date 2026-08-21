@@ -219,6 +219,11 @@ select:focus, input:focus { border-color: rgba(56,215,231,.58); box-shadow: 0 0 
 .app-insights-link { color: #7342b8; background: rgba(140,91,214,.1); }
 .function-app-link { color: #005ea8; background: rgba(0,120,212,.1); }
 .log-analytics-link { color: #075b8f; background: rgba(0,120,212,.08); }
+.managed-identity-link::before { content: ""; width: 6px; height: 6px; border-radius: 50%; flex: 0 0 6px; }
+.managed-identity-link.enabled { color: #1f704d; background: rgba(47,129,90,.11); }
+.managed-identity-link.enabled::before { background: var(--green); }
+.managed-identity-link.disabled { color: #9b3443; background: rgba(185,75,89,.11); }
+.managed-identity-link.disabled::before { background: var(--red); }
 .account-onboarding { margin-top: 16px; }
 .account-form { display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 10px; align-items: end; }
 .account-field { display: grid; gap: 6px; }
