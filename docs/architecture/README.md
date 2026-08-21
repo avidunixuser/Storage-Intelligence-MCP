@@ -12,17 +12,21 @@ service, Microsoft Foundry, private Function tools, and persistent Azure service
 
 ## Reading the diagram
 
-- Blue arrows represent Entra-authenticated public HTTPS ingress.
-- Green arrows represent private VNet or Private Link data-plane traffic.
-- Dashed purple arrows represent managed-identity or control relationships.
-- The Container App exposes the browser UI, REST API, MCP Streamable HTTP, and A2A
-  endpoints through one FastAPI/Uvicorn process and one protocol-neutral service facade.
-- Microsoft Foundry invokes the private Function OpenAPI tools with managed
-  authentication. The Function App reaches its storage, ADLS, Key Vault, Durable Task,
-  and monitoring dependencies through VNet integration and private endpoints.
-- Cosmos DB contains both Foundry backing data and the `storage-intelligence` application
-  database. The `storage-accounts` container is partitioned by `/subscription_id`; saved
-  questions are also persisted there.
+- Follow blue steps **1-4** for every browser, MCP, or A2A request: send the request,
+  authenticate with Entra, route it through the Container App protocol handler, then run
+  the shared application service and query or persist data in Cosmos DB.
+- Follow purple steps **A-C** only when the application selects an agent tool: invoke the
+  private Foundry agent, call the managed-authentication Function tool, then access the
+  Function dependencies.
+- The lower panels document security controls and workload placement. They are not
+  additional request hops and intentionally have no arrows.
+- The private network panel identifies all four VNet subnets, VNet-linked Private DNS,
+  Private Link, and the public-network-access policy.
+- The identity panel lists the actual least-privilege RBAC granted to the web and Function
+  user-assigned managed identities.
+- Cosmos DB contains the `storage-intelligence` application database. The
+  `storage-accounts` container is partitioned by `/subscription_id`; saved questions are
+  also persisted there.
 - Application Insights and Log Analytics are reached through Azure Monitor Private Link
   Scope (AMPLS).
 
