@@ -1052,7 +1052,11 @@
             accountStatus && e("div", { className: "success" }, accountStatus),
             e("div", { className: "bulk-import" },
               e("div", { className: "bulk-import-copy" },
-                e("div", { className: "panel-title" }, "Upload account spreadsheet (AIRGAP Accounts if any)"),
+                e("div", { className: "panel-title" },
+                  "Import account spreadsheet",
+                  " ",
+                  e("em", { className: "airgap-import-qualifier" }, "(for AIRGAP Accounts ONLY, if applicable)")
+                ),
                 e("a", {
                   className: "sample-spreadsheet-link",
                   href: "/static/Sample.xlsx",
