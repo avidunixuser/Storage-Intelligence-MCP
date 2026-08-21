@@ -47,6 +47,11 @@ as the canonical MCP URL; `/mcp` redirects to the mounted transport path.
   plus the complete customer-facing Azure public-region catalog in every region selector.
 - Bulk XLSX/CSV onboarding for avoiding repetitive manual entry. Imports are validated
   atomically, reject duplicates, and update only the in-memory pilot inventory.
+- Account rows in Overview, Agent Investigation, Savings Simulator, Findings, and Data
+  Health include accessible checkboxes plus a tile-level **Notify project owners** action.
+  The action remains disabled until that tile has a selection and batches up to 100
+  selected accounts into one actionable Azure Communication Services email. The pilot
+  recipient is fixed server-side to `nrp@microsoft.com`.
 - Administrator-only tenant discovery that runs read-only Azure CLI commands across all
   authorized subscriptions and imports tenant, management-group, subsidiary/business-unit,
   environment, storage account, region, tier, SKU, access/network posture, and
@@ -140,6 +145,9 @@ Configure the runtime with:
 | `COSMOS_DATABASE` | Inventory database name | `storage-intelligence` |
 | `COSMOS_CONTAINER` | Storage-account container name | `storage-accounts` |
 | `SAVED_QUESTIONS_PATH` | Atomic localhost question-library file when Cosmos is disabled | `data/saved-agent-questions.json` |
+| `AZURE_COMMUNICATION_EMAIL_ENDPOINT` | Azure Communication Services endpoint used with managed identity | required for notifications |
+| `AZURE_COMMUNICATION_EMAIL_SENDER` | Verified Azure-managed `DoNotReply` sender address | required for notifications |
+| `PROJECT_OWNER_NOTIFICATION_RECIPIENT` | Server-controlled pilot recipient; never accepted from the browser | `nrp@microsoft.com` in Azure |
 
 The managed identity or automation principal must be granted read-only access in every
 target subscription/tenant. This project deliberately does not assign tenant-wide
@@ -250,7 +258,7 @@ common Spanish intent phrases for newly authored questions.
 - `src/protocols/mcp_server.py`: MCP tools, resource, prompt, HTTP mount, and stdio entry point.
 - `src/protocols/a2a_server.py`: A2A Agent Card, JSON-RPC/REST routes, task executor, and artifacts.
 - `src/protocols/README.md`: code-adjacent MCP/A2A endpoint, authentication, and usage reference.
-- `src/web`: FastAPI and vendored React 18.3.1 browser UI.
+- `src/web`: FastAPI, managed-identity ACS email notifications, and vendored React 18.3.1 browser UI.
 - `src/function_app.py`: private OpenAPI tools and durable fan-out/fan-in collection.
 - `src/agent`: Foundry instructions, OpenAPI contract, deploy/invoke scripts, and evals.
 - `infra/foundry`: official template 19 baseline and unmodified supporting modules.
@@ -282,10 +290,15 @@ enable ID-token issuance for Container Apps Easy Auth, deploy the web image and 
 package, then create the Foundry prompt-agent version. Easy Auth accepts both the
 application client ID and its `api://` identifier URI as token audiences.
 Production connectors remain disabled unless their explicit flags and least-privilege
-roles are configured.
+roles are configured. The workload also provisions Azure Communication Services, Email
+Communication Service, and an Azure-managed Europe domain. The web UAMI uses
+`DefaultAzureCredential`; no email connection string or key is stored. Because ACS does
+not expose a send-only managed-identity role, the required Communication and Email Service
+Owner assignment is constrained to that single Communication Services resource.
 
 ## Cost caveats
 
 Private Foundry Standard requires fixed-cost AI Search Standard and Premium ACR. Cosmos DB,
 monitoring ingestion, model tokens, private endpoints, and Container Apps add usage-based
-costs. The pilot avoids estate API and Databricks query charges by using synthetic data.
+costs. Azure Communication Services Email adds pay-as-you-go message charges. The pilot
+avoids estate API and Databricks query charges by using synthetic data.

@@ -31,6 +31,8 @@ var managedEnvironmentName = 'cae-storage-intel-${token}'
 var webAppName = 'ca-storage-intel-${token}'
 var inventoryDatabaseName = 'storage-intelligence'
 var inventoryContainerName = 'storage-accounts'
+var communicationServiceName = 'acs-storage-intel-${token}'
+var emailServiceName = 'email-storage-intel-${token}'
 var functionAudience = 'api://${functionAuthClientId}'
 var webAudience = 'api://${webAuthClientId}'
 
@@ -43,6 +45,7 @@ var monitoringMetricsPublisherRoleId = '3913510d-42f4-4e42-8a64-420c390055eb'
 var foundryUserRoleId = '53ca6127-db72-4b80-b1b0-d745d6d5456d'
 var websiteContributorRoleId = 'de139f84-1756-47ae-9be6-808fbbe84772'
 var cosmosDataContributorRoleId = '00000000-0000-0000-0000-000000000002'
+var communicationEmailServiceOwnerRoleId = '09976791-48a7-449e-bb21-39d1a415f350'
 
 resource foundryAccount 'Microsoft.CognitiveServices/accounts@2025-04-01-preview' existing = {
   name: aiAccountName
@@ -63,6 +66,52 @@ resource webIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-3
   name: 'id-web-${token}'
   location: location
   tags: tags
+}
+
+resource emailService 'Microsoft.Communication/emailServices@2023-04-01' = {
+  name: emailServiceName
+  location: 'global'
+  tags: tags
+  properties: {
+    dataLocation: 'Europe'
+  }
+}
+
+resource emailDomain 'Microsoft.Communication/emailServices/domains@2023-04-01' = {
+  parent: emailService
+  name: 'AzureManagedDomain'
+  location: 'global'
+  properties: {
+    domainManagement: 'AzureManaged'
+    userEngagementTracking: 'Disabled'
+  }
+}
+
+resource communicationService 'Microsoft.Communication/communicationServices@2025-05-01' = {
+  name: communicationServiceName
+  location: 'global'
+  tags: tags
+  properties: {
+    dataLocation: 'Europe'
+    disableLocalAuth: true
+    linkedDomains: [
+      emailDomain.id
+    ]
+    publicNetworkAccess: 'Enabled'
+  }
+}
+
+resource webCommunicationEmailOwner 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(communicationService.id, webIdentity.id, communicationEmailServiceOwnerRoleId)
+  scope: communicationService
+  properties: {
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      communicationEmailServiceOwnerRoleId
+    )
+    principalId: webIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
 }
 
 resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2024-11-15' existing = {
@@ -930,6 +979,18 @@ resource webApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: webIdentity.properties.clientId
             }
             {
+              name: 'AZURE_COMMUNICATION_EMAIL_ENDPOINT'
+              value: 'https://${communicationService.properties.hostName}'
+            }
+            {
+              name: 'AZURE_COMMUNICATION_EMAIL_SENDER'
+              value: 'DoNotReply@${emailDomain.properties.fromSenderDomain}'
+            }
+            {
+              name: 'PROJECT_OWNER_NOTIFICATION_RECIPIENT'
+              value: 'nrp@microsoft.com'
+            }
+            {
               name: 'AZURE_AI_PROJECT_ENDPOINT'
               value: aiProjectEndpoint
             }
@@ -1023,6 +1084,7 @@ resource webApp 'Microsoft.App/containerApps@2024-03-01' = {
     webFunctionDeployer
     inventoryContainer
     webCosmosInventoryContributor
+    webCommunicationEmailOwner
   ]
 }
 
@@ -1143,3 +1205,6 @@ output functionIdentityPrincipalId string = functionIdentity.properties.principa
 output webIdentityPrincipalId string = webIdentity.properties.principalId
 output cosmosInventoryDatabaseName string = inventoryDatabase.name
 output cosmosInventoryContainerName string = inventoryContainer.name
+output communicationServiceName string = communicationService.name
+output communicationEmailEndpoint string = 'https://${communicationService.properties.hostName}'
+output communicationEmailSender string = 'DoNotReply@${emailDomain.properties.fromSenderDomain}'

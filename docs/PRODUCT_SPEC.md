@@ -26,6 +26,11 @@ estate of 2,500 Azure Storage accounts while retaining production connector cont
 - **Selection catalogs:** authenticated users can add pilot tenants, management groups,
   subscriptions, subsidiaries/business units, add tracked regions, and choose from the complete customer-facing Azure public
   region catalog in filters, manual onboarding, and spreadsheet imports.
+- **Project-owner notifications:** every tile that renders account rows includes accessible
+  selection checkboxes and a disabled-by-default **Notify project owners** button. Selecting
+  1-100 accounts enables one batched advisory email with hierarchy, project, risk findings,
+  and recommended actions. The pilot recipient is fixed server-side to
+  `nrp@microsoft.com`; the browser cannot choose recipients.
 - **Admin discovery:** a dedicated left-navigation item is visible only to users with the
   `StorageIntelligence.Admin` app role. It triggers tenant-wide read-only Azure CLI
   discovery, enumerates every authorized tenant, management group, subscription, and
@@ -112,6 +117,9 @@ The system does not mutate Azure resources, tiers, lifecycle rules, or Databrick
 configuration. Model-generated SQL/KQL is not accepted. Numerical answers come from the
 versioned Python tool catalog. Empty or stale evidence lowers confidence and is surfaced
 instead of replaced by a fallback.
+
+Email messages are escaped in both HTML and plain text, use an Azure-managed sender, and
+authenticate with the existing web UAMI. No ACS key or connection string is stored.
 
 ## Production connector contracts
 
