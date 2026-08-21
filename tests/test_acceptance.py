@@ -943,13 +943,19 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert '"Upload account spreadsheet (AIRGAP Accounts if any)":' in translations
     assert "max-height: 560px; overflow-y: scroll;" in styles
     assert ".platform-account-scroll::-webkit-scrollbar-thumb" in styles
-    assert 'className: "panel priority-findings-panel"' in app_script
-    assert 'className: "risk-list priority-findings-scroll"' in app_script
-    assert app_script.index('className: "panel priority-findings-panel"') < app_script.index('"Priority findings"')
-    assert ".priority-findings-panel { contain: size; display: flex; flex-direction: column; min-height: 0; }" in styles
-    assert "overflow-x: scroll; overflow-y: auto;" in styles
-    assert ".priority-findings-scroll .risk { min-width: 520px; }" in styles
-    assert ".priority-findings-panel { contain: none; }" in styles
+    assert 'className: "panel risk-overview-panel"' in app_script
+    assert '"Risk concentration and account findings"' in app_script
+    assert 'e("details", { className: "risk-account-row"' in app_script
+    assert 'className: "risk-account-details"' in app_script
+    assert 'className: "risk-component-grid"' in app_script
+    assert 'className: "risk-factor-list"' in app_script
+    assert "row.risk_factors.map" in app_script
+    assert '"Priority findings"' not in app_script
+    assert '"Priority findings":' not in translations
+    assert "priority-findings" not in styles
+    assert ".risk-pie-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));" in styles
+    assert ".risk-component-grid { display: grid; grid-template-columns: repeat(4, minmax(110px, 1fr));" in styles
+    assert "max-height: 640px; overflow-y: auto;" in styles
     for label in (
         "SAS Key",
         "Public Access",
@@ -978,10 +984,10 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert health_segment.index('className: "source-grid"') < health_segment.index(
         'className: "metrics health-metrics"'
     )
-    assert index_html.index("/static/translations.js?v=20260821-overview-refinement") < index_html.index(
-        "/static/app.js?v=20260821-overview-refinement"
+    assert index_html.index("/static/translations.js?v=20260821-risk-consolidation") < index_html.index(
+        "/static/app.js?v=20260821-risk-consolidation"
     )
-    assert "/static/styles.css?v=20260821-overview-refinement" in index_html
+    assert "/static/styles.css?v=20260821-risk-consolidation" in index_html
     assert 'localStorage.setItem("storage-intelligence-language", language)' in app_script
     assert "document.documentElement.lang = language" in app_script
     assert 'className: "language-switch"' in app_script

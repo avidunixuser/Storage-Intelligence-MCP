@@ -947,10 +947,9 @@
             ),
             importStatus && e("div", { className: "success" }, importStatus)
           ),
-            e("section", { className: "grid" },
-            e("div", { className: "panel" },
+            e("section", { className: "panel risk-overview-panel" },
               e("div", { className: "panel-head" },
-                e("div", { className: "panel-title" }, "Risk concentration"),
+                e("div", { className: "panel-title" }, "Risk concentration and account findings"),
                 e("div", { className: "panel-meta" }, bars.length + " accounts · score ≥ " + portfolio.risk_threshold)
               ),
               e("div", { className: "risk-pie-layout" },
@@ -1005,51 +1004,49 @@
               ),
               e("div", { className: "risk-account-heading" },
                 e("span", null, "All at-risk accounts"),
-                e("span", { className: "panel-meta" }, "Scrollable")
+                e("span", { className: "panel-meta" }, "Select an account to inspect its findings")
               ),
               e("div", { className: "risk-account-list risk-scroll" }, bars.map((row) => {
                 const riskType = dominantRisk(row);
-                return e("div", { className: "risk-account-row", key: row.account_id },
-                  e("div", { className: "risk-account-name" },
-                    e("span", { className: "risk-type-dot", style: { background: riskTypeColors[riskType.key] } }),
-                    e("div", null,
-                      e("span", null, row.name),
-                      e("div", { className: "row-hierarchy" }, row.management_group + " · " + row.subsidiary + " · " + row.environment)
-                    )
+                return e("details", { className: "risk-account-row", key: row.account_id },
+                  e("summary", { className: "risk-account-summary" },
+                    e("div", { className: "risk-account-name" },
+                      e("span", { className: "risk-type-dot", style: { background: riskTypeColors[riskType.key] } }),
+                      e("div", null,
+                        e("span", null, row.name),
+                        e("div", { className: "row-hierarchy" }, row.management_group + " · " + row.subsidiary + " · " + row.subscription + " · " + row.environment)
+                      )
+                    ),
+                    e("span", { className: "risk-account-type" }, riskType.label),
+                    e("span", {
+                      className: "risk-account-score" + (row.score >= 70 ? " high" : ""),
+                      "aria-label": "Overall weighted risk score " + row.score + " out of 100"
+                    }, row.score + "/100"),
+                    e("span", { className: "risk-account-toggle", "aria-hidden": "true" }, "›")
                   ),
-                  e("span", { className: "risk-account-type" }, riskType.label),
-                  e("span", { className: "risk-account-score" }, row.score)
+                  e("div", { className: "risk-account-details" },
+                    e("div", { className: "risk-account-detail-title" }, "Risk component scores"),
+                    e("div", { className: "risk-component-grid" },
+                      riskTypes.map((component) =>
+                        e("div", { className: "risk-component", key: component.key },
+                          e("span", { className: "risk-type-dot", style: { background: component.color } }),
+                          e("span", null, component.label),
+                          e("strong", null, row.components[component.key])
+                        )
+                      )
+                    ),
+                    e("div", { className: "risk-account-detail-title" }, "Account findings"),
+                    row.risk_factors && row.risk_factors.length
+                      ? e("ul", { className: "risk-factor-list" },
+                          row.risk_factors.map((factor, index) =>
+                            e("li", { key: row.account_id + "-factor-" + index }, factor)
+                          )
+                        )
+                      : e("p", { className: "risk-factor-empty" }, row.reason || "No explicit configuration findings were recorded.")
+                  )
                 );
               })),
               bars.length === 0 && e("div", { className: "empty-state" }, "No accounts meet the at-risk threshold in this scope.")
-            ),
-            e("div", { className: "panel priority-findings-panel" },
-              e("div", { className: "panel-head" }, e("div", { className: "panel-title" }, "Priority findings"), e("div", { className: "panel-meta" }, portfolio.data_as_of.slice(0, 10))),
-              e("div", { className: "finding-explainer" },
-                "Top eight accounts by weighted overall risk. Growth, Operations, Security, and Governance are 0–100 component scores. ",
-                e("strong", null, "Operations"),
-                " reflects throttling and request latency; the value at right is the overall weighted risk score out of 100."
-              ),
-              e("div", { className: "finding-columns" },
-                e("span", null, "Account and component scores"),
-                e("span", null, "Overall score")
-              ),
-              e("div", { className: "risk-list priority-findings-scroll" }, portfolio.risks.slice(0, 8).map((row) =>
-                e("div", { className: "risk", key: row.account_id },
-                  e("div", null,
-                    e("div", { className: "risk-name" }, row.name),
-                    e("div", { className: "risk-sub" }, row.management_group + " · " + row.subsidiary + " · " + row.subscription + " · " + row.environment),
-                    e("div", { className: "risk-sub" }, "Growth: " + row.components.growth + " · Operations: " + row.components.operations + " · Security: " + row.components.security + " · Governance: " + row.components.governance),
-                    e("div", { className: "row-hierarchy" }, (row.risk_factors || []).slice(0, 2).join(" · "))
-                  ),
-                  e("div", {
-                    className: "score" + (row.score >= 70 ? " high" : ""),
-                    title: "Overall weighted risk score out of 100",
-                    "aria-label": "Overall weighted risk score " + row.score + " out of 100"
-                  }, row.score + "/100")
-                )
-              ))
-            )
             )
           ),
           activeView === "admin" && portfolio.permissions.admin && e("div", { className: "view-stack" },

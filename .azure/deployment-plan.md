@@ -460,6 +460,26 @@ interfaces are deployed and healthy in Sweden Central.
 
 ### Commands and results
 
+- 2026-08-21 consolidated Overview risk deployment: `azd provision
+  --no-prompt` confirmed no infrastructure changes. ACR run `dtb` published
+  `storage-intelligence:risk-consolidation-20260821` with digest
+  `sha256:f33f98d7cc7b193df64109e2d1227f811310d47171aa9c5195267513ad2fe2dc`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000011` is Healthy,
+  Provisioned, and receives 100% of traffic. Internal `/healthz` and `/readyz`
+  checks passed with all 2,500 accounts available, and the running image
+  contains the consolidated account-details UI and cache key. Public access
+  redirects to Microsoft Entra. ACR public access was restored to Disabled,
+  firewall default `Deny`, and admin credentials disabled. Live role review
+  confirmed the web and Function managed identities retain their expected
+  resource-scoped assignments.
+- 2026-08-21 consolidated Overview risk validation: 88 tests passed;
+  JavaScript syntax and Python compilation passed; Bicep build and lint passed;
+  `azd package --no-prompt` produced the Function package; and `azd provision
+  --preview --no-prompt` completed against the confirmed `mcpa2a` Sweden
+  Central environment without resource deletion or replacement. Subscription
+  and management-group policies were reviewed. Static RBAC review confirmed
+  that the unchanged web and Function managed identities retain their
+  resource-scoped data-plane and deployment roles.
 - 2026-08-21 Overview UI deployment: the first ACR run (`dt9`) exposed a
   Debian Trixie/Bookworm package mismatch while installing Azure CLI. The web
   image now uses the pinned `python:3.13-slim-bookworm` manifest. Replacement
