@@ -460,6 +460,30 @@ interfaces are deployed and healthy in Sweden Central.
 
 ### Commands and results
 
+- 2026-08-21 Overview UI deployment: the first ACR run (`dt9`) exposed a
+  Debian Trixie/Bookworm package mismatch while installing Azure CLI. The web
+  image now uses the pinned `python:3.13-slim-bookworm` manifest. Replacement
+  ACR run `dta` succeeded and published
+  `storage-intelligence:overview-refresh-20260821` with digest
+  `sha256:5bbf8b61690cb11cf8675a3760aa4561f3a7166245a59efe541b352488320e52`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000010` is Healthy,
+  Provisioned, and receives 100% of traffic. Internal `/healthz` and `/readyz`
+  checks passed, with readiness reporting all 2,500 accounts. The running
+  container contains the Overview cache key, AIRGAP upload label, persistent
+  account scrollbar, and reduced Entra icon assets. Public routes redirect to
+  Microsoft Entra as designed. ACR public access was restored to Disabled,
+  firewall default `Deny`, and admin credentials disabled; the web UAMI retains
+  its resource-scoped `AcrPull` assignment.
+- 2026-08-21 Overview UI deployment validation: 88 tests passed;
+  `node --check src/web/static/app.js`, Python compilation, and `az bicep build
+  --file infra/main.bicep --stdout` passed. `azd package --no-prompt` produced
+  the Function package, and `azd provision --preview --no-prompt` completed
+  against the existing `mcpa2a` Sweden Central environment without resource
+  deletion or replacement. Assigned subscription and management-group policies
+  were reviewed. Static and live role review confirmed the web UAMI retains
+  resource-scoped `AcrPull`, Foundry User, Website Contributor, and
+  database-scoped Cosmos data access; Function UAMI data-plane roles remain
+  resource scoped.
 - 2026-08-21 Priority Findings UI redeployment validation: 88 tests passed,
   `node --check src/web/static/app.js` and `az bicep build --file
   infra/main.bicep --stdout` passed, and `azd provision --preview --no-prompt`
