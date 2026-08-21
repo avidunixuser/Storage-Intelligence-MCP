@@ -849,9 +849,16 @@
           portfolio.platform_accounts.length > 0 && e("section", { className: "panel platform-panel" },
             e("div", { className: "panel-head" },
               e("div", { className: "panel-title" }, "Platform-linked storage accounts"),
-              e("div", { className: "panel-meta" }, "Databricks · Fabric · SAP · ADF · SFTP · App Insights · Functions · Log Analytics")
+              e("div", { className: "panel-meta" },
+                portfolio.platform_accounts.length.toLocaleString() + " scoped accounts · Databricks · Fabric · SAP · ADF · SFTP · App Insights · Functions · Log Analytics"
+              )
             ),
-            e("div", { className: "platform-account-grid" },
+            e("div", {
+              className: "platform-account-grid platform-account-scroll",
+              role: "region",
+              tabIndex: 0,
+              "aria-label": "Platform-linked storage accounts"
+            },
               portfolio.platform_accounts.map((account) =>
                 e("div", { className: "platform-account", key: account.account_id },
                   e("div", { className: "platform-account-title" },
