@@ -460,6 +460,22 @@ interfaces are deployed and healthy in Sweden Central.
 
 ### Commands and results
 
+- 2026-08-21 centered risk-description hint deployment: `azd provision
+  --no-prompt` confirmed no infrastructure changes. ACR run `dtc` published
+  `storage-intelligence:risk-hint-20260821` with digest
+  `sha256:57a6839295e990987ce75d84b1d24fb0ca9b6686a7eca2b4114bc2787944ddc0`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000012` is Healthy,
+  Provisioned, and receives 100% of traffic. Internal readiness passed with all
+  2,500 accounts, and the running image contains the centered hint CSS and new
+  cache key. Public access redirects to Microsoft Entra. ACR public access was
+  restored to Disabled, firewall default `Deny`, and admin credentials
+  disabled; live managed-identity role checks remained resource scoped.
+- 2026-08-21 centered risk-description hint validation: 88 tests passed;
+  JavaScript syntax and Python compilation passed; Bicep build and lint passed;
+  `azd package --no-prompt` completed; and `azd provision --preview
+  --no-prompt` completed against the confirmed `mcpa2a` Sweden Central
+  environment without resource deletion or replacement. Assigned policies and
+  the unchanged resource-scoped managed-identity roles were reviewed.
 - 2026-08-21 consolidated Overview risk deployment: `azd provision
   --no-prompt` confirmed no infrastructure changes. ACR run `dtb` published
   `storage-intelligence:risk-consolidation-20260821` with digest
