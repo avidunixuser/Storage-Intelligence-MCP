@@ -4,6 +4,22 @@
 
 Generated: 2026-08-11
 
+## Pending Change: AIRGAP Import Heading
+
+- **Mode:** Modify the existing Overview UI and redeploy the existing Container App.
+- **Requested wording:** `Import account spreadsheet` followed by
+  `(for AIRGAP Accounts ONLY, if applicable)` on the same heading.
+- **Presentation:** Render only the parenthetical qualifier in semantic italic text.
+- **Localization:** Update the Spanish heading while preserving the same emphasis structure.
+- **Security and infrastructure:** No API, authentication, RBAC, networking, workbook, data,
+  or Azure infrastructure changes.
+- **Deployment:** Validate the static UI, build a fresh image through the bounded ACR build
+  window, restore ACR to private/default-deny, deploy a healthy revision, then commit, push,
+  create a pull request, and merge it.
+- **Preparation proof:** The heading uses an `<em>` qualifier, English and Spanish strings
+  preserve the split emphasis, cache keys are refreshed, 93 tests pass, JavaScript syntax
+  checks pass, and the unchanged Bicep deployment builds cleanly.
+
 ## Pending Change: AIRGAP Sample Spreadsheet
 
 - **Mode:** Modify the existing Overview UI and redeploy the existing Container App.
@@ -562,9 +578,9 @@ check before provisioning.
 
 ## 13. Next Step
 
-> Current: Project-owner notification changes are ready for Azure validation.
+> Current: The AIRGAP import-heading update is deployed and ready for source-control publication.
 
-Invoke `azure-validate`, then hand the validated deployment to `azure-deploy`.
+Commit the validated change, push it, create a pull request, and merge it.
 
 ---
 
@@ -593,6 +609,21 @@ Invoke `azure-validate`, then hand the validated deployment to `azure-deploy`.
 
 ### Commands and results
 
+- 2026-08-21 AIRGAP import-heading deployment: `azd provision --no-prompt`
+  confirmed no infrastructure changes. ACR run `dtf` published
+  `storage-intelligence:airgap-heading-20260821` with digest
+  `sha256:b590da2eb79e1b63fe2390a47f0bb30e576d069ad29911f9fcfc17585cf193bc`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000016` is Healthy,
+  Provisioned, running at maximum scale, and receives 100% of traffic. The live
+  application remains protected by Microsoft Entra (unauthenticated HTTP 401).
+  ACR was restored to public access disabled, firewall default `Deny`, and admin
+  credentials disabled; the web UAMI retains resource-scoped `AcrPull`.
+- 2026-08-21 AIRGAP import-heading validation: confirmed the approved `mcpa2a`
+  Sweden Central environment and authentication; 93 tests passed; JavaScript
+  syntax checks, Bicep build, and `azd package --no-prompt` passed. `azd
+  provision --preview --no-prompt` completed without resource deletes.
+  Applicable policies and the existing resource-scoped web-UAMI `AcrPull`
+  assignment were reviewed; no infrastructure or RBAC change is required.
 - 2026-08-21 AIRGAP sample workbook deployment: `azd provision --no-prompt`
   confirmed no infrastructure changes. ACR run `dte` published
   `storage-intelligence:airgap-sample-20260821` with digest

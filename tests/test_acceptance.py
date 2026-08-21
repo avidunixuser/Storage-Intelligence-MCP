@@ -1035,13 +1035,20 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert 'className: "platform-account-grid platform-account-scroll"' in app_script
     assert '"aria-label": "Platform-linked storage accounts"' in app_script
     assert "portfolio.platform_accounts.length.toLocaleString()" in app_script
-    assert "Upload account spreadsheet (AIRGAP Accounts if any)" in app_script
+    assert '"Import account spreadsheet"' in app_script
+    assert 'e("em", { className: "airgap-import-qualifier" }, "(for AIRGAP Accounts ONLY, if applicable)")' in app_script
+    assert "Upload account spreadsheet (AIRGAP Accounts if any)" not in app_script
     assert 'href: "/static/Sample.xlsx"' in app_script
     assert 'download: "Sample.xlsx"' in app_script
     assert 'className: "sample-spreadsheet-link"' in app_script
     assert "Use XLSX or UTF-8 CSV with columns:" not in app_script
     assert '"aria-label": "AIRGAP account spreadsheet"' in app_script
-    assert '"Upload account spreadsheet (AIRGAP Accounts if any)":' in translations
+    assert '"Import account spreadsheet": "Importar hoja de cálculo de cuentas"' in translations
+    assert (
+        '"(for AIRGAP Accounts ONLY, if applicable)": '
+        '"(SOLO para cuentas AIRGAP, si corresponde)"'
+    ) in translations
+    assert '"Upload account spreadsheet (AIRGAP Accounts if any)":' not in translations
     assert "Use XLSX or UTF-8 CSV with columns:" not in translations
     assert "max-height: 560px; overflow-y: scroll;" in styles
     assert ".platform-account-scroll::-webkit-scrollbar-thumb" in styles
@@ -1087,10 +1094,10 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert health_segment.index('className: "source-grid"') < health_segment.index(
         'className: "metrics health-metrics"'
     )
-    assert index_html.index("/static/translations.js?v=20260821-airgap-sample") < index_html.index(
-        "/static/app.js?v=20260821-airgap-sample"
+    assert index_html.index("/static/translations.js?v=20260821-airgap-heading") < index_html.index(
+        "/static/app.js?v=20260821-airgap-heading"
     )
-    assert "/static/styles.css?v=20260821-airgap-sample" in index_html
+    assert "/static/styles.css?v=20260821-airgap-heading" in index_html
     assert 'localStorage.setItem("storage-intelligence-language", language)' in app_script
     assert "document.documentElement.lang = language" in app_script
     assert 'className: "language-switch"' in app_script
