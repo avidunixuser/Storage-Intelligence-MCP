@@ -498,6 +498,7 @@ POSTURE_FACTOR_LABELS = {
     "public-access": "Public Access",
     "no-private-endpoint": "No Private Endpoint",
     "no-service-principal": "No Service Principal",
+    "managed-identity": "Managed Identity",
     "no-grs-gzrs": "No GRS/GZRS",
     "nsg-asg-linked": "NSG/ASG linked",
     "defunct-projects": "Defunct Projects",
@@ -517,6 +518,8 @@ def _matches_posture_factor(row: dict[str, Any], factor: str) -> bool:
         return row.get("private_endpoint_enabled") is False
     if factor == "no-service-principal":
         return row.get("service_principal_access_enabled") is False
+    if factor == "managed-identity":
+        return row.get("managed_identity_enabled") is True
     if factor == "no-grs-gzrs":
         return row.get("replication") not in {"GRS", "GZRS"}
     if factor == "nsg-asg-linked":
@@ -551,6 +554,8 @@ def _posture_detail(row: dict[str, Any], factor: str) -> str:
         return "No approved private endpoint is enabled"
     if factor == "no-service-principal":
         return "No service-principal-based access marker is enabled"
+    if factor == "managed-identity":
+        return "System-assigned or user-assigned managed identity is enabled"
     if factor == "no-grs-gzrs":
         return f"Replication is {row.get('replication')}; GRS/GZRS is not enabled"
     if factor == "nsg-asg-linked":
@@ -1467,6 +1472,9 @@ def get_data_health(
             ),
             "missing_service_principal_access_accounts": sum(
                 row.get("service_principal_access_enabled") is False for row in rows
+            ),
+            "managed_identity_accounts": sum(
+                row.get("managed_identity_enabled") is True for row in rows
             ),
             "non_geo_redundant_accounts": sum(
                 row.get("replication") not in {"GRS", "GZRS"} for row in rows

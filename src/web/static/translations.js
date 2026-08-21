@@ -74,6 +74,8 @@
     "Log Analytics": "Log Analytics",
     "Managed identity enabled": "Identidad administrada habilitada",
     "Managed identity disabled": "Identidad administrada deshabilitada",
+    "Managed Identity": "Identidad administrada",
+    "Identity-enabled accounts": "Cuentas con identidad habilitada",
     "Add storage account": "Agregar cuenta de almacenamiento",
     "Pilot inventory only": "Solo inventario piloto",
     "Account name": "Nombre de la cuenta",
