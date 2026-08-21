@@ -242,6 +242,18 @@
     );
   }
 
+  function FunctionAppLogo() {
+    return e("span", { className: "function-app-logo", role: "img", "aria-label": "Azure Function App", title: "Azure Function App" }, "ƒ");
+  }
+
+  function LogAnalyticsLogo() {
+    return e("span", { className: "log-analytics-logo", role: "img", "aria-label": "Log Analytics", title: "Log Analytics" },
+      e("span", { className: "log-analytics-bar bar-one" }),
+      e("span", { className: "log-analytics-bar bar-two" }),
+      e("span", { className: "log-analytics-bar bar-three" })
+    );
+  }
+
   function App() {
     const [language, setLanguage] = useState(activeLanguage);
     activeLanguage = language;
@@ -837,7 +849,7 @@
           portfolio.platform_accounts.length > 0 && e("section", { className: "panel platform-panel" },
             e("div", { className: "panel-head" },
               e("div", { className: "panel-title" }, "Platform-linked storage accounts"),
-              e("div", { className: "panel-meta" }, "Databricks · Fabric · SAP · ADF · SFTP · App Insights")
+              e("div", { className: "panel-meta" }, "Databricks · Fabric · SAP · ADF · SFTP · App Insights · Functions · Log Analytics")
             ),
             e("div", { className: "platform-account-grid" },
               portfolio.platform_accounts.map((account) =>
@@ -849,7 +861,9 @@
                       account.sap_system && e(SapLogo),
                       account.azure_data_factory && e(DataFactoryLogo),
                       account.sftp_enabled && e(SftpLogo),
-                      account.application_insights_resource && e(AppInsightsLogo)
+                      account.application_insights_resource && e(AppInsightsLogo),
+                      account.azure_function_app && e(FunctionAppLogo),
+                      account.log_analytics_workspace && e(LogAnalyticsLogo)
                     ),
                     e("span", null, account.name)
                   ),
@@ -861,7 +875,15 @@
                     account.sap_system && e("span", { className: "platform-link sap-link" }, account.sap_system),
                     account.azure_data_factory && e("span", { className: "platform-link data-factory-link" }, account.azure_data_factory),
                     account.sftp_enabled && e("span", { className: "platform-link sftp-link" }, "SFTP enabled"),
-                    account.application_insights_resource && e("span", { className: "platform-link app-insights-link" }, account.application_insights_resource)
+                    account.application_insights_resource && e("span", { className: "platform-link app-insights-link" }, account.application_insights_resource),
+                    account.azure_function_app && e("span", { className: "platform-link function-app-link" },
+                      e(FunctionAppLogo),
+                      e("span", null, account.azure_function_app)
+                    ),
+                    account.log_analytics_workspace && e("span", { className: "platform-link log-analytics-link" },
+                      e(LogAnalyticsLogo),
+                      e("span", null, account.log_analytics_workspace)
+                    )
                   )
                 )
               )

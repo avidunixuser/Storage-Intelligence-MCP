@@ -49,6 +49,8 @@ def generate_accounts(count: int = 2500, seed: int = SEED) -> list[dict[str, Any
         has_data_factory = index == 0 or platform_rng.random() < 0.18
         has_sftp = index == 0 or platform_rng.random() < 0.09
         has_app_insights = index == 0 or platform_rng.random() < 0.15
+        has_function_app = index == 0 or platform_rng.random() < 0.14
+        has_log_analytics = index == 0 or platform_rng.random() < 0.17
         hns_enabled = has_sftp or platform_rng.random() < 0.38
         security_rng = random.Random(f"{seed}:{index}:security-posture")
         uses_sas_keys = security_rng.random() < 0.22
@@ -126,6 +128,16 @@ def generate_accounts(count: int = 2500, seed: int = SEED) -> list[dict[str, Any
                 "application_insights_resource": (
                     f"appi-{index % len(SUBSCRIPTIONS)}-{index % 29:02d}"
                     if has_app_insights
+                    else None
+                ),
+                "azure_function_app": (
+                    f"func-storage-{index % len(SUBSCRIPTIONS)}-{index % 31:02d}"
+                    if has_function_app
+                    else None
+                ),
+                "log_analytics_workspace": (
+                    f"log-storage-{index % len(SUBSCRIPTIONS)}-{index % 23:02d}"
+                    if has_log_analytics
                     else None
                 ),
                 "databricks_io_tb": round(capacity_tb * rng.uniform(0.1, 2.5), 2) if has_databricks else 0.0,
