@@ -46,7 +46,8 @@ as the canonical MCP URL; `/mcp` redirects to the mounted transport path.
   subscriptions, subsidiaries/business units,
   plus the complete customer-facing Azure public-region catalog in every region selector.
 - Bulk XLSX/CSV onboarding for avoiding repetitive manual entry. Imports are validated
-  atomically, reject duplicates, and update only the in-memory pilot inventory.
+  as a complete workbook, reject duplicates, preserve the AIRGAP template's storage-account
+  attributes, and upsert them to private Cosmos DB before updating the in-memory inventory.
 - Account rows in Overview, Agent Investigation, Savings Simulator, Findings, and Data
   Health include accessible checkboxes plus a tile-level **Notify project owners** action.
   The action remains disabled until that tile has a selection and batches up to 100
@@ -140,7 +141,7 @@ Configure the runtime with:
 | `DISCOVERY_SCHEDULE_PATH` | Persisted admin schedule configuration | `data/discovery-schedule.json` |
 | `DISCOVERY_OUTPUT_PATH` | Scheduled CLI snapshot path | `data/discovered-storage-accounts.json` |
 | `AZURE_CLI_PATH` | Azure CLI executable | `az` |
-| `COSMOS_INVENTORY_ENABLED` | Persist manual and scheduled discovery results to Cosmos DB | `false` locally; `true` in Azure |
+| `COSMOS_INVENTORY_ENABLED` | Persist spreadsheet imports and scheduled discovery results to Cosmos DB | `false` locally; `true` in Azure |
 | `COSMOS_ENDPOINT` | Private Cosmos DB account endpoint | required when persistence is enabled |
 | `COSMOS_DATABASE` | Inventory database name | `storage-intelligence` |
 | `COSMOS_CONTAINER` | Storage-account container name | `storage-accounts` |

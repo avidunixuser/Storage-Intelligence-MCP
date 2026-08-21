@@ -504,6 +504,239 @@ def test_bulk_xlsx_account_import(monkeypatch):
         ACCOUNTS[:] = [row for row in ACCOUNTS if row["name"] not in names]
 
 
+def test_bulk_xlsx_import_persists_full_airgap_record(monkeypatch):
+    monkeypatch.setenv("AUTH_DISABLED", "true")
+    import web.app as web_app
+
+    account_name = "stairgapcosmos01"
+    account_id = (
+        "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/rg-airgap/"
+        f"providers/Microsoft.Storage/storageAccounts/{account_name}"
+    )
+    headers = [
+        "account_id",
+        "name",
+        "tenant_id",
+        "subscription_id",
+        "subscription_name",
+        "environment",
+        "management_group",
+        "subsidiary",
+        "business_unit",
+        "region",
+        "tier",
+        "tier_assumed",
+        "kind",
+        "sku",
+        "uses_sas_keys",
+        "shared_key_access_enabled",
+        "public_network_access",
+        "blob_public_access_enabled",
+        "private_endpoint_enabled",
+        "service_principal_access_enabled",
+        "managed_identity_enabled",
+        "network_security_group",
+        "application_security_group",
+        "project_name",
+        "tag_business_unit",
+        "last_accessed_date",
+        "project_defunct",
+        "databricks_workspace",
+        "fabric_lakehouse",
+        "sap_system",
+        "azure_data_factory",
+        "hns_enabled",
+        "sftp_enabled",
+        "application_insights_resource",
+        "azure_function_app",
+        "log_analytics_workspace",
+    ]
+    values = [
+        account_id,
+        account_name,
+        TENANTS[0]["id"],
+        "11111111-1111-1111-1111-111111111111",
+        "platform-prod",
+        "Prod",
+        SUBSCRIPTIONS[0]["management_group"],
+        SUBSCRIPTIONS[0]["subsidiary"],
+        "AIRGAP Data",
+        "eastus2",
+        "Hot",
+        True,
+        "StorageV2",
+        "Standard_ZRS",
+        False,
+        False,
+        False,
+        False,
+        True,
+        True,
+        True,
+        "nsg-airgap",
+        "asg-airgap",
+        "project-airgap",
+        "AIRGAP Data",
+        "2026-08-20",
+        False,
+        "dbw-airgap",
+        "lakehouse-airgap",
+        "SAP-AIRGAP",
+        "adf-airgap",
+        True,
+        False,
+        "appi-airgap",
+        "func-airgap",
+        "log-airgap",
+    ]
+    workbook = Workbook()
+    workbook.active.append(headers)
+    workbook.active.append(values)
+    content = BytesIO()
+    workbook.save(content)
+    workbook.close()
+    persisted = []
+
+    def fake_persist(accounts, *, pulled_at, trigger, source):
+        assert not any(row["name"] == account_name for row in web_app.ACCOUNTS)
+        assert trigger == "airgap-spreadsheet"
+        assert source == "spreadsheet-pilot-v1"
+        assert pulled_at == accounts[0]["data_as_of"]
+        persisted.extend(accounts)
+        return {
+            "status": "completed",
+            "upserted": len(accounts),
+            "database": "storage-intelligence",
+            "container": "storage-accounts",
+        }
+
+    monkeypatch.setattr(web_app, "persist_inventory_accounts", fake_persist)
+    try:
+        response = TestClient(web_app.app).post(
+            "/api/accounts/import",
+            files={
+                "spreadsheet": (
+                    "airgap.xlsx",
+                    content.getvalue(),
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+            },
+        )
+        assert response.status_code == 201
+        assert response.json()["persistence"]["upserted"] == 1
+        assert persisted[0]["account_id"] == account_id
+        assert persisted[0]["subscription_id"] == values[3]
+        assert persisted[0]["subscription_name"] == "platform-prod"
+        assert persisted[0]["business_unit"] == "AIRGAP Data"
+        assert persisted[0]["tier_assumed"] is True
+        assert persisted[0]["kind"] == "StorageV2"
+        assert persisted[0]["sku"] == "Standard_ZRS"
+        assert persisted[0]["uses_sas_keys"] is False
+        assert persisted[0]["private_endpoint_enabled"] is True
+        assert persisted[0]["project_name"] == "project-airgap"
+        assert persisted[0]["last_accessed_date"] == "2026-08-20"
+        assert persisted[0]["hns_enabled"] is True
+        assert persisted[0]["sftp_enabled"] is False
+        assert persisted[0]["log_analytics_workspace"] == "log-airgap"
+        assert any(row["name"] == account_name for row in web_app.ACCOUNTS)
+    finally:
+        web_app.ACCOUNTS[:] = [row for row in web_app.ACCOUNTS if row["name"] != account_name]
+
+
+def test_bulk_import_does_not_publish_when_cosmos_persistence_fails(monkeypatch):
+    monkeypatch.setenv("AUTH_DISABLED", "true")
+    import web.app as web_app
+
+    account_name = "stairgapfailure01"
+    content = (
+        "name,tenant_id,management_group,subscription,environment,subsidiary,region,tier\n"
+        f"{account_name},{TENANTS[0]['id']},{SUBSCRIPTIONS[0]['management_group']},"
+        f"platform-prod,Prod,{SUBSCRIPTIONS[0]['subsidiary']},eastus2,Hot\n"
+    ).encode()
+
+    def fail_persistence(*args, **kwargs):
+        raise RuntimeError("Cosmos unavailable")
+
+    monkeypatch.setattr(web_app, "persist_inventory_accounts", fail_persistence)
+    response = TestClient(web_app.app).post(
+        "/api/accounts/import",
+        files={"spreadsheet": ("airgap.csv", content, "text/csv")},
+    )
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == (
+        "Spreadsheet validated but the accounts could not be persisted to Cosmos DB"
+    )
+    assert not any(row["name"] == account_name for row in web_app.ACCOUNTS)
+
+
+def test_bulk_import_derives_cosmos_partition_from_account_id(monkeypatch):
+    monkeypatch.setenv("AUTH_DISABLED", "true")
+    import web.app as web_app
+
+    account_name = "stairgappartition01"
+    subscription_id = "22222222-2222-2222-2222-222222222222"
+    account_id = (
+        f"/subscriptions/{subscription_id}/resourceGroups/rg-airgap/"
+        f"providers/Microsoft.Storage/storageAccounts/{account_name}"
+    )
+    content = (
+        "account_id,name,tenant_id,management_group,subscription,environment,"
+        "subsidiary,region,tier\n"
+        f"{account_id},{account_name},{TENANTS[0]['id']},"
+        f"{SUBSCRIPTIONS[0]['management_group']},platform-prod,Prod,"
+        f"{SUBSCRIPTIONS[0]['subsidiary']},eastus2,Hot\n"
+    ).encode()
+    persisted = []
+
+    def fake_persist(accounts, **kwargs):
+        persisted.extend(accounts)
+        return {
+            "status": "completed",
+            "upserted": len(accounts),
+            "database": "storage-intelligence",
+            "container": "storage-accounts",
+        }
+
+    monkeypatch.setattr(web_app, "persist_inventory_accounts", fake_persist)
+    try:
+        response = TestClient(web_app.app).post(
+            "/api/accounts/import",
+            files={"spreadsheet": ("airgap.csv", content, "text/csv")},
+        )
+        assert response.status_code == 201
+        assert persisted[0]["account_id"] == account_id
+        assert persisted[0]["subscription_id"] == subscription_id
+    finally:
+        web_app.ACCOUNTS[:] = [row for row in web_app.ACCOUNTS if row["name"] != account_name]
+
+
+def test_bulk_import_rejects_mismatched_account_subscription_ids(monkeypatch):
+    monkeypatch.setenv("AUTH_DISABLED", "true")
+    import web.app as web_app
+
+    account_name = "stairgapmismatch01"
+    account_id = (
+        "/subscriptions/22222222-2222-2222-2222-222222222222/resourceGroups/rg-airgap/"
+        f"providers/Microsoft.Storage/storageAccounts/{account_name}"
+    )
+    content = (
+        "account_id,name,tenant_id,subscription_id,management_group,subscription,"
+        "environment,subsidiary,region,tier\n"
+        f"{account_id},{account_name},{TENANTS[0]['id']},"
+        f"33333333-3333-3333-3333-333333333333,{SUBSCRIPTIONS[0]['management_group']},"
+        f"platform-prod,Prod,{SUBSCRIPTIONS[0]['subsidiary']},eastus2,Hot\n"
+    ).encode()
+    response = TestClient(web_app.app).post(
+        "/api/accounts/import",
+        files={"spreadsheet": ("airgap.csv", content, "text/csv")},
+    )
+
+    assert response.status_code == 422
+    assert "subscription_id does not match" in str(response.json()["detail"])
+    assert not any(row["name"] == account_name for row in web_app.ACCOUNTS)
+
+
 def test_catalog_management_and_all_azure_regions(monkeypatch):
     monkeypatch.setenv("AUTH_DISABLED", "true")
     from web.app import (
@@ -698,7 +931,7 @@ def test_admin_tenant_discovery_ingests_accounts(monkeypatch):
             "container": "storage-accounts",
         }
 
-    monkeypatch.setattr(web_app, "persist_discovered_accounts", fake_persist)
+    monkeypatch.setattr(web_app, "persist_inventory_accounts", fake_persist)
     try:
         response = TestClient(web_app.app).post("/api/admin/discovery/pull")
         assert response.status_code == 202
@@ -718,7 +951,7 @@ def test_admin_tenant_discovery_ingests_accounts(monkeypatch):
 
 
 def test_cosmos_inventory_upserts_with_managed_identity(monkeypatch):
-    from storage_intelligence.cosmos_inventory import persist_discovered_accounts
+    from storage_intelligence.cosmos_inventory import persist_inventory_accounts
 
     monkeypatch.setenv("COSMOS_INVENTORY_ENABLED", "true")
     monkeypatch.setenv("COSMOS_ENDPOINT", "https://cosmos.example/")
@@ -751,7 +984,7 @@ def test_cosmos_inventory_upserts_with_managed_identity(monkeypatch):
         credentials.append(kwargs)
         return "credential"
 
-    result = persist_discovered_accounts(
+    result = persist_inventory_accounts(
         [
             {
                 "account_id": "/subscriptions/sub-id/resourceGroups/rg/providers/Microsoft.Storage/storageAccounts/stpersisted01",
@@ -792,19 +1025,20 @@ def test_cosmos_inventory_upserts_with_managed_identity(monkeypatch):
     assert upserted[0]["project_name"] == "cosmos-project"
     assert upserted[0]["sftp_enabled"] is True
     assert upserted[0]["application_insights_resource"] == "appi-cosmos"
+    assert upserted[0]["source"] == "azure-cli-discovery-v1"
     assert upserted[0]["discovery_trigger"] == "schedule"
     assert upserted[0]["resource_id"].endswith("/stpersisted01")
     assert "/" not in upserted[0]["id"]
 
 
 def test_cosmos_inventory_requires_endpoint_when_enabled(monkeypatch):
-    from storage_intelligence.cosmos_inventory import persist_discovered_accounts
+    from storage_intelligence.cosmos_inventory import persist_inventory_accounts
 
     monkeypatch.setenv("COSMOS_INVENTORY_ENABLED", "true")
     monkeypatch.delenv("COSMOS_ENDPOINT", raising=False)
 
     with pytest.raises(RuntimeError, match="COSMOS_ENDPOINT is required"):
-        persist_discovered_accounts([], pulled_at="2026-08-12T19:00:00+00:00", trigger="schedule")
+        persist_inventory_accounts([], pulled_at="2026-08-12T19:00:00+00:00", trigger="schedule")
 
 
 def test_admin_tenant_discovery_requires_role(monkeypatch):
