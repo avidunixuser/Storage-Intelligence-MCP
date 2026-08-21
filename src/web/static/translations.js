@@ -72,6 +72,8 @@
     "Platform-linked storage accounts": "Cuentas de almacenamiento vinculadas a plataformas",
     "Azure Function App": "Aplicación de Azure Functions",
     "Log Analytics": "Log Analytics",
+    "Managed identity enabled": "Identidad administrada habilitada",
+    "Managed identity disabled": "Identidad administrada deshabilitada",
     "Add storage account": "Agregar cuenta de almacenamiento",
     "Pilot inventory only": "Solo inventario piloto",
     "Account name": "Nombre de la cuenta",

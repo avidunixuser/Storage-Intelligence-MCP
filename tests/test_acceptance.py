@@ -106,6 +106,8 @@ def test_synthetic_estate_is_large_and_deterministic(accounts):
     assert any(row["azure_function_app"] for row in accounts)
     assert any(row["log_analytics_workspace"] for row in accounts)
     assert any(row["azure_function_app"] and row["log_analytics_workspace"] for row in accounts)
+    assert any(row["managed_identity_enabled"] for row in accounts)
+    assert any(not row["managed_identity_enabled"] for row in accounts)
     assert all(not row["sftp_enabled"] or row["hns_enabled"] for row in accounts)
     assert all(row["project_name"] and row["tag_business_unit"] and row["last_accessed_date"] for row in accounts)
 
@@ -318,6 +320,8 @@ def test_web_api_and_auth_boundary(monkeypatch):
     assert any(item["application_insights_resource"] for item in portfolio_body["platform_accounts"])
     assert any(item["azure_function_app"] for item in portfolio_body["platform_accounts"])
     assert any(item["log_analytics_workspace"] for item in portfolio_body["platform_accounts"])
+    assert any(item["managed_identity_enabled"] for item in portfolio_body["platform_accounts"])
+    assert any(not item["managed_identity_enabled"] for item in portfolio_body["platform_accounts"])
     answer = client.post("/api/query", json={"question": QUESTIONS[0], "filters": {}})
     assert answer.status_code == 200
     assert answer.json()["evidence"]
@@ -894,6 +898,8 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert "function LogAnalyticsLogo()" in app_script
     assert "function-app-link" in app_script
     assert "log-analytics-link" in app_script
+    assert "Managed identity enabled" in app_script
+    assert "Managed identity disabled" in app_script
     assert "function NavIcon(props)" in app_script
     assert "select { color: #8292a3; }" in styles
     assert "select:focus, select:active { color: var(--text); }" in styles
@@ -950,10 +956,10 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert health_segment.index('className: "source-grid"') < health_segment.index(
         'className: "metrics health-metrics"'
     )
-    assert index_html.index("/static/translations.js?v=20260821-service-tags") < index_html.index(
-        "/static/app.js?v=20260821-service-tags"
+    assert index_html.index("/static/translations.js?v=20260821-identity-tags") < index_html.index(
+        "/static/app.js?v=20260821-identity-tags"
     )
-    assert "/static/styles.css?v=20260821-service-tags" in index_html
+    assert "/static/styles.css?v=20260821-identity-tags" in index_html
     assert 'localStorage.setItem("storage-intelligence-language", language)' in app_script
     assert "document.documentElement.lang = language" in app_script
     assert 'className: "language-switch"' in app_script

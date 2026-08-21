@@ -329,6 +329,7 @@ def _build_account(payload: AddStorageAccountRequest, source: str, data_as_of: s
         "blob_public_access_enabled": None,
         "private_endpoint_enabled": None,
         "service_principal_access_enabled": None,
+        "managed_identity_enabled": None,
         "network_security_group": None,
         "application_security_group": None,
         "project_name": None,
@@ -649,6 +650,7 @@ def get_portfolio(
                 "application_insights_resource": row.get("application_insights_resource"),
                 "azure_function_app": row.get("azure_function_app"),
                 "log_analytics_workspace": row.get("log_analytics_workspace"),
+                "managed_identity_enabled": row.get("managed_identity_enabled"),
             }
             for row in rows
             if (
@@ -793,6 +795,9 @@ def _run_tenant_discovery() -> None:
                         "private_endpoint_enabled": discovered.get("private_endpoint_enabled"),
                         "service_principal_access_enabled": discovered.get(
                             "service_principal_access_enabled"
+                        ),
+                        "managed_identity_enabled": discovered.get(
+                            "managed_identity_enabled"
                         ),
                         "network_security_group": discovered.get("network_security_group"),
                         "application_security_group": discovered.get("application_security_group"),
