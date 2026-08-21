@@ -26,9 +26,9 @@ VSDX_TEMPLATE = (
 )
 
 WIDTH = 1800
-HEIGHT = 1100
+HEIGHT = 1140
 VISIO_WIDTH = 24.0
-VISIO_HEIGHT = 14.0
+VISIO_HEIGHT = 15.0
 
 
 @dataclass(frozen=True)
@@ -90,317 +90,264 @@ ICONS = {
 
 REGIONS = [
     Region(
-        292,
-        88,
-        1480,
-        950,
+        20,
+        82,
+        1760,
+        970,
         "Azure subscription c82406dd... / rg-storage-intel-mcpa2a",
         "Sweden Central | Infrastructure as Code: Bicep",
         "#f8fbff",
         "#0078d4",
     ),
     Region(
-        330,
-        236,
-        865,
-        660,
-        "Virtual network: vnet-storage-intel-nladau77",
-        "192.168.0.0/16 | private DNS zones linked to the VNet",
-        "#f4faff",
-        "#3a96dd",
-    ),
-    Region(
-        352,
-        318,
-        820,
-        178,
-        "Container Apps subnet",
-        "192.168.2.0/24 | Microsoft.App/environments delegation",
+        45,
+        125,
+        1710,
+        245,
+        "Primary request path",
+        "1 Send request  |  2 Authenticate  |  3 Route REST, MCP, or A2A  |  4 Query or persist in Cosmos DB",
         "#eef7ff",
         "#5ea0d6",
     ),
     Region(
-        352,
-        518,
-        320,
-        240,
-        "Agent subnet",
-        "192.168.0.0/24 | Foundry network injection",
+        45,
+        395,
+        1710,
+        245,
+        "Optional Foundry tool path",
+        "A Select agent tool  |  B Invoke Foundry agent  |  C Call private Function tool and dependencies",
         "#f2f3ff",
         "#7f77c5",
     ),
     Region(
-        690,
-        518,
-        300,
-        240,
-        "Functions subnet",
-        "192.168.3.0/24 | regional VNet integration",
-        "#f5f2ff",
+        45,
+        665,
+        1070,
+        360,
+        "Private network boundary",
+        "vnet-storage-intel-nladau77 | 192.168.0.0/16 | Private Link and Private DNS",
+        "#f4faff",
+        "#3a96dd",
+    ),
+    Region(
+        1140,
+        665,
+        615,
+        360,
+        "Identity and operations",
+        "User-assigned managed identities, least-privilege RBAC, delivery, and monitoring",
+        "#faf7ff",
         "#8064a2",
-    ),
-    Region(
-        1008,
-        518,
-        164,
-        350,
-        "Private endpoints",
-        "192.168.1.0/24",
-        "#f1fbf7",
-        "#3c8d68",
-    ),
-    Region(
-        1210,
-        236,
-        535,
-        660,
-        "Private platform and data services",
-        "Public network access disabled where supported",
-        "#fbfbfc",
-        "#65758b",
     ),
 ]
 
 
 NODES = [
-    Node("users", 28, 165, 220, 78, "Web users and admins", "Browser UI and admin operations", "user"),
-    Node("mcp", 28, 272, 220, 78, "External MCP clients", "Streamable HTTP /mcp/\nor stdio", "container"),
-    Node("a2a", 28, 379, 220, 78, "External A2A clients", "Agent Card, JSON-RPC,\nand REST", "foundry"),
     Node(
-        "entra",
-        28,
-        520,
-        220,
-        126,
-        "Microsoft Entra ID",
-        "Easy Auth + OAuth 2.0\nbearer tokens\nApp registration SPN\nAdmin app role",
-        "entra",
+        "clients",
+        75,
+        195,
+        260,
+        135,
+        "External clients",
+        "Browser UI\nMCP Streamable HTTP /mcp/\nA2A Agent Card + /a2a\nHTTPS only",
+        "user",
         "#eef6ff",
         "#0078d4",
     ),
     Node(
-        "webmi",
+        "entra",
         380,
+        195,
+        250,
         135,
-        350,
-        92,
-        "Web user-assigned managed identity",
-        "AcrPull | Foundry User | Website Contributor\nCosmos database-scoped data contributor",
-        "identity",
-        "#f1f8ff",
-        "#2674b8",
-    ),
-    Node(
-        "funcmi",
-        760,
-        135,
-        395,
-        92,
-        "Function user-assigned managed identity",
-        "Blob Owner/Contributor | Queue/Table Contributor\nKey Vault Secrets User | Durable Task | Metrics Publisher",
-        "identity",
-        "#f6f2ff",
-        "#7252aa",
-    ),
-    Node(
-        "dns",
-        1240,
-        125,
-        475,
-        102,
-        "Azure Private DNS",
-        "Foundry, Search, Cosmos, Storage, ACR, Functions,\nKey Vault, Durable Task, and Azure Monitor zones",
-        "dns",
+        "Microsoft Entra ID",
+        "Easy Auth\nOAuth 2.0 bearer token\nApp registration (SPN)\nAdmin app role",
+        "entra",
         "#f2f9ff",
-        "#3a96dd",
+        "#0078d4",
     ),
     Node(
         "web",
-        392,
-        356,
-        740,
-        112,
-        "Azure Container App: ca-storage-intel-kxlgam3w",
-        "React UI + FastAPI/Uvicorn | REST /api/v1 | MCP 2.0 /mcp/\nA2A v1 /.well-known/agent-card.json, /a2a, /a2a/rest | shared service facade",
+        675,
+        185,
+        365,
+        155,
+        "Azure Container App",
+        "React UI + FastAPI/Uvicorn\nREST /api/v1\nMCP 2.0 /mcp/\nA2A Agent Card + /a2a",
         "container",
         "#eaf5ff",
         "#0078d4",
     ),
     Node(
+        "service",
+        1085,
+        195,
+        285,
+        135,
+        "Shared application service",
+        "StorageIntelligenceService\nDeterministic analytics\nAzure discovery connectors\nOne result contract",
+        "storage",
+        "#f7fbf3",
+        "#6a8e3a",
+    ),
+    Node(
+        "cosmos",
+        1415,
+        195,
+        290,
+        135,
+        "Azure Cosmos DB",
+        "storage-intelligence database\nInventory + saved questions\n/subscription_id partition scope\n400 RU/s shared throughput",
+        "cosmos",
+    ),
+    Node(
+        "agententry",
+        100,
+        470,
+        280,
+        130,
+        "Agent tool request",
+        "Optional path selected by\nStorageIntelligenceService\nSame deterministic\nbusiness logic",
+        "storage",
+        "#f7fbf3",
+        "#6a8e3a",
+    ),
+    Node(
         "foundry",
-        382,
-        585,
-        260,
-        132,
-        "Microsoft Foundry",
-        "Private account + project\nAgent Service capability host\nManaged Function tool auth",
+        465,
+        470,
+        300,
+        130,
+        "Microsoft Foundry Agent",
+        "Private account + project\nAgent Service capability host\nAI Search + Cosmos + Storage",
         "foundry",
         "#f0efff",
         "#6b5fb5",
     ),
     Node(
         "function",
-        716,
-        585,
-        248,
-        132,
-        "Azure Function App",
-        "Python 3.13 / FC1\nPrivate OpenAPI tools\nDurable Functions orchestration",
+        850,
+        470,
+        300,
+        130,
+        "Private Azure Function",
+        "Python 3.13 / FC1\nManaged OpenAPI tool auth\nDurable Functions orchestration",
         "function",
         "#f4efff",
         "#8064a2",
     ),
     Node(
-        "pe",
-        1027,
-        592,
-        126,
+        "funcdeps",
+        1235,
+        455,
+        470,
+        160,
+        "Private Function dependencies",
+        "Function storage: Blob + Queue + Table\nADLS Gen2 lake + Azure Key Vault\nDurable Task Scheduler\nApp Insights + Log Analytics through AMPLS",
+        "keyvault",
+        "#f7f7fb",
+        "#65758b",
+    ),
+    Node(
+        "agentsubnet",
+        70,
+        745,
         235,
-        "Private Link",
-        "PEs + NICs\n\nFunction inbound\nPaaS access",
+        105,
+        "Agent subnet",
+        "192.168.0.0/24\nFoundry network\ninjection",
+        "foundry",
+    ),
+    Node(
+        "containersubnet",
+        325,
+        745,
+        235,
+        105,
+        "Container Apps",
+        "192.168.2.0/24\nMicrosoft.App delegation",
+        "container",
+    ),
+    Node(
+        "functionsubnet",
+        580,
+        745,
+        235,
+        105,
+        "Functions subnet",
+        "192.168.3.0/24\nRegional VNet\nintegration",
+        "function",
+    ),
+    Node(
+        "pesubnet",
+        835,
+        745,
+        235,
+        105,
+        "Private endpoints",
+        "192.168.1.0/24\nInbound Function\nand PaaS endpoints",
         "private",
+    ),
+    Node(
+        "dns",
+        70,
+        875,
+        620,
+        110,
+        "Private DNS and Private Link",
+        "VNet-linked zones resolve Foundry, Search, Cosmos, Storage, ACR,\nFunctions, Key Vault, Durable Task, and Azure Monitor to private endpoints.",
+        "dns",
+        "#f2f9ff",
+        "#3a96dd",
+    ),
+    Node(
+        "networkpolicy",
+        715,
+        875,
+        355,
+        110,
+        "Network policy",
+        "Public access disabled where supported\nPrivate east-west traffic\nNo inbound access to Function tools",
+        "vnet",
         "#edf9f3",
         "#25855a",
     ),
     Node(
-        "foundrydata",
-        1232,
-        288,
-        230,
-        92,
-        "Foundry account/project",
-        "AIServices S0\nPrivate agent service",
-        "foundry",
-    ),
-    Node(
-        "search",
-        1484,
-        288,
-        230,
-        92,
-        "Azure AI Search",
-        "Standard\nPrivate endpoint",
-        "search",
-    ),
-    Node(
-        "cosmos",
-        1232,
-        398,
-        230,
+        "webmi",
+        1165,
+        745,
+        565,
         105,
-        "Azure Cosmos DB",
-        "Foundry backing data\nstorage-intelligence DB\nstorage-accounts, /subscription_id\n400 RU/s shared throughput",
-        "cosmos",
+        "Web user-assigned managed identity",
+        "Cosmos database-scoped data contributor\nFoundry User + AcrPull + Function Website Contributor",
+        "identity",
+        "#f1f8ff",
+        "#2674b8",
     ),
     Node(
-        "foundrystorage",
-        1484,
-        398,
-        230,
-        105,
-        "Foundry storage",
-        "Standard_ZRS\nBlob private endpoint",
-        "storage",
-    ),
-    Node(
-        "adls",
-        1232,
-        521,
-        230,
-        92,
-        "ADLS Gen2 lake",
-        "Standard_ZRS\nBlob + DFS endpoints",
-        "storage",
-    ),
-    Node(
-        "funcstorage",
-        1484,
-        521,
-        230,
-        92,
-        "Function storage",
-        "Standard_LRS\nBlob + Queue + Table\nprivate endpoints",
-        "storage",
-    ),
-    Node(
-        "keyvault",
-        1232,
-        631,
-        230,
-        92,
-        "Azure Key Vault",
-        "Secrets via Function UAMI\nPrivate endpoint",
-        "keyvault",
-    ),
-    Node(
-        "durable",
-        1484,
-        631,
-        230,
-        92,
-        "Durable Task Scheduler",
-        "Private endpoint\nFunction UAMI RBAC",
-        "function",
-    ),
-    Node(
-        "acr",
-        1232,
-        741,
-        230,
-        92,
-        "Azure Container Registry",
-        "Premium | Private endpoint\nWeb UAMI AcrPull",
-        "registry",
-    ),
-    Node(
-        "monitoring",
-        1484,
-        741,
-        230,
-        112,
-        "Observability",
-        "Application Insights\nLog Analytics workspace\nAzure Monitor Private Link Scope",
-        "appinsights",
-    ),
-    Node(
-        "engine",
-        392,
-        934,
-        1320,
-        74,
-        "Application data plane",
-        "StorageIntelligenceService -> deterministic analytics -> Azure discovery connectors -> persisted inventory/saved questions",
-        "storage",
-        "#f7fbf3",
-        "#6a8e3a",
+        "funcmi",
+        1165,
+        870,
+        565,
+        125,
+        "Function user-assigned managed identity",
+        "Blob Owner/Contributor + Queue/Table Contributor\nKey Vault Secrets User + Durable Task Contributor\nMonitoring Metrics Publisher",
+        "identity",
+        "#f6f2ff",
+        "#7252aa",
     ),
 ]
 
 
 EDGES = [
-    Edge("users", "entra", "HTTPS sign-in"),
-    Edge("mcp", "entra", "OAuth 2.0"),
-    Edge("a2a", "entra", "OAuth 2.0"),
-    Edge("entra", "web", "Authenticated HTTPS / Easy Auth", "#0078d4", width=3),
-    Edge("webmi", "web", "identity attachment", "#2674b8", True),
-    Edge("funcmi", "function", "identity attachment", "#7252aa", True),
-    Edge("dns", "pe", "private name resolution", "#3a96dd", True),
-    Edge("web", "foundry", "Foundry agent invocation", "#6b5fb5"),
-    Edge("web", "pe", "Private PaaS calls", "#25855a"),
-    Edge("foundry", "pe", "private OpenAPI tool call", "#6b5fb5", width=3),
-    Edge("function", "pe", "private PaaS egress", "#7252aa", width=3),
-    Edge("pe", "foundrydata", "", "#8ba6ba", width=1),
-    Edge("pe", "search", "", "#8ba6ba", width=1),
-    Edge("pe", "cosmos", "", "#8ba6ba", width=1),
-    Edge("pe", "foundrystorage", "", "#8ba6ba", width=1),
-    Edge("pe", "adls", "", "#8ba6ba", width=1),
-    Edge("pe", "funcstorage", "", "#8ba6ba", width=1),
-    Edge("pe", "keyvault", "", "#8ba6ba", width=1),
-    Edge("pe", "durable", "", "#8ba6ba", width=1),
-    Edge("pe", "acr", "", "#8ba6ba", width=1),
-    Edge("pe", "monitoring", "", "#8ba6ba", width=1),
-    Edge("web", "engine", "shared service facade", "#6a8e3a"),
-    Edge("function", "engine", "deterministic tools", "#6a8e3a"),
+    Edge("clients", "entra", "1", "#0078d4", width=3),
+    Edge("entra", "web", "2", "#0078d4", width=3),
+    Edge("web", "service", "3", "#0078d4", width=3),
+    Edge("service", "cosmos", "4", "#0078d4", width=3),
+    Edge("agententry", "foundry", "A", "#6b5fb5", width=3),
+    Edge("foundry", "function", "B", "#6b5fb5", width=3),
+    Edge("function", "funcdeps", "C", "#6b5fb5", width=3),
 ]
 
 
@@ -447,18 +394,25 @@ def anchor(node: Node, toward: Node) -> tuple[float, float]:
 def svg_edge_path(source: Node, target: Node) -> tuple[str, float, float]:
     x1, y1 = anchor(source, target)
     x2, y2 = anchor(target, source)
-    if target.id == "entra" and source.id in {"users", "mcp", "a2a"}:
-        bus_x = 266
-        return f"M{x1:.1f},{y1:.1f} H{bus_x} V{y2:.1f} H{x2:.1f}", bus_x, (y1 + y2) / 2
-    if source.id == "pe" and target.x > source.x:
-        bus_x = 1190
-        return f"M{x1:.1f},{y1:.1f} H{bus_x} V{y2:.1f} H{x2:.1f}", (bus_x + x2) / 2, y2 - 5
-    if source.id == "foundry" and target.id == "pe":
-        return f"M{x1:.1f},{y1:.1f} L675,780 H990 L{x2:.1f},{y2:.1f}", 835, 772
     return f"M{x1:.1f},{y1:.1f} L{x2:.1f},{y2:.1f}", (x1 + x2) / 2, (y1 + y2) / 2 - 5
 
 
+def validate_layout() -> None:
+    for node in NODES:
+        icon_size = min(46, node.height - 24)
+        available_width = node.width - icon_size - 40
+        if len(node.title) * 7.3 > available_width:
+            raise ValueError(f"Title exceeds its card boundary: {node.id}: {node.title}")
+        for line in node.detail.splitlines():
+            if len(line) * 6.2 > available_width:
+                raise ValueError(f"Detail exceeds its card boundary: {node.id}: {line}")
+        final_baseline = node.y + 48 + 16 * (len(node.detail.splitlines()) - 1)
+        if final_baseline > node.y + node.height - 12:
+            raise ValueError(f"Text is too tall for its card boundary: {node.id}")
+
+
 def render_svg(icons: dict[str, Path]) -> None:
+    validate_layout()
     nodes = node_lookup()
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGHT}" '
@@ -482,17 +436,25 @@ def render_svg(icons: dict[str, Path]) -> None:
     .region-subtitle { font: 12px "Segoe UI", Arial, sans-serif; fill: #64798a; }
     .node-title { font: 700 14px "Segoe UI", Arial, sans-serif; fill: #17324d; }
     .node-detail { font: 12px "Segoe UI", Arial, sans-serif; fill: #4f6475; }
-    .edge-label { font: 11px "Segoe UI", Arial, sans-serif; fill: #40596f;
-                  paint-order: stroke; stroke: white; stroke-width: 4px; stroke-linejoin: round; }
+    .step-label { font: 700 13px "Segoe UI", Arial, sans-serif; fill: #ffffff; }
     .legend { font: 12px "Segoe UI", Arial, sans-serif; fill: #40596f; }
   </style>
 </defs>
-<rect width="1800" height="1100" fill="#ffffff"/>
+<rect width="1800" height="1140" fill="#ffffff"/>
 <text x="28" y="42" class="title">Storage Intelligence — MCP &amp; A2A Azure Architecture</text>
-<text x="28" y="68" class="subtitle">Authenticated public ingress; managed identity and RBAC;
-private east-west traffic through VNet integration, Private Link, and Private DNS.</text>
+<text x="28" y="68" class="subtitle">Two request lanes make execution explicit;
+support panels document private networking, managed identity, RBAC, delivery, and monitoring.</text>
 """,
     ]
+    parts.append("<defs>")
+    for node in NODES:
+        icon_size = min(46, node.height - 24)
+        text_x = node.x + icon_size + 27
+        parts.append(
+            f'<clipPath id="clip-{node.id}"><rect x="{text_x}" y="{node.y + 8}" '
+            f'width="{node.x + node.width - text_x - 10}" height="{node.height - 16}"/></clipPath>'
+        )
+    parts.append("</defs>")
 
     for region in REGIONS:
         dash = ' stroke-dasharray="8 6"' if region.dashed else ""
@@ -520,12 +482,14 @@ private east-west traffic through VNet integration, Private Link, and Private DN
         )
         if not edge.label:
             continue
-        label_lines = edge.label.split("\n")
-        parts.append(f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="middle" class="edge-label">')
-        for index, line in enumerate(label_lines):
-            dy = "0" if index == 0 else "14"
-            parts.append(f'<tspan x="{lx:.1f}" dy="{dy}">{escape(line)}</tspan>')
-        parts.append("</text>")
+        parts.append(
+            f'<circle cx="{lx:.1f}" cy="{ly:.1f}" r="14" fill="{edge.color}" '
+            'stroke="#ffffff" stroke-width="3"/>'
+        )
+        parts.append(
+            f'<text x="{lx:.1f}" y="{ly + 4:.1f}" text-anchor="middle" '
+            f'class="step-label">{escape(edge.label)}</text>'
+        )
 
     for node in NODES:
         parts.append(
@@ -540,28 +504,24 @@ private east-west traffic through VNet integration, Private Link, and Private DN
             f'href="{svg_data_uri(icons[node.icon])}"/>'
         )
         text_x = node.x + icon_size + 27
-        parts.append(
-            f'<text x="{text_x}" y="{node.y + 27}" class="node-title">{escape(node.title)}</text>'
-        )
+        parts.append(f'<g clip-path="url(#clip-{node.id})">')
+        parts.append(f'<text x="{text_x}" y="{node.y + 27}" class="node-title">{escape(node.title)}</text>')
         parts.append(f'<text x="{text_x}" y="{node.y + 48}" class="node-detail">')
         for index, line in enumerate(node.detail.split("\n")):
             dy = "0" if index == 0 else "16"
             parts.append(f'<tspan x="{text_x}" dy="{dy}">{escape(line)}</tspan>')
-        parts.append("</text></g>")
+        parts.append("</text></g></g>")
 
     parts.append(
         """
-<g transform="translate(28 1050)">
+<g transform="translate(28 1080)">
   <line x1="0" y1="12" x2="48" y2="12" stroke="#0078d4" stroke-width="3" marker-end="url(#arrow)"/>
-  <text x="58" y="16" class="legend">Authenticated public HTTPS</text>
-  <line x1="265" y1="12" x2="313" y2="12" stroke="#25855a" stroke-width="3" marker-end="url(#arrow)"/>
-  <text x="323" y="16" class="legend">Private Link / VNet traffic</text>
-  <line x1="545" y1="12" x2="593" y2="12" stroke="#7252aa" stroke-width="2"
-        stroke-dasharray="7 5" marker-end="url(#arrow)"/>
-  <text x="603" y="16" class="legend">Managed identity / control relationship</text>
-  <text x="1080" y="16" class="legend">Official Microsoft Azure architecture icons</text>
+  <text x="58" y="16" class="legend">Blue 1–4: primary UI, MCP, and A2A request path</text>
+  <line x1="430" y1="12" x2="478" y2="12" stroke="#6b5fb5" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="488" y="16" class="legend">Purple A–C: optional Foundry tool path</text>
+  <text x="850" y="16" class="legend">Panels below: controls and placement, not additional request hops</text>
 </g>
-<text x="1772" y="1085" text-anchor="end" class="region-subtitle">
+<text x="1772" y="1125" text-anchor="end" class="region-subtitle">
 Source of truth: Bicep, application code, and deployed rg-storage-intel-mcpa2a topology</text>
 </svg>
 """
@@ -575,7 +535,7 @@ def drawio_style(node: Node, icon_uri: str) -> str:
         "spacingLeft=66;fontFamily=Segoe UI;fontSize=12;fontStyle=0;"
         f"fillColor={node.fill};strokeColor={node.stroke};"
         f"shape=label;image={icon_uri};imageWidth=42;imageHeight=42;imageAlign=left;"
-        "imageVerticalAlign=middle;spacing=10;"
+        "imageVerticalAlign=middle;spacing=10;overflow=hidden;"
     )
 
 
@@ -688,6 +648,7 @@ def add_visio_rectangle(
     font_size: float = 0.12,
     dashed: bool = False,
     transparent: bool = False,
+    icon_gutter: bool = False,
 ) -> None:
     pin_x, pin_y = visio_xy(x + width / 2, y + height / 2)
     visio_width = width / WIDTH * VISIO_WIDTH
@@ -704,6 +665,16 @@ def add_visio_rectangle(
     add_cell(shape, "LocPinX", visio_width / 2)
     add_cell(shape, "LocPinY", visio_height / 2)
     add_cell(shape, "Angle", "0")
+    if icon_gutter:
+        gutter = 68 / WIDTH * VISIO_WIDTH
+        text_width = visio_width - gutter - 0.12
+        text_height = visio_height - 0.12
+        add_cell(shape, "TxtPinX", gutter + text_width / 2)
+        add_cell(shape, "TxtPinY", visio_height / 2)
+        add_cell(shape, "TxtWidth", text_width)
+        add_cell(shape, "TxtHeight", text_height)
+        add_cell(shape, "TxtLocPinX", text_width / 2)
+        add_cell(shape, "TxtLocPinY", text_height / 2)
     add_cell(shape, "FillForegnd", fill)
     add_cell(shape, "FillPattern", "0" if transparent else "1")
     add_cell(shape, "LineColor", stroke)
@@ -846,7 +817,7 @@ def render_vsdx(icons: dict[str, Path], template_bytes: bytes) -> None:
             1760,
             64,
             "Storage Intelligence - MCP & A2A Azure Architecture\n"
-            "Authenticated ingress, managed identity/RBAC, and private data-plane connectivity",
+            "Explicit primary and optional agent request paths with separate support controls",
             "#ffffff",
             "#ffffff",
             0.22,
@@ -886,6 +857,7 @@ def render_vsdx(icons: dict[str, Path], template_bytes: bytes) -> None:
                 node.fill,
                 node.stroke,
                 0.105,
+                icon_gutter=True,
             )
             shape_id += 1
             add_visio_image(shapes, shape_id, node, relationship_ids[node.icon])
