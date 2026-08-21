@@ -1,5 +1,13 @@
 # Storage Intelligence Agent Architecture
 
+## Architecture diagram
+
+![Storage Intelligence MCP and A2A Azure architecture](architecture/storage-intelligence-architecture.svg)
+
+The [native Visio source](architecture/storage-intelligence-architecture.vsdx) and
+[diagrams.net source](architecture/storage-intelligence-architecture.drawio) are editable.
+See the [diagram guide](architecture/README.md) for format and regeneration details.
+
 ## Protocol-first agent boundary
 
 `StorageIntelligenceService` is the single protocol-neutral facade over the

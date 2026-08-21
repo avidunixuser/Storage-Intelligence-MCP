@@ -4,6 +4,12 @@ Production-like, read-only Azure storage intelligence pilot with a 2,500-account
 synthetic estate spanning 339 subscriptions across Dev, QA, Perf, and Prod, deterministic
 analytics, private Foundry tools, and an Entra-protected web application.
 
+![Storage Intelligence MCP and A2A Azure architecture](docs/architecture/storage-intelligence-architecture.svg)
+
+Open the [editable Visio diagram](docs/architecture/storage-intelligence-architecture.vsdx),
+the [diagrams.net source](docs/architecture/storage-intelligence-architecture.drawio), or the
+[detailed architecture guide](docs/ARCHITECTURE.md).
+
 The same deterministic agent is available through REST, an official MCP
 Streamable HTTP server, and A2A v1 JSON-RPC/HTTP+JSON endpoints. See
 [MCP and A2A integration](docs/PROTOCOL_INTEGRATION.md) for client configuration,
@@ -253,7 +259,10 @@ common Spanish intent phrases for newly authored questions.
 
 See [product specification](docs/PRODUCT_SPEC.md),
 [architecture](docs/ARCHITECTURE.md), and
-[protocol integration](docs/PROTOCOL_INTEGRATION.md).
+[protocol integration](docs/PROTOCOL_INTEGRATION.md). The synchronized
+[Visio, diagrams.net, and SVG architecture assets](docs/architecture/README.md)
+show the deployed UI-to-database topology, protocol endpoints, trust boundaries,
+managed identities, RBAC, VNet subnets, Private Link paths, and monitoring plane.
 
 ## Azure workflow
 
