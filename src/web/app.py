@@ -34,7 +34,7 @@ from storage_intelligence.analytics import (
     top_actions,
 )
 from storage_intelligence.azure_regions import AZURE_REGION_LABELS
-from storage_intelligence.cosmos_inventory import persist_discovered_accounts
+from storage_intelligence.cosmos_inventory import persist_inventory_accounts
 from storage_intelligence.discovery import discover_storage_accounts
 from storage_intelligence.hierarchy import (
     ENVIRONMENTS,
@@ -265,9 +265,8 @@ IMPORT_COLUMN_ALIASES = {
     "deployment_environment": "environment",
     "stage": "environment",
     "env": "environment",
-    "businessunit": "subsidiary",
-    "business_unit": "subsidiary",
-    "business_unit_name": "subsidiary",
+    "businessunit": "business_unit",
+    "business_unit_name": "business_unit",
     "subsidiary_name": "subsidiary",
     "access_tier": "tier",
     "tiers": "tier",
@@ -382,6 +381,100 @@ def _build_account(payload: AddStorageAccountRequest, source: str, data_as_of: s
     }
 
 
+OPTIONAL_IMPORT_BOOLEAN_COLUMNS = {
+    "tier_assumed",
+    "uses_sas_keys",
+    "shared_key_access_enabled",
+    "public_network_access",
+    "blob_public_access_enabled",
+    "private_endpoint_enabled",
+    "service_principal_access_enabled",
+    "managed_identity_enabled",
+    "project_defunct",
+    "hns_enabled",
+    "sftp_enabled",
+}
+OPTIONAL_IMPORT_TEXT_COLUMNS = {
+    "network_security_group",
+    "application_security_group",
+    "project_name",
+    "tag_business_unit",
+    "last_accessed_date",
+    "databricks_workspace",
+    "fabric_lakehouse",
+    "sap_system",
+    "azure_data_factory",
+    "application_insights_resource",
+    "azure_function_app",
+    "log_analytics_workspace",
+}
+
+
+def _optional_import_text(row: dict[str, Any], column: str) -> str | None:
+    value = row.get(column)
+    if value is None or not str(value).strip():
+        return None
+    return str(value).strip()
+
+
+def _optional_import_bool(row: dict[str, Any], column: str) -> bool | None:
+    value = row.get(column)
+    if value is None or not str(value).strip():
+        return None
+    if isinstance(value, bool):
+        return value
+    normalized = str(value).strip().casefold()
+    if normalized in {"true", "yes", "y", "1"}:
+        return True
+    if normalized in {"false", "no", "n", "0"}:
+        return False
+    raise ValueError(f"{column} must be true/false, yes/no, or 1/0")
+
+
+def _import_subscription_id(row: dict[str, Any]) -> str | None:
+    account_id = _optional_import_text(row, "account_id")
+    subscription_id = _optional_import_text(row, "subscription_id")
+    if not account_id:
+        return subscription_id
+    match = re.search(r"(?i)/subscriptions/([^/]+)", account_id)
+    if not match:
+        raise ValueError("account_id must contain a /subscriptions/{subscription_id} segment")
+    account_subscription_id = match.group(1)
+    if subscription_id and subscription_id.casefold() != account_subscription_id.casefold():
+        raise ValueError("subscription_id does not match the subscription in account_id")
+    return subscription_id or account_subscription_id
+
+
+def _build_import_account(
+    payload: AddStorageAccountRequest,
+    row: dict[str, Any],
+    data_as_of: str,
+) -> dict[str, Any]:
+    account = _build_account(payload, "spreadsheet-pilot-v1", data_as_of)
+    account_id = _optional_import_text(row, "account_id")
+    subscription_id = _import_subscription_id(row)
+    if account_id:
+        account["account_id"] = account_id
+    if subscription_id:
+        account["subscription_id"] = subscription_id
+        if not account_id:
+            account["account_id"] = re.sub(
+                r"(?i)(/subscriptions/)[^/]+",
+                rf"\g<1>{subscription_id}",
+                account["account_id"],
+                count=1,
+            )
+    account["subscription_name"] = payload.subscription
+    account["business_unit"] = _optional_import_text(row, "business_unit") or payload.subsidiary
+    account["kind"] = _optional_import_text(row, "kind")
+    account["sku"] = _optional_import_text(row, "sku")
+    for column in OPTIONAL_IMPORT_BOOLEAN_COLUMNS:
+        account[column] = _optional_import_bool(row, column)
+    for column in OPTIONAL_IMPORT_TEXT_COLUMNS:
+        account[column] = _optional_import_text(row, column)
+    return account
+
+
 def _normalize_import_column(value: Any) -> str:
     normalized = "_".join(
         part for part in "".join(character.lower() if character.isalnum() else "_" for character in str(value)).split("_") if part
@@ -393,7 +486,10 @@ def _matrix_to_rows(matrix: list[tuple[Any, ...]]) -> list[dict[str, Any]]:
     if not matrix:
         raise HTTPException(status_code=422, detail="The spreadsheet is empty")
     headers = [_normalize_import_column(value) for value in matrix[0]]
-    missing = sorted(REQUIRED_IMPORT_COLUMNS - set(headers))
+    available_headers = set(headers)
+    if "business_unit" in available_headers:
+        available_headers.add("subsidiary")
+    missing = sorted(REQUIRED_IMPORT_COLUMNS - available_headers)
     if missing:
         raise HTTPException(status_code=422, detail=f"Missing required columns: {', '.join(missing)}")
     rows = []
@@ -727,7 +823,7 @@ def _run_tenant_discovery() -> None:
         result = discover_storage_accounts()
         with DISCOVERY_LOCK:
             trigger = str(DISCOVERY_STATE.get("trigger", "unknown"))
-        persistence = persist_discovered_accounts(
+        persistence = persist_inventory_accounts(
             result["accounts"],
             pulled_at=result["pulled_at"],
             trigger=trigger,
@@ -1228,11 +1324,15 @@ async def import_accounts(
                 management_group=str(row.get("management_group") or "").strip(),
                 subscription=str(row.get("subscription") or "").strip(),
                 environment=str(row.get("environment") or "").strip(),
-                subsidiary=str(row.get("subsidiary") or "").strip(),
+                subsidiary=str(row.get("subsidiary") or row.get("business_unit") or "").strip(),
                 region=str(row.get("region") or "").strip(),
                 tier=str(row.get("tier") or "").strip(),
             )
-            payloads.append(_canonicalize_account(candidate))
+            canonical = _canonicalize_account(candidate)
+            _import_subscription_id(row)
+            for column in OPTIONAL_IMPORT_BOOLEAN_COLUMNS:
+                _optional_import_bool(row, column)
+            payloads.append(canonical)
         except (ValidationError, ValueError) as exc:
             errors.append(f"Row {index}: {exc}")
 
@@ -1250,14 +1350,30 @@ async def import_accounts(
         if errors:
             raise HTTPException(status_code=422, detail={"message": "Spreadsheet validation failed", "errors": errors})
         data_as_of = datetime.now(UTC).isoformat()
-        imported = [_build_account(payload, "spreadsheet-pilot-v1", data_as_of) for payload in payloads]
+        imported = [
+            _build_import_account(payload, row, data_as_of)
+            for payload, row in zip(payloads, raw_rows, strict=True)
+        ]
+        try:
+            persistence = persist_inventory_accounts(
+                imported,
+                pulled_at=data_as_of,
+                trigger="airgap-spreadsheet",
+                source="spreadsheet-pilot-v1",
+            )
+        except Exception as exc:
+            raise HTTPException(
+                status_code=503,
+                detail="Spreadsheet validated but the accounts could not be persisted to Cosmos DB",
+            ) from exc
         ACCOUNTS.extend(imported)
 
     return {
         "imported": len(imported),
         "total": len(ACCOUNTS),
         "accounts": [account["name"] for account in imported],
-        "note": "Added to the pilot inventory only; no Azure resources were created.",
+        "persistence": persistence,
+        "note": "Persisted to the pilot inventory; no Azure resources were created.",
     }
 
 

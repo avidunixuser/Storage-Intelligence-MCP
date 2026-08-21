@@ -4,6 +4,50 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Persist AIRGAP Spreadsheet Imports
+
+- **Mode:** Modify the existing authenticated spreadsheet import and redeploy the existing
+  Container App.
+- **Goal:** Persist successfully imported AIRGAP storage-account records in the existing
+  Cosmos DB storage-account inventory container using the Container App managed identity.
+- **Atomicity:** Validate the complete workbook before changing the application inventory.
+  Upsert validated records to Cosmos before publishing them to the in-memory inventory, and
+  return an explicit server error rather than a success response when persistence fails.
+  Deterministic IDs make a retry idempotent across the container's `/subscription_id`
+  partitions.
+- **Schema:** Extend spreadsheet parsing beyond the eight required onboarding fields so the
+  optional storage-account attributes supplied by `Sample.xlsx` are type-checked, normalized,
+  incorporated into each account record, and persisted with deterministic document metadata
+  and spreadsheet-source provenance.
+- **Persistence service:** Generalize the existing managed-identity Cosmos inventory writer so
+  Azure discovery retains `azure-cli-discovery-v1` provenance while spreadsheet imports use
+  `spreadsheet-pilot-v1` and an `airgap-spreadsheet` trigger.
+- **API contract:** Return Cosmos persistence status, upsert count, database, and container in
+  the successful import response. Keep whole-workbook validation and duplicate/conflict
+  rejection ahead of any write.
+- **Verification:** Add focused tests for full attribute mapping, managed-identity Cosmos
+  upserts, persistence metadata, disabled local-mode behavior, and explicit persistence
+  failures that do not mutate the in-memory account inventory. Run the complete existing test
+  suite, JavaScript checks, Bicep build, AZD package, and deployment preview.
+- **Infrastructure:** Reuse the existing Cosmos account, database, container, private endpoint,
+  managed identity, and database-scoped Cosmos DB Built-in Data Contributor role; no new Azure
+  resources and no subscription-wide role.
+- **Azure context:** Reuse AZD environment `mcpa2a`, subscription
+  `ME-MngEnvMCAP585394-nrp-at-microsoft-dot-com`
+  (`c82406dd-f84c-42df-9586-c6f02abda6df`), resource group
+  `rg-storage-intel-mcpa2a`, and Sweden Central after user confirmation.
+- **Deployment:** AZD recipe; after implementation, hand off through `azure-validate` and
+  `azure-deploy`, build a fresh ACR image in the established bounded access window, restore
+  ACR to private/default-deny, deploy and verify a healthy revision with 100% traffic, then
+  commit, push, create a pull request, merge it, and verify the commit on `origin/main`.
+- **Preparation proof:** User approved the plan and reuse of the existing Azure context.
+  The implementation preserves all 36 template attributes, derives and validates the
+  `/subscription_id` Cosmos partition from supplied resource IDs, uses deterministic
+  document IDs for idempotent retry, persists before in-memory publication, and reports
+  persistence details in the API response. The complete 97-test suite, Python compilation,
+  JavaScript syntax checks, Bicep build, `azd package --no-prompt`, and `git diff --check`
+  pass. No new Azure resource or quota is required.
+
 ## Pending Change: AIRGAP Import Heading
 
 - **Mode:** Modify the existing Overview UI and redeploy the existing Container App.
@@ -578,7 +622,7 @@ check before provisioning.
 
 ## 13. Next Step
 
-> Current: The AIRGAP import-heading update is deployed and ready for source-control publication.
+> Current: AIRGAP spreadsheet Cosmos persistence is deployed and ready for source-control publication.
 
 Commit the validated change, push it, create a pull request, and merge it.
 
@@ -609,6 +653,28 @@ Commit the validated change, push it, create a pull request, and merge it.
 
 ### Commands and results
 
+- 2026-08-21 AIRGAP spreadsheet Cosmos-persistence deployment: `azd provision
+  --no-prompt` confirmed no infrastructure changes. ACR run `dtg` published
+  `storage-intelligence:airgap-cosmos-20260821` with digest
+  `sha256:fc09dbca8635737326b8ef6f1d034c586064e1c496f75dbc70ae30f4117a77c2`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000017` is Healthy,
+  Provisioned, running at maximum scale, and receives 100% of traffic. The live
+  application remains protected by Microsoft Entra (unauthenticated HTTP 401).
+  ACR was restored to public access disabled, firewall default `Deny`, and admin
+  credentials disabled. Cosmos DB remains private with local authentication
+  disabled and `/subscription_id` partitioning. Live role verification confirmed
+  the web UAMI retains resource-scoped `AcrPull` and Cosmos DB Built-in Data
+  Contributor scoped to the `storage-intelligence` database.
+- 2026-08-21 AIRGAP spreadsheet Cosmos-persistence validation: confirmed AZD 1.30.0,
+  authenticated environment `mcpa2a`, approved subscription
+  `c82406dd-f84c-42df-9586-c6f02abda6df`, and Sweden Central. The complete
+  97-test suite and Python compilation passed; JavaScript syntax checks, Bicep
+  build, `azd package --no-prompt`, and `git diff --check` passed. `azd
+  provision --preview --no-prompt` completed successfully with no resource
+  deletes. Subscription policies do not conflict with this application-only
+  update. Static RBAC review confirmed the web UAMI retains Cosmos DB Built-in
+  Data Contributor scoped to the existing `storage-intelligence` database; no
+  infrastructure, role, or quota change is required.
 - 2026-08-21 AIRGAP import-heading deployment: `azd provision --no-prompt`
   confirmed no infrastructure changes. ACR run `dtf` published
   `storage-intelligence:airgap-heading-20260821` with digest

@@ -112,10 +112,11 @@ during brief CPU or network contention.
 Raw, normalized, curated, and findings zones are partitioned by
 source/date/tenant/management-group/subsidiary/subscription/environment/account.
 The synthetic pilot remains materialized in memory for deterministic analytics. Azure CLI
-discovery additionally hashes each resource ID into a Cosmos-safe document ID and upserts
-the complete account record into `storage-intelligence/storage-accounts`, partitioned by
-subscription ID. Manual and cron-triggered pulls use the same idempotent persistence path;
-an enabled Cosmos failure fails the discovery run instead of silently reporting success.
+discovery and AIRGAP spreadsheet imports hash each resource ID into a Cosmos-safe document
+ID and upsert the complete account record into `storage-intelligence/storage-accounts`,
+partitioned by subscription ID. Discovery and spreadsheet imports use the same idempotent
+managed-identity persistence path with distinct source metadata; an enabled Cosmos failure
+fails the operation instead of silently reporting success.
 Production connectors return the same account-shaped records and use bounded batch sizes
 (50 metrics resources; 250-account durable partitions), watermarks, and idempotency keys.
 
@@ -157,7 +158,9 @@ Pilot inventory onboarding is an authenticated application-local write, not an A
 estate mutation. Manual and spreadsheet routes share the same account schema and current
 portfolio selection catalog. Spreadsheet bytes are capped before parsing; all rows,
 headers, choices, names, and duplicates are validated before any in-memory records are
-added, so a failed import cannot partially update the pilot.
+added. Validated spreadsheet records are upserted to private Cosmos DB before in-memory
+publication, and persistence failures return an explicit error without mutating the
+in-memory pilot.
 
 Subscription, business-unit, and tracked-region catalogs are also application-local and
 protected by the same Entra boundary. Region validation uses a versioned list of all

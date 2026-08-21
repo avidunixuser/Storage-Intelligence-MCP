@@ -34,11 +34,12 @@ def get_cosmos_container(
     return client.get_database_client(database_name).get_container_client(container_name)
 
 
-def persist_discovered_accounts(
+def persist_inventory_accounts(
     accounts: list[dict[str, Any]],
     *,
     pulled_at: str,
     trigger: str,
+    source: str = "azure-cli-discovery-v1",
     client_factory: Callable[..., Any] | None = None,
     credential_factory: Callable[..., Any] | None = None,
 ) -> dict[str, Any]:
@@ -65,7 +66,7 @@ def persist_discovered_accounts(
             "resource_id": resource_id,
             "document_type": "storage-account-inventory",
             "schema_version": 1,
-            "source": "azure-cli-discovery-v1",
+            "source": source,
             "discovery_trigger": trigger,
             "pulled_at": pulled_at,
         }
