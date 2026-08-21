@@ -316,6 +316,18 @@ def discover_storage_accounts(tenant_ids: list[str] | None = None) -> dict[str, 
                         "appinsightsresource",
                         "telemetryresource",
                     ),
+                    "azure_function_app": _platform_tag(
+                        tags,
+                        "azurefunctionapp",
+                        "functionapp",
+                        "functionsapp",
+                    ),
+                    "log_analytics_workspace": _platform_tag(
+                        tags,
+                        "loganalyticsworkspace",
+                        "loganalytics",
+                        "laworkspace",
+                    ),
                 }
             )
 

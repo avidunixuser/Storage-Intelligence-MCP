@@ -70,6 +70,8 @@
     "Add region": "Agregar región",
     "Selection-list changes are in-memory pilot metadata and never create Azure resources.": "Los cambios en las listas de selección son metadatos del piloto en memoria y nunca crean recursos de Azure.",
     "Platform-linked storage accounts": "Cuentas de almacenamiento vinculadas a plataformas",
+    "Azure Function App": "Aplicación de Azure Functions",
+    "Log Analytics": "Log Analytics",
     "Add storage account": "Agregar cuenta de almacenamiento",
     "Pilot inventory only": "Solo inventario piloto",
     "Account name": "Nombre de la cuenta",

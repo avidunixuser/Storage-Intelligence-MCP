@@ -348,6 +348,8 @@ def _build_account(payload: AddStorageAccountRequest, source: str, data_as_of: s
         "hns_enabled": None,
         "sftp_enabled": None,
         "application_insights_resource": None,
+        "azure_function_app": None,
+        "log_analytics_workspace": None,
         "databricks_io_tb": 0.0,
         "small_file_ratio": 0.0,
         "version_overhead_pct": 0.0,
@@ -645,6 +647,8 @@ def get_portfolio(
                 "azure_data_factory": row.get("azure_data_factory"),
                 "sftp_enabled": row.get("sftp_enabled"),
                 "application_insights_resource": row.get("application_insights_resource"),
+                "azure_function_app": row.get("azure_function_app"),
+                "log_analytics_workspace": row.get("log_analytics_workspace"),
             }
             for row in rows
             if (
@@ -654,6 +658,8 @@ def get_portfolio(
                 or row.get("azure_data_factory")
                 or row.get("sftp_enabled")
                 or row.get("application_insights_resource")
+                or row.get("azure_function_app")
+                or row.get("log_analytics_workspace")
             )
         ],
         key=lambda account: account["name"],
@@ -802,6 +808,10 @@ def _run_tenant_discovery() -> None:
                         "sftp_enabled": discovered.get("sftp_enabled"),
                         "application_insights_resource": discovered.get(
                             "application_insights_resource"
+                        ),
+                        "azure_function_app": discovered.get("azure_function_app"),
+                        "log_analytics_workspace": discovered.get(
+                            "log_analytics_workspace"
                         ),
                     }
                 )

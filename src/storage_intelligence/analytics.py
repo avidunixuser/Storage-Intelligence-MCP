@@ -32,6 +32,8 @@ def _hierarchy(row: dict[str, Any]) -> dict[str, Any]:
         "hns_enabled": row.get("hns_enabled"),
         "sftp_enabled": row.get("sftp_enabled"),
         "application_insights_resource": row.get("application_insights_resource"),
+        "azure_function_app": row.get("azure_function_app"),
+        "log_analytics_workspace": row.get("log_analytics_workspace"),
         "uses_sas_keys": row.get("uses_sas_keys"),
         "shared_key_access_enabled": row.get("shared_key_access_enabled"),
         "public_network_access": row.get("public_network_access"),

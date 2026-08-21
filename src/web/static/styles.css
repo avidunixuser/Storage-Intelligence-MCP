@@ -194,14 +194,31 @@ select:focus, input:focus { border-color: rgba(56,215,231,.58); box-shadow: 0 0 
   content: ""; position: absolute; left: 1px; bottom: -5px; width: 4px; height: 3px;
   border-top: 2px solid #8c5bd6; border-bottom: 1px solid #8c5bd6;
 }
+.function-app-logo {
+  display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 4px;
+  color: #fff; background: linear-gradient(135deg, #0078d4, #42a5f5); font-size: 12px; font-weight: 800;
+}
+.log-analytics-logo {
+  display: inline-flex; align-items: end; justify-content: center; gap: 1px; width: 16px; height: 16px;
+  border: 1px solid rgba(0,120,212,.3); border-radius: 4px; background: rgba(0,120,212,.1); padding: 3px;
+}
+.log-analytics-bar { width: 2px; border-radius: 1px 1px 0 0; background: #0078d4; }
+.log-analytics-bar.bar-one { height: 4px; }
+.log-analytics-bar.bar-two { height: 8px; }
+.log-analytics-bar.bar-three { height: 6px; }
 .platform-links { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
-.platform-link { border-radius: 99px; font-size: 9px; max-width: 100%; overflow: hidden; padding: 4px 7px; text-overflow: ellipsis; white-space: nowrap; }
+.platform-link { display: inline-flex; align-items: center; gap: 4px; border-radius: 99px; font-size: 9px; max-width: 100%; overflow: hidden; padding: 4px 7px; text-overflow: ellipsis; white-space: nowrap; }
+.platform-link .function-app-logo, .platform-link .log-analytics-logo { width: 12px; height: 12px; flex: 0 0 12px; }
+.platform-link .function-app-logo { font-size: 9px; }
+.platform-link .log-analytics-logo { padding: 2px; }
 .databricks-link { color: #ff9b90; background: rgba(255,54,33,.1); }
 .lakehouse-link { color: #87e4df; background: rgba(18,184,176,.1); }
 .sap-link { color: #075baf; background: rgba(10,110,209,.1); }
 .data-factory-link { color: #5940c7; background: rgba(115,90,242,.1); }
 .sftp-link { color: #087858; background: rgba(22,138,99,.1); }
 .app-insights-link { color: #7342b8; background: rgba(140,91,214,.1); }
+.function-app-link { color: #005ea8; background: rgba(0,120,212,.1); }
+.log-analytics-link { color: #075b8f; background: rgba(0,120,212,.08); }
 .account-onboarding { margin-top: 16px; }
 .account-form { display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 10px; align-items: end; }
 .account-field { display: grid; gap: 6px; }
