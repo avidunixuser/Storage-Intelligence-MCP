@@ -1053,7 +1053,11 @@
             e("div", { className: "bulk-import" },
               e("div", { className: "bulk-import-copy" },
                 e("div", { className: "panel-title" }, "Upload account spreadsheet (AIRGAP Accounts if any)"),
-                e("div", { className: "account-note" }, "Use XLSX or UTF-8 CSV with columns: name, tenant_id, management_group, subscription, environment, subsidiary (or business_unit), region, tier.")
+                e("a", {
+                  className: "sample-spreadsheet-link",
+                  href: "/static/Sample.xlsx",
+                  download: "Sample.xlsx"
+                }, "Sample.xlsx")
               ),
               e("form", { className: "import-form", onSubmit: importSpreadsheet },
                 e("input", {
