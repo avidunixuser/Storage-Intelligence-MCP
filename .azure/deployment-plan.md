@@ -460,6 +460,25 @@ interfaces are deployed and healthy in Sweden Central.
 
 ### Commands and results
 
+- 2026-08-21 managed-identity UI redeployment validation: 88 tests passed,
+  `node --check src/web/static/app.js` passed, `az bicep build --file
+  infra/main.bicep --stdout` passed, `azd package --no-prompt` completed, and
+  `azd provision --preview --no-prompt` completed successfully against the
+  existing `mcpa2a` Sweden Central environment with no resource deletion.
+  Static RBAC review confirmed resource-scoped managed-identity assignments;
+  applicable subscription and management-group policies were reviewed.
+- 2026-08-21 managed-identity UI redeployment: `azd provision --no-prompt`
+  confirmed no infrastructure changes; ACR build `dt7` produced
+  `storage-intelligence:miui-20260821` with digest
+  `sha256:e0bf7a335ade5add751fddf8e7d344cd1d5128b7ec632878f8ba638588c21f9b`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000008` reached
+  `Healthy`/`Provisioned`, received 100% of traffic, and sustained HTTP 200
+  responses on `/healthz` and `/readyz`. In-revision inspection confirmed the
+  Managed Identity Data Health tile and enabled/disabled storage-account tags;
+  the image also contains the Function App and Log Analytics account tags from
+  the preceding change. Entra continues to protect public UI/API/protocol
+  routes. ACR was restored to public access disabled, firewall default `Deny`,
+  and admin credentials disabled.
 - 2026-08-20 UI visibility redeployment validation: 87 tests passed,
   `node --check src/web/static/app.js` passed, `az bicep build --file
   infra/main.bicep --stdout` passed, managed-identity `AcrPull` was present, and
@@ -587,7 +606,7 @@ interfaces are deployed and healthy in Sweden Central.
   identity-based service URIs.
 - Durable Functions uses extension bundle `[4.32.0, 5.0.0)` and the
   `azureManaged` Durable Task Scheduler provider.
-- Container App revision `ca-storage-intel-kxlgam3w--0000006` and Function
+- Container App revision `ca-storage-intel-kxlgam3w--0000008` and Function
   `/api/healthz` are healthy.
 - ACR was restored to `publicNetworkAccess=Disabled`, firewall default `Deny`,
   and admin credentials disabled after each bounded remote-build window.
@@ -601,6 +620,10 @@ interfaces are deployed and healthy in Sweden Central.
   lake Storage Blob Data Contributor; Durable Task Data Contributor; Key Vault
   Secrets User; Monitoring Metrics Publisher; web AcrPull, Foundry User, and
   Function-scoped Website Contributor.
+- 2026-08-21 live re-verification confirmed the web identity's AcrPull,
+  Foundry User, and Function-scoped Website Contributor roles and the Function
+  identity's seven resource-scoped storage, lake, scheduler, Key Vault, and
+  monitoring roles.
 - Scope: Service roles are scoped to their individual resources. No workload identity receives subscription-wide data-plane access.
 - Issues: None. The temporary diagnostic Storage Blob Data Reader assignment was
   removed from the web identity after verification.
