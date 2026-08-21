@@ -876,6 +876,8 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert 'function FoundryMiniLogo()' in app_script
     assert "function EntraAuthenticatedMark()" in app_script
     assert 'src: "/static/assets/microsoft-entra-id.png"' in app_script
+    assert "width: 22px; height: 22px;" in styles
+    assert ".entra-id-logo { width: 14px; height: 14px;" in styles
     assert 'className: "entra-lock"' not in app_script
     assert 'e("div", { className: "identity" }' not in app_script
     entra_logo = static_root / "assets" / "microsoft-entra-id.png"
@@ -936,6 +938,9 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert 'className: "platform-account-grid platform-account-scroll"' in app_script
     assert '"aria-label": "Platform-linked storage accounts"' in app_script
     assert "portfolio.platform_accounts.length.toLocaleString()" in app_script
+    assert "Upload account spreadsheet (AIRGAP Accounts if any)" in app_script
+    assert '"aria-label": "AIRGAP account spreadsheet"' in app_script
+    assert '"Upload account spreadsheet (AIRGAP Accounts if any)":' in translations
     assert "max-height: 560px; overflow-y: scroll;" in styles
     assert ".platform-account-scroll::-webkit-scrollbar-thumb" in styles
     assert 'className: "panel priority-findings-panel"' in app_script
@@ -973,10 +978,10 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert health_segment.index('className: "source-grid"') < health_segment.index(
         'className: "metrics health-metrics"'
     )
-    assert index_html.index("/static/translations.js?v=20260821-priority-scroll") < index_html.index(
-        "/static/app.js?v=20260821-platform-account-scroll"
+    assert index_html.index("/static/translations.js?v=20260821-overview-refinement") < index_html.index(
+        "/static/app.js?v=20260821-overview-refinement"
     )
-    assert "/static/styles.css?v=20260821-platform-account-scroll" in index_html
+    assert "/static/styles.css?v=20260821-overview-refinement" in index_html
     assert 'localStorage.setItem("storage-intelligence-language", language)' in app_script
     assert "document.documentElement.lang = language" in app_script
     assert 'className: "language-switch"' in app_script

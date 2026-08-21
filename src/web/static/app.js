@@ -930,7 +930,7 @@
             accountStatus && e("div", { className: "success" }, accountStatus),
             e("div", { className: "bulk-import" },
               e("div", { className: "bulk-import-copy" },
-                e("div", { className: "panel-title" }, "Upload account spreadsheet"),
+                e("div", { className: "panel-title" }, "Upload account spreadsheet (AIRGAP Accounts if any)"),
                 e("div", { className: "account-note" }, "Use XLSX or UTF-8 CSV with columns: name, tenant_id, management_group, subscription, environment, subsidiary (or business_unit), region, tier.")
               ),
               e("form", { className: "import-form", onSubmit: importSpreadsheet },
@@ -940,7 +940,7 @@
                   name: "spreadsheet",
                   accept: ".xlsx,.csv",
                   required: true,
-                  "aria-label": "Storage account spreadsheet"
+                  "aria-label": "AIRGAP account spreadsheet"
                 }),
                 e("button", { className: "ghost import-button", disabled: importingAccounts }, importingAccounts ? "Importing…" : "Import spreadsheet")
               )
