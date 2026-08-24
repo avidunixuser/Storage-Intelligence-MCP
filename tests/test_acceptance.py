@@ -1331,11 +1331,18 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert index_html.index("/static/translations.js?v=20260821-airgap-heading") < index_html.index(
         "/static/app.js?v=20260821-airgap-heading"
     )
-    assert "/static/styles.css?v=20260823-segoe-variable" in index_html
+    assert "/static/styles.css?v=20260823-fluent-blue" in index_html
+    assert '<meta name="theme-color" content="#0078d4">' in index_html
     assert (
         'font-family: "Segoe UI Variable", "Segoe UI", Inter, ui-sans-serif, system-ui, '
         '-apple-system, BlinkMacSystemFont, sans-serif;'
     ) in styles
+    assert "--accent: #0078d4;" in styles
+    assert "--accent-hover: #106ebe;" in styles
+    assert "--accent-pressed: #005a9e;" in styles
+    assert "background: linear-gradient(135deg, var(--cyan), var(--green));" not in styles
+    assert ".ask:hover:not(:disabled)" in styles
+    assert ".notify-owners-button:hover:not(:disabled)" in styles
     assert 'localStorage.setItem("storage-intelligence-language", language)' in app_script
     assert "document.documentElement.lang = language" in app_script
     assert 'className: "language-switch"' in app_script
