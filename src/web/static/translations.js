@@ -211,6 +211,8 @@
     "Five-field cron in UTC. Next scheduled run: ": "Cron de cinco campos en UTC. Próxima ejecución programada: ",
     "Cosmos DB persistence: ": "Persistencia de Cosmos DB: ",
     "Schedule examples": "Ejemplos de programación",
+    "Cron expression": "Expresión cron",
+    "Runs": "Ejecución",
     "Every six hours": "Cada seis horas",
     "Daily at 02:00": "Diariamente a las 02:00",
     "Mondays at 01:30": "Los lunes a la 01:30",

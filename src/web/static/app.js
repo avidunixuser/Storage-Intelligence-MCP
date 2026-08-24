@@ -1254,15 +1254,19 @@
                 e("div", { className: "panel-title" }, "Schedule examples"),
                 e("div", { className: "panel-meta" }, "UTC")
               ),
-              e("div", { className: "data-table" },
+              e("div", { className: "schedule-examples", role: "table", "aria-label": "Discovery schedule examples" },
+                e("div", { className: "schedule-example-header", role: "row" },
+                  e("span", { role: "columnheader" }, "Cron expression"),
+                  e("span", { role: "columnheader" }, "Runs")
+                ),
                 [
                   ["0 */6 * * *", "Every six hours"],
                   ["0 2 * * *", "Daily at 02:00"],
                   ["30 1 * * 1", "Mondays at 01:30"]
                 ].map((example) =>
-                  e("div", { className: "data-row admin-schedule-row", key: example[0] },
-                    e("code", { className: "data-primary" }, example[0]),
-                    e("span", null, example[1])
+                  e("div", { className: "schedule-example-row", role: "row", key: example[0] },
+                    e("code", { className: "schedule-expression", role: "cell" }, example[0]),
+                    e("span", { className: "schedule-description", role: "cell" }, example[1])
                   )
                 )
               )

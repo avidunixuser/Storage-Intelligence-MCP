@@ -1086,10 +1086,16 @@ def test_admin_can_configure_discovery_cron(monkeypatch, tmp_path):
 
 def test_admin_discovery_has_role_gated_navigation():
     app_script = (Path(__file__).parents[1] / "src" / "web" / "static" / "app.js").read_text(encoding="utf-8")
+    styles = (Path(__file__).parents[1] / "src" / "web" / "static" / "styles.css").read_text(encoding="utf-8")
     assert '{ id: "admin", label: "Admin"' in app_script
     assert 'view.id !== "admin" || (portfolio && portfolio.permissions.admin)' in app_script
     assert 'activeView === "admin" && portfolio.permissions.admin' in app_script
     assert "Pull Tenant Wide Storage Account Details" in app_script
+    assert 'className: "schedule-examples", role: "table"' in app_script
+    assert 'className: "schedule-example-row", role: "row"' in app_script
+    assert 'className: "data-row admin-schedule-row"' not in app_script
+    assert ".schedule-example-header, .schedule-example-row {" in styles
+    assert ".schedule-example-row { grid-template-columns: 1fr; gap: 5px; }" in styles
 
 
 def test_airgap_sample_workbook_has_complete_header_and_imports(monkeypatch):
@@ -1328,10 +1334,11 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert health_segment.index('className: "source-grid"') < health_segment.index(
         'className: "metrics health-metrics"'
     )
-    assert index_html.index("/static/translations.js?v=20260821-airgap-heading") < index_html.index(
-        "/static/app.js?v=20260821-airgap-heading"
+    assert index_html.index("/static/translations.js?v=20260824-admin-schedule") < index_html.index(
+        "/static/app.js?v=20260824-admin-schedule"
     )
-    assert "/static/styles.css?v=20260823-fluent-blue" in index_html
+    assert "/static/styles.css?v=20260824-admin-schedule" in index_html
+    assert "/static/app.js?v=20260824-admin-schedule" in index_html
     assert '<meta name="theme-color" content="#0078d4">' in index_html
     assert (
         'font-family: "Segoe UI Variable", "Segoe UI", Inter, ui-sans-serif, system-ui, '
