@@ -4,6 +4,40 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Admin Copy, Savings Recommendations, and Classification Icons
+
+- **Mode:** Modify the existing web UI and redeploy the existing Container App.
+- **Admin:** Rename tenant discovery to `Tenant-wide storage account discovery & Retrieval`
+  and change its primary action to `Retrieve Storage Inventory`, including localized text,
+  accessible labels, and any related tests.
+- **Savings Simulator:** Make each Top Savings Opportunity candidate explicitly
+  recommendation-based. Present clear columns for account name, current tier,
+  recommended target tier, current size, and estimated monthly savings. Preserve existing
+  savings calculations and ensure responsive presentation.
+- **Overview classification:** Audit the account classification-icon logic and add a
+  deterministic, tag-driven fallback so accounts without a platform-specific icon still
+  receive a meaningful Azure-style classification icon and accessible label. Use known
+  platform icons where available and map remaining project, management-group,
+  environment, business-unit, and workload tags to appropriate classifications.
+- **Delivery:** Refresh changed static-asset cache keys and add focused acceptance
+  coverage for all three surfaces.
+- **Security and infrastructure:** No API, persistence, identity, RBAC, networking, or
+  infrastructure changes.
+- **Azure context:** Reuse AZD environment `mcpa2a`, subscription
+  `ME-MngEnvMCAP585394-nrp-at-microsoft-dot-com`
+  (`c82406dd-f84c-42df-9586-c6f02abda6df`), resource group
+  `rg-storage-intel-mcpa2a`, and Sweden Central after user confirmation.
+- **Validation and deployment:** Verify desktop and narrow layouts locally, run the full
+  test suite, Python/JavaScript checks, Bicep build, AZD package, deployment preview,
+  policy and RBAC checks; then build a uniquely tagged image within a bounded ACR access
+  window, restore ACR private/default-deny settings, deploy a healthy revision at 100%
+  traffic, commit, push, create and merge a pull request, and verify the commit on
+  `origin/main`.
+- **Preparation evidence:** Local browser verification confirmed the requested Admin
+  wording, six labeled recommendation columns, and tag-driven fallback classification
+  for `st00023`. The complete 97-test suite, Python compilation, JavaScript syntax
+  checks, Bicep build, AZD package, and `git diff --check` succeeded.
+
 ## Pending Change: Admin Schedule Example Layout
 
 - **Mode:** Modify the existing Admin UI and redeploy the existing Container App.
@@ -708,7 +742,7 @@ check before provisioning.
 
 ## 13. Next Step
 
-> Current: Admin schedule-example layout is deployed and ready for source-control publication.
+> Current: Admin, savings, and classification-icon improvements are deployed and ready for source-control publication.
 
 Commit the validated change, push it, create a pull request, and merge it.
 
@@ -739,6 +773,29 @@ Commit the validated change, push it, create a pull request, and merge it.
 
 ### Commands and results
 
+- 2026-08-24 Admin, savings, and classification-icon deployment: `azd
+  provision --no-prompt` confirmed no infrastructure changes. ACR run `dtm`
+  published `storage-intelligence:inventory-savings-icons-20260824` with digest
+  `sha256:a73f4071d179f1ad8681f310d2ee7612765154e3033ec1dfa911f8360f268c99`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000021` is Healthy,
+  Provisioned, running at maximum scale, and receives 100% traffic. The live
+  endpoint redirects unauthenticated requests to Microsoft Entra (HTTP 302).
+  ACR was restored to public access disabled, firewall default `Deny`, and
+  admin credentials disabled. Live verification confirmed the web UAMI has
+  ACR-scoped `AcrPull`, Communication and Email Service Owner, and
+  database-scoped Cosmos DB Built-in Data Contributor.
+- 2026-08-24 Admin, savings, and classification-icon validation: confirmed
+  AZD 1.30.0, authenticated environment `mcpa2a`, approved subscription
+  `c82406dd-f84c-42df-9586-c6f02abda6df`, resource group
+  `rg-storage-intel-mcpa2a`, and Sweden Central. The complete 97-test suite,
+  Python compilation, JavaScript syntax checks, Bicep build, AZD package, and
+  `git diff --check` passed. Local browser verification confirmed the requested
+  Admin wording, six recommendation-oriented savings columns, and a tag-driven
+  Azure data classification for `st00023`. `azd provision --preview
+  --no-prompt` completed successfully with zero creates or deletes. Applicable
+  policies were reviewed and the resource group reported no non-compliant
+  policies or resources. Static RBAC review confirmed resource-scoped web UAMI
+  roles for ACR, Communication Services, and Cosmos DB remain unchanged.
 - 2026-08-24 Admin schedule-example deployment: `azd provision --no-prompt`
   confirmed no infrastructure changes. The standard `azd deploy --no-prompt`
   path reached the private Function SCM endpoint and received the expected HTTP

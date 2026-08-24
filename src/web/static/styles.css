@@ -198,6 +198,36 @@ select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
 .platform-account > .account-select-control { position: absolute; left: 11px; top: 10px; }
 .platform-account-title { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 680; }
 .platform-logos { display: inline-flex; align-items: center; gap: 5px; min-width: 18px; }
+.classification-logo {
+  display: inline-grid; place-items: center; width: 18px; height: 18px; flex: 0 0 18px;
+  border: 1px solid rgba(0,120,212,.28); border-radius: 5px; background: rgba(0,120,212,.08);
+}
+.classification-glyph { position: relative; display: block; width: 10px; height: 10px; }
+.classification-data .classification-glyph {
+  border: 2px solid #0078d4; border-radius: 50% / 25%; background: rgba(0,120,212,.1);
+}
+.classification-data .classification-glyph::after {
+  content: ""; position: absolute; left: -2px; right: -2px; top: 2px; bottom: 2px;
+  border-top: 1px solid #0078d4; border-bottom: 1px solid #0078d4;
+}
+.classification-production .classification-glyph {
+  width: 11px; height: 7px; margin-top: 3px; border-radius: 6px; background: #0078d4;
+}
+.classification-production .classification-glyph::before {
+  content: ""; position: absolute; width: 6px; height: 6px; left: 2px; top: -3px;
+  border-radius: 50%; background: #0078d4;
+}
+.classification-nonproduction .classification-glyph::before {
+  content: "</>"; position: absolute; left: -2px; top: -2px; color: #005a9e;
+  font-family: Consolas, monospace; font-size: 8px; font-weight: 800;
+}
+.classification-archive { border-color: rgba(169,104,24,.32); background: rgba(169,104,24,.08); }
+.classification-archive .classification-glyph {
+  border: 2px solid var(--amber); border-radius: 2px;
+}
+.classification-archive .classification-glyph::before {
+  content: ""; position: absolute; left: -2px; right: -2px; top: 1px; border-top: 2px solid var(--amber);
+}
 .databricks-logo { position: relative; display: inline-block; width: 18px; height: 17px; }
 .databricks-layer { position: absolute; left: 4px; width: 9px; height: 9px; border: 2px solid #ff3621; transform: rotate(45deg) skew(-4deg, -4deg); }
 .databricks-layer.layer-one { top: 0; }
@@ -463,6 +493,17 @@ pre { margin: 12px 0 0; max-height: 270px; overflow: auto; padding: 12px; color:
 .scenario-card { min-height: 120px; }
 .scenario-adoption { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
 .scenario-value { font-size: 25px; font-weight: 760; letter-spacing: -.04em; margin: 12px 0 7px; }
+.savings-table { overflow-x: auto; }
+.savings-table-header, .savings-row {
+  display: grid; grid-template-columns: 22px minmax(165px, 1.3fr) 90px 135px 110px 135px 105px;
+  align-items: center; gap: 10px; min-width: 900px;
+}
+.savings-table-header {
+  color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .06em; padding: 0 9px 2px;
+  text-transform: uppercase;
+}
+.data-row.savings-row { grid-template-columns: 22px minmax(165px, 1.3fr) 90px 135px 110px 135px 105px; }
+.recommended-tier { color: #004578; font-weight: 700; }
 .data-table { display: grid; gap: 6px; }
 .data-row { display: grid; grid-template-columns: 22px minmax(130px, 1fr) 100px 110px 120px 90px; align-items: center; gap: 10px; border: 1px solid rgba(67,91,116,.13); border-radius: 8px; color: var(--muted); font-size: 10px; padding: 9px; }
 .data-primary { color: var(--text); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -553,6 +594,7 @@ pre { margin: 12px 0 0; max-height: 270px; overflow: auto; padding: 12px; color:
   .scenario-grid, .finding-inbox, .source-grid { grid-template-columns: 1fr; }
   .finding-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .data-row { grid-template-columns: 1fr 1fr; }
+  .data-row.savings-row { grid-template-columns: 22px minmax(165px, 1.3fr) 90px 135px 110px 135px 105px; }
   .response-reason-row { grid-template-columns: 1fr; }
   .data-value { text-align: left; }
 }

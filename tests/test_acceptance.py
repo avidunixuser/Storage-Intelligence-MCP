@@ -325,6 +325,11 @@ def test_web_api_and_auth_boundary(monkeypatch):
     assert any(item["log_analytics_workspace"] for item in portfolio_body["platform_accounts"])
     assert any(item["managed_identity_enabled"] for item in portfolio_body["platform_accounts"])
     assert any(not item["managed_identity_enabled"] for item in portfolio_body["platform_accounts"])
+    assert all(
+        {"business_unit", "project_name", "tag_business_unit", "project_defunct", "business_criticality", "hns_enabled"}
+        <= item.keys()
+        for item in portfolio_body["platform_accounts"]
+    )
     answer = client.post("/api/query", json={"question": QUESTIONS[0], "filters": {}})
     assert answer.status_code == 200
     assert answer.json()["evidence"]
@@ -1090,12 +1095,23 @@ def test_admin_discovery_has_role_gated_navigation():
     assert '{ id: "admin", label: "Admin"' in app_script
     assert 'view.id !== "admin" || (portfolio && portfolio.permissions.admin)' in app_script
     assert 'activeView === "admin" && portfolio.permissions.admin' in app_script
-    assert "Pull Tenant Wide Storage Account Details" in app_script
+    assert "Tenant-wide storage account discovery & Retrieval" in app_script
+    assert "Retrieve Storage Inventory" in app_script
+    assert "Pull Tenant Wide Storage Account Details" not in app_script
     assert 'className: "schedule-examples", role: "table"' in app_script
     assert 'className: "schedule-example-row", role: "row"' in app_script
     assert 'className: "data-row admin-schedule-row"' not in app_script
     assert ".schedule-example-header, .schedule-example-row {" in styles
     assert ".schedule-example-row { grid-template-columns: 1fr; gap: 5px; }" in styles
+    assert "function accountClassification(account)" in app_script
+    assert "!hasPlatformClassification(account) && e(AccountClassificationLogo" in app_script
+    assert 'return { key: "data", label: "Azure data and analytics workload" };' in app_script
+    assert ".classification-data .classification-glyph" in styles
+    assert 'className: "savings-table-header", role: "row"' in app_script
+    assert '"Current tier"' in app_script
+    assert '"Recommended target tier"' in app_script
+    assert "account.current_size_tb" in app_script
+    assert ".data-row.savings-row" in styles
 
 
 def test_airgap_sample_workbook_has_complete_header_and_imports(monkeypatch):
@@ -1334,11 +1350,11 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert health_segment.index('className: "source-grid"') < health_segment.index(
         'className: "metrics health-metrics"'
     )
-    assert index_html.index("/static/translations.js?v=20260824-admin-schedule") < index_html.index(
-        "/static/app.js?v=20260824-admin-schedule"
+    assert index_html.index("/static/translations.js?v=20260824-inventory-savings-icons") < index_html.index(
+        "/static/app.js?v=20260824-inventory-savings-icons"
     )
-    assert "/static/styles.css?v=20260824-admin-schedule" in index_html
-    assert "/static/app.js?v=20260824-admin-schedule" in index_html
+    assert "/static/styles.css?v=20260824-inventory-savings-icons" in index_html
+    assert "/static/app.js?v=20260824-inventory-savings-icons" in index_html
     assert '<meta name="theme-color" content="#0078d4">' in index_html
     assert (
         'font-family: "Segoe UI Variable", "Segoe UI", Inter, ui-sans-serif, system-ui, '
@@ -1368,7 +1384,8 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
         ("Total Findings", "Total de hallazgos"),
         ("Stale accounts", "Cuentas obsoletas"),
         ("Save question", "Guardar pregunta"),
-        ("Pull Tenant Wide Storage Account Details", "Obtener detalles de cuentas de almacenamiento de todo el inquilino"),
+        ("Retrieve Storage Inventory", "Recuperar inventario de almacenamiento"),
+        ("Recommended target tier", "Nivel objetivo recomendado"),
     ):
         assert f'"{english}": "{spanish}"' in translations
     assert "function FindingMetric(props)" in app_script
@@ -1445,6 +1462,10 @@ def test_functional_view_endpoints(monkeypatch):
     )
     assert savings.status_code == 200
     assert savings.json()["simulation"]["adoption_pct"] == 37
+    recommendation = savings.json()["simulation"]["top_accounts"][0]
+    assert recommendation["current_tier"] in {"Hot", "Cool", "Cold", "Archive"}
+    assert recommendation["target_tier"] in {"Cold", "Archive"}
+    assert recommendation["current_size_tb"] > 0
     assert len(savings.json()["scenarios"]) == 3
     assert savings.json()["confidence"]["level"] in {"low", "medium", "high"}
     assert savings.json()["scope"]["filters"]["subsidiary"] == SUBSCRIPTIONS[0]["subsidiary"]

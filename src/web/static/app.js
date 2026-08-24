@@ -45,7 +45,7 @@
     { id: "findings", label: "Findings", icon: "/static/assets/nav-findings.svg", eyebrow: "Actionable inbox", title: "Findings", subtitle: "Review Prioritized Risks, Anomalies, Freshness Issues, And Savings Actions." },
     { id: "savings", label: "Savings Simulator", icon: "/static/assets/nav-savings.svg", eyebrow: "FinOps modeling", title: "Savings Simulator", subtitle: "Compare tiering adoption scenarios with retrieval and early-deletion caveats." },
     { id: "agent", label: "Agent Investigation", icon: "/static/assets/nav-agent.svg", eyebrow: "Evidence-first analysis", title: "Agent Investigation", subtitle: "Ask scoped operational and financial questions backed by deterministic tools." },
-    { id: "admin", label: "Admin", icon: "/static/assets/nav-admin.svg", eyebrow: "Estate administration", title: "Admin", subtitle: "Schedule read-only tenant-wide storage account discovery through Azure CLI." }
+    { id: "admin", label: "Admin", icon: "/static/assets/nav-admin.svg", eyebrow: "Estate administration", title: "Admin", subtitle: "Schedule read-only tenant-wide storage inventory retrieval through Azure CLI." }
   ];
 
   function NavIcon(props) {
@@ -303,6 +303,48 @@
       e("span", { className: "log-analytics-bar bar-two" }),
       e("span", { className: "log-analytics-bar bar-three" })
     );
+  }
+
+  function hasPlatformClassification(account) {
+    return Boolean(
+      account.databricks_workspace ||
+      account.fabric_lakehouse ||
+      account.sap_system ||
+      account.azure_data_factory ||
+      account.sftp_enabled ||
+      account.application_insights_resource ||
+      account.azure_function_app ||
+      account.log_analytics_workspace
+    );
+  }
+
+  function accountClassification(account) {
+    const tags = [
+      account.management_group,
+      account.project_name,
+      account.business_unit,
+      account.tag_business_unit,
+      account.subscription
+    ].filter(Boolean).join(" ").toLowerCase();
+
+    if (account.project_defunct) return { key: "archive", label: "Retired project archive" };
+    if (account.hns_enabled || /data|analytics|lake/.test(tags)) {
+      return { key: "data", label: "Azure data and analytics workload" };
+    }
+    if (account.environment === "Prod" || account.business_criticality === "high") {
+      return { key: "production", label: "Production application workload" };
+    }
+    return { key: "nonproduction", label: (account.environment || "Non-production") + " application workload" };
+  }
+
+  function AccountClassificationLogo(props) {
+    const classification = accountClassification(props.account);
+    return e("span", {
+      className: "classification-logo classification-" + classification.key,
+      role: "img",
+      "aria-label": classification.label,
+      title: classification.label
+    }, e("span", { className: "classification-glyph", "aria-hidden": "true" }));
   }
 
   function App() {
@@ -992,7 +1034,8 @@
                       account.sftp_enabled && e(SftpLogo),
                       account.application_insights_resource && e(AppInsightsLogo),
                       account.azure_function_app && e(FunctionAppLogo),
-                      account.log_analytics_workspace && e(LogAnalyticsLogo)
+                      account.log_analytics_workspace && e(LogAnalyticsLogo),
+                      !hasPlatformClassification(account) && e(AccountClassificationLogo, { account: account })
                     ),
                     e("span", null, account.name)
                   ),
@@ -1201,7 +1244,7 @@
             e("section", { className: "panel admin-panel" },
               e("div", { className: "panel-head" },
                 e("div", null,
-                  e("div", { className: "panel-title" }, "Tenant-wide storage account discovery"),
+                  e("div", { className: "panel-title" }, "Tenant-wide storage account discovery & Retrieval"),
                   e("div", { className: "account-note" }, "Runs fixed, read-only Azure CLI commands behind the scenes. It enumerates authorized tenants, management-group tags, subsidiaries/business units, subscriptions, storage accounts, regions, tiers, SKUs, and platform relationships without changing Azure resources.")
                 ),
                 e("span", { className: "admin-badge" }, "Administrator")
@@ -1211,7 +1254,7 @@
                   className: "ask tenant-pull-button",
                   disabled: pullingTenantDetails,
                   onClick: pullTenantStorageDetails
-                }, pullingTenantDetails ? "Pulling Tenant Wide Storage Account Details…" : "Pull Tenant Wide Storage Account Details"),
+                }, pullingTenantDetails ? "Retrieving Storage Inventory…" : "Retrieve Storage Inventory"),
                 e("form", { className: "schedule-form", onSubmit: saveDiscoverySchedule },
                   e("label", { className: "account-field" },
                     e("span", { className: "field-label" }, "Discovery cron"),
@@ -1398,9 +1441,9 @@
               ),
               e("section", { className: "panel" },
                 e("div", { className: "panel-head" },
-                  e("div", { className: "panel-title" }, "Top savings candidates"),
+                  e("div", { className: "panel-title" }, "Top savings recommendations"),
                   e("div", { className: "notification-panel-meta" },
-                    e("div", { className: "panel-meta" }, "Net monthly savings"),
+                    e("div", { className: "panel-meta" }, "Current state compared with recommended target"),
                     e(NotificationToolbar, {
                       selectedIds: selectedIds("savings", savingsResult.simulation.top_accounts.map((account) => account.account_id)),
                       busy: notificationBusy.savings,
@@ -1409,25 +1452,36 @@
                     })
                   )
                 ),
-                e("div", { className: "data-table savings-table" },
+                e("div", { className: "data-table savings-table", role: "table", "aria-label": "Top savings recommendations" },
+                  e("div", { className: "savings-table-header", role: "row" },
+                    e("span", { "aria-hidden": "true" }),
+                    e("span", { role: "columnheader" }, "Account name"),
+                    e("span", { role: "columnheader" }, "Current tier"),
+                    e("span", { role: "columnheader" }, "Recommended target tier"),
+                    e("span", { role: "columnheader" }, "Current size"),
+                    e("span", { role: "columnheader" }, "Estimated monthly savings"),
+                    e("span", { role: "columnheader" }, "Recommendation risk")
+                  ),
                   savingsResult.simulation.top_accounts.map((account) =>
                     e("div", {
-                      className: "data-row" + (selectedIds("savings").includes(account.account_id) ? " selected" : ""),
-                      key: account.account_id
+                      className: "data-row savings-row" + (selectedIds("savings").includes(account.account_id) ? " selected" : ""),
+                      key: account.account_id,
+                      role: "row"
                     },
                       e(AccountCheckbox, {
                         name: account.account_id.split("/").pop(),
                         checked: selectedIds("savings").includes(account.account_id),
                         onChange: (checked) => toggleAccountSelection("savings", account.account_id, checked)
                       }),
-                      e("span", { className: "data-primary" },
+                      e("span", { className: "data-primary", role: "cell" },
                         e("span", null, account.account_id.split("/").pop()),
                         e("small", { className: "row-hierarchy" }, account.management_group + " · " + account.subsidiary + " · " + account.environment)
                       ),
-                      e("span", null, account.target_tier),
-                      e("span", null, formatNumber(account.eligible_tb, "tb")),
-                      e("span", { className: "data-value" }, formatNumber(account.net_monthly_savings_usd, "money")),
-                      e("span", { className: account.early_deletion_risk ? "severity high" : "severity low" },
+                      e("span", { role: "cell" }, account.current_tier),
+                      e("span", { className: "recommended-tier", role: "cell" }, account.target_tier),
+                      e("span", { role: "cell" }, formatNumber(account.current_size_tb, "tb")),
+                      e("span", { className: "data-value", role: "cell" }, formatNumber(account.net_monthly_savings_usd, "money")),
+                      e("span", { className: account.early_deletion_risk ? "severity high" : "severity low", role: "cell" },
                         account.early_deletion_risk ? "Retention risk" : "Lower risk"
                       )
                     )
