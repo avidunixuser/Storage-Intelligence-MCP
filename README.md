@@ -297,6 +297,30 @@ Communication Service, and an Azure-managed Europe domain. The web UAMI uses
 not expose a send-only managed-identity role, the required Communication and Email Service
 Owner assignment is constrained to that single Communication Services resource.
 
+## Roadmap Phase 2
+
+1. **API Management:** Introduce Azure API Management (APIM) for endpoint obfuscation,
+   a public API facade, and rate limiting.
+2. **Caching:**
+   - **Provider prompt caching:** Keep system prompts, tool definitions, schemas, and
+     examples as an identical stable prefix; append user-specific content last. Azure
+     OpenAI applies supported prompt caching automatically and reports `cached_tokens`.
+   - **Response caching:** Cache repeated answers through APIM semantic caching or Redis.
+     Include tenant, user scope, filters, model, prompt version, and data timestamp in the
+     key; use a short TTL and never share cached results across tenants.
+
+The Foundry agent's stable instructions and OpenAPI schema total roughly **1,085 tokens**,
+exceeding Azure's 1,024-token prompt-cache threshold. User input is already appended
+separately. Implementation would require:
+
+- Canonicalizing tool-schema serialization and preserving tool order.
+- Versioning the prompt/tool bundle instead of rebuilding it per request.
+- Capturing `response.usage.input_tokens_details.cached_tokens`.
+- Emitting cache-hit rate, cached tokens, latency, and estimated savings to Application
+  Insights.
+- Confirming the deployed model supports prompt caching and optionally adopting an explicit
+  `prompt_cache_key` when supported.
+
 ## Cost caveats
 
 Private Foundry Standard requires fixed-cost AI Search Standard and Premium ACR. Cosmos DB,
