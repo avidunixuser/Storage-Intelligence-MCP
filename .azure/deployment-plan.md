@@ -4,6 +4,40 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Microsoft Fluent Color Theme
+
+- **Mode:** Modify the existing static UI and redeploy the existing Container App.
+- **Goal:** Replace green/teal primary actions with a professional Microsoft Fluent blue
+  interaction palette centered on `#0078D4`, with darker hover/active states and accessible
+  focus treatment.
+- **Scope:** Audit buttons, selected navigation/filter states, links, focus states, and other
+  interactive accents across every page. Reserve green for semantic success/healthy states,
+  amber for warnings, and red for errors. Preserve the existing light layout, typography,
+  risk-category data visualization colors, and PepsiCo brand mark.
+- **Accessibility:** Maintain readable foreground contrast, visible keyboard focus, disabled
+  control distinction, and non-color status cues.
+- **Delivery:** Centralize reusable Fluent colors in CSS variables, refresh the stylesheet
+  cache key, and update focused acceptance coverage.
+- **Dependencies:** No remote theme package, font, tracking request, or runtime dependency.
+- **Security and infrastructure:** No API, data, identity, RBAC, networking, or infrastructure
+  changes.
+- **Azure context:** Reuse AZD environment `mcpa2a`, subscription
+  `ME-MngEnvMCAP585394-nrp-at-microsoft-dot-com`
+  (`c82406dd-f84c-42df-9586-c6f02abda6df`), resource group
+  `rg-storage-intel-mcpa2a`, and Sweden Central after user confirmation.
+- **Validation and deployment:** Run focused and complete tests, JavaScript syntax checks,
+  Bicep build, AZD package, and deployment preview; then build a fresh image, restore ACR to
+  private/default-deny, deploy a healthy revision with 100% traffic, commit, push, create and
+  merge a pull request, and verify the commit on `origin/main`.
+- **Preparation proof:** User approved the Fluent theme scope and existing Azure context.
+  Primary and notification actions now use solid Fluent blue with defined hover, active,
+  focus, disabled, selection, checkbox, slider, and link states. Green remains limited to
+  semantic success/healthy indicators, risk-chart category colors and brand marks remain
+  unchanged, and the browser theme color/cache key are refreshed. The local app returned
+  HTTP 200 and rendered in the browser preview. The complete 97-test suite, Python
+  compilation, JavaScript syntax checks, Bicep build, `azd package --no-prompt`, and
+  `git diff --check` pass. No new resource or quota is required.
+
 ## Pending Change: Segoe UI Variable Typography
 
 - **Mode:** Modify the existing static UI and redeploy the existing Container App.
@@ -647,7 +681,7 @@ check before provisioning.
 
 ## 13. Next Step
 
-> Current: Segoe UI Variable typography is deployed and ready for source-control publication.
+> Current: Microsoft Fluent color theme is deployed and ready for source-control publication.
 
 Commit the validated change, push it, create a pull request, and merge it.
 
@@ -678,6 +712,28 @@ Commit the validated change, push it, create a pull request, and merge it.
 
 ### Commands and results
 
+- 2026-08-23 Microsoft Fluent color-theme deployment: `azd provision
+  --no-prompt` confirmed no infrastructure changes. ACR run `dtj` published
+  `storage-intelligence:fluent-blue-20260823` with digest
+  `sha256:8a28d3a1b810769d681bf8be2b9fe771016791bd4566087882f8e808e4ee7100`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000019` is Healthy,
+  Provisioned, running at maximum scale, and receives 100% of traffic. The live
+  application remains protected by Microsoft Entra (unauthenticated HTTP 401).
+  ACR was restored to public access disabled, firewall default `Deny`, and admin
+  credentials disabled; live role verification confirmed the web UAMI retains
+  resource-scoped `AcrPull`. The browser preview was switched from the local
+  HTTP 200 instance to the deployed application, and the local preview server
+  was stopped.
+- 2026-08-23 Microsoft Fluent color-theme validation: confirmed AZD 1.30.0,
+  authenticated environment `mcpa2a`, approved subscription
+  `c82406dd-f84c-42df-9586-c6f02abda6df`, and Sweden Central. The complete
+  97-test suite and Python compilation passed; local functional preview returned
+  HTTP 200; JavaScript syntax checks, Bicep build, `azd package --no-prompt`,
+  and `git diff --check` passed. `azd provision --preview --no-prompt`
+  completed successfully with no resource deletes. Subscription policies do not
+  conflict with this static theme update, and static role review confirmed the
+  existing resource-scoped web-UAMI `AcrPull`; no infrastructure, role, or quota
+  change is required.
 - 2026-08-23 Segoe UI Variable typography deployment: `azd provision
   --no-prompt` confirmed no infrastructure changes. ACR run `dth` published
   `storage-intelligence:segoe-variable-20260823` with digest
