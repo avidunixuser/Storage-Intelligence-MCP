@@ -4,6 +4,31 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Segoe UI Variable Typography
+
+- **Mode:** Modify the existing static UI and redeploy the existing Container App.
+- **Goal:** Make `"Segoe UI Variable"` the primary application font, followed by
+  `"Segoe UI"`, `Inter`, and system sans-serif fallbacks.
+- **Scope:** Update the global CSS font stack, preserve the intentional PepsiCo wordmark
+  styling, refresh the stylesheet cache key, and update focused acceptance coverage.
+- **Dependencies:** Use the operating system font when available; do not add a remote font
+  dependency, package, tracking request, or new Azure resource.
+- **Security and infrastructure:** No API, data, identity, RBAC, network, or infrastructure
+  changes.
+- **Azure context:** Reuse AZD environment `mcpa2a`, subscription
+  `ME-MngEnvMCAP585394-nrp-at-microsoft-dot-com`
+  (`c82406dd-f84c-42df-9586-c6f02abda6df`), resource group
+  `rg-storage-intel-mcpa2a`, and Sweden Central after user confirmation.
+- **Validation and deployment:** Run focused and complete tests, JavaScript syntax checks,
+  Bicep build, AZD package, and deployment preview; then build a fresh image, restore ACR to
+  private/default-deny, deploy a healthy revision with 100% traffic, commit, push, create and
+  merge a pull request, and verify the commit on `origin/main`.
+- **Preparation proof:** User approved the font-only plan and existing Azure context.
+  `"Segoe UI Variable"` now leads the global local-font stack, the stylesheet cache key is
+  refreshed, and the wordmark override remains unchanged. The complete 97-test suite,
+  Python compilation, JavaScript syntax checks, Bicep build, `azd package --no-prompt`, and
+  `git diff --check` pass. No new resource or quota is required.
+
 ## Pending Change: Persist AIRGAP Spreadsheet Imports
 
 - **Mode:** Modify the existing authenticated spreadsheet import and redeploy the existing
@@ -622,7 +647,7 @@ check before provisioning.
 
 ## 13. Next Step
 
-> Current: AIRGAP spreadsheet Cosmos persistence is deployed and ready for source-control publication.
+> Current: Segoe UI Variable typography is deployed and ready for source-control publication.
 
 Commit the validated change, push it, create a pull request, and merge it.
 
@@ -653,6 +678,25 @@ Commit the validated change, push it, create a pull request, and merge it.
 
 ### Commands and results
 
+- 2026-08-23 Segoe UI Variable typography deployment: `azd provision
+  --no-prompt` confirmed no infrastructure changes. ACR run `dth` published
+  `storage-intelligence:segoe-variable-20260823` with digest
+  `sha256:faaaec8b6e9207d529e0be617708136f3e10497125d617f59d3b8c00ffce0bb1`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000018` is Healthy,
+  Provisioned, running at maximum scale, and receives 100% of traffic. The live
+  application remains protected by Microsoft Entra (unauthenticated HTTP 401).
+  ACR was restored to public access disabled, firewall default `Deny`, and admin
+  credentials disabled; live role verification confirmed the web UAMI retains
+  resource-scoped `AcrPull`.
+- 2026-08-23 Segoe UI Variable typography validation: confirmed AZD 1.30.0,
+  authenticated environment `mcpa2a`, approved subscription
+  `c82406dd-f84c-42df-9586-c6f02abda6df`, and Sweden Central. The complete
+  97-test suite and Python compilation passed; JavaScript syntax checks, Bicep
+  build, `azd package --no-prompt`, and `git diff --check` passed. `azd
+  provision --preview --no-prompt` completed successfully with no resource
+  deletes. Subscription policies do not conflict with this static font update,
+  and static role review confirmed the existing resource-scoped web-UAMI
+  `AcrPull`; no infrastructure, role, or quota change is required.
 - 2026-08-21 AIRGAP spreadsheet Cosmos-persistence deployment: `azd provision
   --no-prompt` confirmed no infrastructure changes. ACR run `dtg` published
   `storage-intelligence:airgap-cosmos-20260821` with digest
