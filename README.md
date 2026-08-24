@@ -309,6 +309,30 @@ Owner assignment is constrained to that single Communication Services resource.
      Include tenant, user scope, filters, model, prompt version, and data timestamp in the
      key; use a short TTL and never share cached results across tenants.
 
+     Implement exact scoped caching first, using Azure Managed Redis:
+
+     ```text
+     cache key =
+     tenant ID
+     + caller/scope hash
+     + normalized question and filters
+     + model deployment
+     + agent/prompt version
+     + inventory data timestamp
+     ```
+
+     Use a 5-15 minute TTL, invalidate when inventory changes, cache only successful
+     read-only responses, encrypt connections, and never fall back to another tenant's
+     entry.
+
+     **Implementation scope**
+
+     | Approach | Scope |
+     |---|---|
+     | Prompt-cache stabilization + telemetry | Code and Application Insights |
+     | Exact scoped Azure Managed Redis cache | Infrastructure, identity, cache service, and tests |
+     | APIM semantic cache | APIM, embeddings deployment, Redis with RediSearch, policies, routing, and security tests |
+
 The Foundry agent's stable instructions and OpenAPI schema total roughly **1,085 tokens**,
 exceeding Azure's 1,024-token prompt-cache threshold. User input is already appended
 separately. Implementation would require:
