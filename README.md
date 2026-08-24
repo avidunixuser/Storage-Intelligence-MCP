@@ -305,9 +305,11 @@ Owner assignment is constrained to that single Communication Services resource.
    - **Provider prompt caching:** Keep system prompts, tool definitions, schemas, and
      examples as an identical stable prefix; append user-specific content last. Azure
      OpenAI applies supported prompt caching automatically and reports `cached_tokens`.
+     Provider prompt caching is mostly aligned already.
    - **Response caching:** Cache repeated answers through APIM semantic caching or Redis.
      Include tenant, user scope, filters, model, prompt version, and data timestamp in the
-     key; use a short TTL and never share cached results across tenants.
+     key; use a short TTL and never share cached results across tenants. Response caching 
+     is a pending larger change.
 
 The Foundry agent's stable instructions and OpenAPI schema total roughly **1,085 tokens**,
 exceeding Azure's 1,024-token prompt-cache threshold. User input is already appended
