@@ -1607,3 +1607,16 @@ def test_foundry_agent_models_are_available():
             PromptAgentDefinition,
         )
     )
+
+
+def test_preprovision_reuses_configured_entra_applications():
+    scripts_root = Path(__file__).parents[1] / "scripts"
+    powershell = (scripts_root / "preprovision.ps1").read_text(encoding="utf-8")
+    shell = (scripts_root / "preprovision.sh").read_text(encoding="utf-8")
+
+    assert '$env:WEB_AUTH_CLIENT_ID' in powershell
+    assert '$env:FUNCTION_AUTH_CLIENT_ID' in powershell
+    assert "--display-name $displayName" in powershell
+    assert '"${WEB_AUTH_CLIENT_ID:-}"' in shell
+    assert '"${FUNCTION_AUTH_CLIENT_ID:-}"' in shell
+    assert '--display-name "$display_name"' in shell

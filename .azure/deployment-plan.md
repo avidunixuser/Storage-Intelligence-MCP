@@ -4,6 +4,29 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Storage Atlas Container Redeployment
+
+- **Mode:** Redeploy the existing Container App with the merged Storage Atlas branding.
+- **Identity safety:** Reuse the configured web and Function Entra application client IDs
+  during pre-provisioning and rename those registrations in place. Never create replacement
+  registrations merely because the product display name changed.
+- **Infrastructure:** Reuse AZD environment `mcpa2a`, subscription
+  `c82406dd-f84c-42df-9586-c6f02abda6df`, resource group
+  `rg-storage-intel-mcpa2a`, and Sweden Central. No new Azure resources are required.
+- **Deployment:** Provision the existing infrastructure, verify ACR pull authorization, build
+  a uniquely tagged image in the established bounded ACR access window, restore ACR to
+  private/default-deny, update the Container App, and verify a healthy revision at 100%
+  traffic.
+- **Delivery:** Record deployment evidence, commit and push the identity-safety fix and
+  deployment record, create a pull request, merge it, and verify the commit on `origin/main`.
+- **Validation proof:** The user reconfirmed the existing subscription and Sweden Central.
+  Azure CLI and AZD authentication succeeded after a clean device-code login. The 98-test
+  suite, Python compilation, JavaScript syntax checks, PowerShell and POSIX hook parsing,
+  Bicep build, AZD package, and provision preview passed. The preview identified only updates
+  to existing resources and no creates or deletes. Static RBAC review confirmed the existing
+  ACR-scoped `AcrPull` assignment. Azure Policy reports pre-existing audit findings on
+  unchanged resources but did not deny the validated preview.
+
 ## Pending Change: Admin Copy, Savings Recommendations, and Classification Icons
 
 - **Mode:** Modify the existing web UI and redeploy the existing Container App.
@@ -742,7 +765,7 @@ check before provisioning.
 
 ## 13. Next Step
 
-> Current: Admin, savings, and classification-icon improvements are deployed and ready for source-control publication.
+> Current: The Storage Atlas image is deployed and ready for source-control publication.
 
 Commit the validated change, push it, create a pull request, and merge it.
 
@@ -772,6 +795,39 @@ Commit the validated change, push it, create a pull request, and merge it.
 - [x] Static managed-identity and RBAC role verification
 
 ### Commands and results
+
+- 2026-08-24 Storage Atlas container deployment: `azd provision
+  --no-prompt` updated the existing infrastructure and renamed the configured
+  Entra registrations in place to `Storage Atlas Web - mcpa2a` and
+  `Storage Atlas Tools - mcpa2a` without changing either client ID. ACR run
+  `dtp` published `storage-intelligence:storage-atlas-20260824-53aef81` with
+  digest
+  `sha256:2c1c1ad2e9d42d7ce9ce1c99e86a59d639b0977f30f500f0193bc223463c3ccb`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000023` is Healthy,
+  Provisioned, `RunningAtMaxScale` with one replica, and receives 100% traffic.
+  The protected endpoint returns HTTP 401 to an unauthenticated request. ACR
+  was restored to public access disabled, firewall default `Deny`, and admin
+  credentials disabled. Live role verification confirmed the web UAMI retains
+  ACR-scoped `AcrPull`, Communication and Email Service Owner scoped to the
+  Communication Service, and Cosmos DB Built-in Data Contributor scoped to the
+  `storage-intelligence` database. The first streamed ACR attempt (`dtn`)
+  encountered a Windows CLI log-encoding failure and was safely denied during
+  push after the registry restoration guard ran; the successful retry used
+  asynchronous status polling so the bounded access window remained open
+  through the remote push.
+
+- 2026-08-24 Storage Atlas redeployment validation: confirmed AZD 1.30.0,
+  authenticated environment `mcpa2a`, user-approved subscription
+  `c82406dd-f84c-42df-9586-c6f02abda6df`, resource group
+  `rg-storage-intel-mcpa2a`, and Sweden Central. The complete 98-test suite,
+  Python compilation, JavaScript syntax checks, PowerShell and POSIX hook
+  parsing, Bicep build, and `azd package --no-prompt` passed. `azd provision
+  --preview --no-prompt` completed successfully with no resource creates or
+  deletes. Static RBAC review confirmed the existing web UAMI's resource-scoped
+  `AcrPull` assignment. Policy review found pre-existing audit findings on
+  unchanged resources but no policy denial. The pre-provision hooks now prefer
+  the configured web and Function client IDs and rename those exact Entra
+  registrations in place, preventing duplicate application registrations.
 
 - 2026-08-24 Admin, savings, and classification-icon deployment: `azd
   provision --no-prompt` confirmed no infrastructure changes. ACR run `dtm`
