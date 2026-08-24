@@ -1,4 +1,4 @@
-"""Deterministic storage intelligence domain package."""
+"""Deterministic Storage Atlas domain package."""
 
 from .engine import IntelligenceEngine
 from .synthetic import generate_accounts

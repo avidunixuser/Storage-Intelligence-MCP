@@ -1,6 +1,6 @@
 # MCP and A2A integration
 
-The web container exposes the same read-only storage intelligence agent through
+The web container exposes the same read-only Storage Atlas agent through
 three interfaces:
 
 | Interface | Endpoint | Best for |

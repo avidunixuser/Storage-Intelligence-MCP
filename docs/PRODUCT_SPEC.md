@@ -1,8 +1,8 @@
-# Storage Intelligence Agent Product Spec
+# Storage Atlas Agent Product Spec
 
 ## Pilot outcome
 
-The Storage Intelligence Agent gives StorageOps, FinOps, DataOps, Databricks, and
+The Storage Atlas Agent gives StorageOps, FinOps, DataOps, Databricks, and
 business stakeholders one read-only view of capacity, cost, growth, freshness, risk,
 forecast, and tiering opportunity. The pilot runs against a deterministic synthetic
 estate of 2,500 Azure Storage accounts while retaining production connector contracts.

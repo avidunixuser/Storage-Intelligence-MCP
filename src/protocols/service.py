@@ -40,7 +40,7 @@ class StorageIntelligenceService:
     @staticmethod
     def capabilities() -> dict[str, Any]:
         return {
-            "name": "Storage Intelligence Agent",
+            "name": "Storage Atlas Agent",
             "version": "0.1.0",
             "read_only": True,
             "operations": [

@@ -1,4 +1,4 @@
-"""Generate the editable and rendered Storage Intelligence architecture diagrams."""
+"""Generate the editable and rendered Storage Atlas architecture diagrams."""
 
 from __future__ import annotations
 
@@ -418,7 +418,7 @@ def render_svg(icons: dict[str, Path]) -> None:
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGHT}" '
         f'viewBox="0 0 {WIDTH} {HEIGHT}" role="img" '
         'aria-labelledby="diagram-title diagram-description">',
-        '<title id="diagram-title">Storage Intelligence MCP and A2A Azure architecture</title>',
+        '<title id="diagram-title">Storage Atlas MCP and A2A Azure architecture</title>',
         '<desc id="diagram-description">End-to-end architecture from authenticated clients through '
         "Container Apps, Microsoft Foundry, private Azure Functions, Private Link, and data services.</desc>",
         """
@@ -441,7 +441,7 @@ def render_svg(icons: dict[str, Path]) -> None:
   </style>
 </defs>
 <rect width="1800" height="1140" fill="#ffffff"/>
-<text x="28" y="42" class="title">Storage Intelligence — MCP &amp; A2A Azure Architecture</text>
+<text x="28" y="42" class="title">Storage Atlas — MCP &amp; A2A Azure Architecture</text>
 <text x="28" y="68" class="subtitle">Two request lanes make execution explicit;
 support panels document private networking, managed identity, RBAC, delivery, and monitoring.</text>
 """,
@@ -582,7 +582,7 @@ def render_drawio(icons: dict[str, Path]) -> None:
     document = (
         '<mxfile host="app.diagrams.net" modified="2026-08-21T00:00:00.000Z" agent="Copilot" '
         'version="24.7.17" type="device"><diagram id="storage-intelligence" '
-        'name="Storage Intelligence Architecture"><mxGraphModel dx="1800" dy="1100" grid="1" '
+        'name="Storage Atlas Architecture"><mxGraphModel dx="1800" dy="1100" grid="1" '
         'gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" '
         'pageScale="1" pageWidth="1800" pageHeight="1100" math="0" shadow="0"><root>'
         + "".join(cells)
@@ -816,7 +816,7 @@ def render_vsdx(icons: dict[str, Path], template_bytes: bytes) -> None:
             18,
             1760,
             64,
-            "Storage Intelligence - MCP & A2A Azure Architecture\n"
+            "Storage Atlas - MCP & A2A Azure Architecture\n"
             "Explicit primary and optional agent request paths with separate support controls",
             "#ffffff",
             "#ffffff",

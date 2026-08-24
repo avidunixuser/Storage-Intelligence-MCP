@@ -1350,11 +1350,14 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert health_segment.index('className: "source-grid"') < health_segment.index(
         'className: "metrics health-metrics"'
     )
-    assert index_html.index("/static/translations.js?v=20260824-inventory-savings-icons") < index_html.index(
-        "/static/app.js?v=20260824-inventory-savings-icons"
+    assert index_html.index("/static/translations.js?v=20260825-storage-atlas") < index_html.index(
+        "/static/app.js?v=20260825-storage-atlas"
     )
     assert "/static/styles.css?v=20260824-inventory-savings-icons" in index_html
-    assert "/static/app.js?v=20260824-inventory-savings-icons" in index_html
+    assert "/static/app.js?v=20260825-storage-atlas" in index_html
+    assert "<title>Storage Atlas</title>" in index_html
+    assert 'e("div", { className: "product-name" }, "Storage Atlas")' in app_script
+    assert '"Storage Atlas": "Storage Atlas"' in translations
     assert '<meta name="theme-color" content="#0078d4">' in index_html
     assert (
         'font-family: "Segoe UI Variable", "Segoe UI", Inter, ui-sans-serif, system-ui, '

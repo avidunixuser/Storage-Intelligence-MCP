@@ -176,7 +176,7 @@ async def lifespan(_: FastAPI):
                 pass
 
 app = FastAPI(
-    title="Storage Intelligence Agent",
+    title="Storage Atlas Agent",
     version="0.1.0",
     docs_url="/api/docs",
     openapi_url="/api/openapi.json",
@@ -557,7 +557,7 @@ def _admin_principal(
     principal: Annotated[dict[str, Any], Depends(_principal)],
 ) -> dict[str, Any]:
     if not _has_admin_role(principal):
-        raise HTTPException(status_code=403, detail="Storage Intelligence administrator role is required")
+        raise HTTPException(status_code=403, detail="Storage Atlas administrator role is required")
     return principal
 
 

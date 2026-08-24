@@ -117,7 +117,7 @@ def render_notification(accounts: list[dict[str, Any]]) -> tuple[str, str, str]:
     html_body = (
         "<!doctype html><html><body style=\"font-family:Segoe UI,Arial,sans-serif;color:#1c2b3a\">"
         "<h2>Azure Storage account review requested</h2>"
-        "<p>The Storage Intelligence application identified the following accounts for owner review. "
+        "<p>The Storage Atlas application identified the following accounts for owner review. "
         "Please validate the findings, assign an accountable owner, and record a remediation date.</p>"
         '<table style="border-collapse:collapse;width:100%;font-size:12px"><thead><tr>'
         f"{header_cells}</tr></thead><tbody>{body_rows}</tbody></table>"

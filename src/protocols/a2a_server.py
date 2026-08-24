@@ -68,7 +68,7 @@ class StorageIntelligenceAgentExecutor(AgentExecutor):
         updater = TaskUpdater(event_queue, context.task_id, context.context_id)
         await updater.start_work(
             message=updater.new_agent_message(
-                [Part(text="Running deterministic storage intelligence analysis.")]
+                [Part(text="Running deterministic Storage Atlas analysis.")]
             )
         )
 
@@ -114,13 +114,13 @@ class StorageIntelligenceAgentExecutor(AgentExecutor):
 def build_agent_card(public_url: str | None = None) -> AgentCard:
     base_url = (public_url or os.getenv("A2A_PUBLIC_URL") or "http://localhost:8000").rstrip("/")
     return AgentCard(
-        name="Storage Intelligence Agent",
+        name="Storage Atlas Agent",
         description=(
             "Read-only Azure Storage estate analysis with deterministic evidence, "
             "scope, assumptions, and confidence."
         ),
         provider=AgentProvider(
-            organization="Storage Intelligence",
+            organization="Storage Atlas",
             url=base_url,
         ),
         version="0.1.0",
