@@ -15,16 +15,21 @@ done
 
 ensure_app() {
   display_name="$1"
-  app_id="$(az ad app list --filter "displayName eq '$display_name'" --query '[0].appId' -o tsv)"
+  app_id="${2:-}"
+  if [ -n "$app_id" ]; then
+    az ad app show --id "$app_id" --query appId -o tsv >/dev/null
+  else
+    app_id="$(az ad app list --filter "displayName eq '$display_name'" --query '[0].appId' -o tsv)"
+  fi
   if [ -z "$app_id" ]; then
     app_id="$(az ad app create --display-name "$display_name" --sign-in-audience AzureADMyOrg --query appId -o tsv)"
   fi
-  az ad app update --id "$app_id" --identifier-uris "api://$app_id" >/dev/null
+  az ad app update --id "$app_id" --display-name "$display_name" --identifier-uris "api://$app_id" >/dev/null
   printf '%s' "$app_id"
 }
 
-WEB_AUTH_CLIENT_ID="$(ensure_app "Storage Atlas Web - $AZURE_ENV_NAME")"
-FUNCTION_AUTH_CLIENT_ID="$(ensure_app "Storage Atlas Tools - $AZURE_ENV_NAME")"
+WEB_AUTH_CLIENT_ID="$(ensure_app "Storage Atlas Web - $AZURE_ENV_NAME" "${WEB_AUTH_CLIENT_ID:-}")"
+FUNCTION_AUTH_CLIENT_ID="$(ensure_app "Storage Atlas Tools - $AZURE_ENV_NAME" "${FUNCTION_AUTH_CLIENT_ID:-}")"
 ADMIN_ROLE_ID="df3e3a1f-7f91-4cb7-a9f6-848ef6fb7a5b"
 ADMIN_APP_ROLES="[{\"allowedMemberTypes\":[\"User\"],\"description\":\"Manage read-only storage discovery and schedules.\",\"displayName\":\"Storage Atlas Admin\",\"id\":\"$ADMIN_ROLE_ID\",\"isEnabled\":true,\"value\":\"StorageIntelligence.Admin\"}]"
 ADMIN_ROLE_FILE="$(mktemp)"

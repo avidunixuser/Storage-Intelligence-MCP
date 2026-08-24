@@ -36,17 +36,25 @@ foreach ($provider in @(
     az provider register --namespace $provider | Out-Null
 }
 
-function Ensure-EntraApplication([string]$displayName) {
-    $appId = az ad app list --filter "displayName eq '$displayName'" --query "[0].appId" -o tsv
+function Ensure-EntraApplication([string]$displayName, [string]$configuredAppId) {
+    $appId = $configuredAppId
+    if ($appId) {
+        az ad app show --id $appId --query appId -o tsv | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "Configured Entra application '$appId' was not found."
+        }
+    } else {
+        $appId = az ad app list --filter "displayName eq '$displayName'" --query "[0].appId" -o tsv
+    }
     if (-not $appId) {
         $appId = az ad app create --display-name $displayName --sign-in-audience AzureADMyOrg --query appId -o tsv
     }
-    az ad app update --id $appId --identifier-uris "api://$appId" | Out-Null
+    az ad app update --id $appId --display-name $displayName --identifier-uris "api://$appId" | Out-Null
     return $appId
 }
 
-$webAppId = Ensure-EntraApplication "Storage Atlas Web - $($env:AZURE_ENV_NAME)"
-$functionAppId = Ensure-EntraApplication "Storage Atlas Tools - $($env:AZURE_ENV_NAME)"
+$webAppId = Ensure-EntraApplication "Storage Atlas Web - $($env:AZURE_ENV_NAME)" $env:WEB_AUTH_CLIENT_ID
+$functionAppId = Ensure-EntraApplication "Storage Atlas Tools - $($env:AZURE_ENV_NAME)" $env:FUNCTION_AUTH_CLIENT_ID
 $adminRoleId = 'df3e3a1f-7f91-4cb7-a9f6-848ef6fb7a5b'
 $adminAppRoles = '[{"allowedMemberTypes":["User"],"description":"Manage read-only storage discovery and schedules.","displayName":"Storage Atlas Admin","id":"' + $adminRoleId + '","isEnabled":true,"value":"StorageIntelligence.Admin"}]'
 $adminRoleFile = [System.IO.Path]::GetTempFileName()
