@@ -166,7 +166,23 @@ select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
 .schedule-copy { color: var(--muted); font-size: 11px; margin-top: 12px; }
 .schedule-copy code { color: #31536f; }
 .discovery-status { border-left: 2px solid var(--accent); color: #31536f; font-size: 12px; margin-top: 14px; padding-left: 10px; }
-.admin-schedule-row { grid-template-columns: minmax(140px, .35fr) 1fr; }
+.schedule-examples { display: grid; gap: 6px; }
+.schedule-example-header, .schedule-example-row {
+  display: grid; grid-template-columns: minmax(150px, .35fr) minmax(0, 1fr); align-items: center; gap: 16px;
+}
+.schedule-example-header {
+  color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .08em; padding: 0 12px 2px;
+  text-transform: uppercase;
+}
+.schedule-example-row {
+  border: 1px solid rgba(67,91,116,.13); border-radius: 8px; background: rgba(248,250,252,.72);
+  min-height: 44px; padding: 10px 12px;
+}
+.schedule-expression {
+  color: #004578; font-size: 12px; font-weight: 650; font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere; white-space: normal;
+}
+.schedule-description { color: var(--muted); font-size: 11px; line-height: 1.4; }
 .platform-panel { margin-top: 16px; }
 .platform-account-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
 .platform-account-scroll {
@@ -505,6 +521,12 @@ pre { margin: 12px 0 0; max-height: 270px; overflow: auto; padding: 12px; color:
   .posture-metrics { grid-template-columns: 1fr; }
   .catalog-form { grid-template-columns: 1fr; }
   .schedule-form { grid-template-columns: 1fr; }
+  .schedule-example-header { display: none; }
+  .schedule-example-row { grid-template-columns: 1fr; gap: 5px; }
+  .schedule-description::before {
+    content: "Runs: "; color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase;
+  }
   .risk-pie-layout { grid-template-columns: 1fr; justify-items: center; }
   .risk-pie-side { width: 100%; }
   .risk-pie-legend { width: 100%; }

@@ -4,6 +4,33 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Admin Schedule Example Layout
+
+- **Mode:** Modify the existing Admin UI and redeploy the existing Container App.
+- **Goal:** Repair the malformed schedule-example presentation so cron expressions and their
+  descriptions are aligned, readable, responsive, and visually consistent with the Fluent
+  theme.
+- **Approach:** Inspect the Admin schedule markup, translations, and responsive CSS; correct
+  the root layout/typography issue without changing schedule validation, persistence, or API
+  behavior.
+- **Accessibility:** Preserve semantic text, readable contrast, wrapping at narrow widths,
+  and keyboard-accessible form controls.
+- **Delivery:** Refresh any changed static-asset cache keys and add focused acceptance coverage.
+- **Security and infrastructure:** No API, data, identity, RBAC, networking, or infrastructure
+  changes.
+- **Azure context:** Reuse AZD environment `mcpa2a`, subscription
+  `ME-MngEnvMCAP585394-nrp-at-microsoft-dot-com`
+  (`c82406dd-f84c-42df-9586-c6f02abda6df`), resource group
+  `rg-storage-intel-mcpa2a`, and Sweden Central after user confirmation.
+- **Validation and deployment:** Visually verify the Admin page locally, run focused and
+  complete tests, JavaScript syntax checks, Bicep build, AZD package, and deployment preview;
+  then build a fresh image, restore ACR to private/default-deny, deploy a healthy revision
+  with 100% traffic, commit, push, create and merge a pull request, and verify the commit on
+  `origin/main`.
+- **Preparation evidence:** The dedicated schedule layout was verified in the local Admin UI;
+  97 tests passed; Python compilation, JavaScript syntax checks, Bicep build, AZD package, and
+  `git diff --check` succeeded.
+
 ## Pending Change: Microsoft Fluent Color Theme
 
 - **Mode:** Modify the existing static UI and redeploy the existing Container App.
@@ -681,7 +708,7 @@ check before provisioning.
 
 ## 13. Next Step
 
-> Current: Microsoft Fluent color theme is deployed and ready for source-control publication.
+> Current: Admin schedule-example layout is deployed and ready for source-control publication.
 
 Commit the validated change, push it, create a pull request, and merge it.
 
@@ -712,6 +739,35 @@ Commit the validated change, push it, create a pull request, and merge it.
 
 ### Commands and results
 
+- 2026-08-24 Admin schedule-example deployment: `azd provision --no-prompt`
+  confirmed no infrastructure changes. The standard `azd deploy --no-prompt`
+  path reached the private Function SCM endpoint and received the expected HTTP
+  403 network denial before the Container App hook ran, so the Container
+  App-only recovery path was used without changing the Function. ACR run `dtk`
+  published `storage-intelligence:admin-schedule-20260824` with digest
+  `sha256:e8d898dea898eb98aa0c0d472eed2ef2787053ef6d7942d8a7752d159d014838`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000020` is Healthy,
+  Provisioned, running at maximum scale, and receives 100% traffic. The live
+  endpoint redirects unauthenticated requests to Microsoft Entra (HTTP 302).
+  ACR was restored to public access disabled, firewall default `Deny`, and
+  admin credentials disabled. Live verification confirmed the web UAMI has
+  ACR-scoped `AcrPull`, Communication and Email Service Owner on the
+  Communication Service, and Cosmos DB Built-in Data Contributor scoped to the
+  `storage-intelligence` database.
+- 2026-08-24 Admin schedule-example validation: confirmed AZD 1.30.0,
+  authenticated environment `mcpa2a`, approved subscription
+  `c82406dd-f84c-42df-9586-c6f02abda6df`, resource group
+  `rg-storage-intel-mcpa2a`, and Sweden Central. The complete 97-test suite,
+  Python compilation, JavaScript syntax checks, Bicep build, AZD package, and
+  `git diff --check` passed. Local functional preview returned HTTP 200 and
+  visually confirmed the dedicated two-column schedule layout. `azd provision
+  --preview --no-prompt` completed successfully with no resource creates or
+  deletes. The applicable policy assignments were reviewed and the resource
+  group reported no non-compliant policies or resources. Docker build context
+  is complete and requires no Node/npm assets. Static RBAC review confirmed the
+  existing web UAMI retains resource-scoped Communication Email Service Owner,
+  database-scoped Cosmos DB Built-in Data Contributor, and ACR-scoped AcrPull;
+  this UI-only update requires no identity or role changes.
 - 2026-08-23 Microsoft Fluent color-theme deployment: `azd provision
   --no-prompt` confirmed no infrastructure changes. ACR run `dtj` published
   `storage-intelligence:fluent-blue-20260823` with digest
