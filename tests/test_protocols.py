@@ -39,7 +39,7 @@ def test_a2a_card_and_routes_advertise_v1_interfaces():
     app = FastAPI()
     card = register_a2a_routes(app, service, "https://agent.example.com")
 
-    assert build_agent_card("https://agent.example.com").name == "Storage Intelligence Agent"
+    assert build_agent_card("https://agent.example.com").name == "Storage Atlas Agent"
     assert {interface.protocol_version for interface in card.supported_interfaces} == {"1.0"}
     paths = {route.path for route in app.routes}
     assert "/.well-known/agent-card.json" in paths

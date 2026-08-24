@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Storage Intelligence Deterministic Tools",
+    "title": "Storage Atlas Deterministic Tools",
     "version": "1.0.0",
     "description": "Read-only tools that return scoped analytics and evidence."
   },
@@ -14,7 +14,7 @@
     "/tools/query": {
       "post": {
         "operationId": "investigateStorageEstate",
-        "description": "Answer an approved storage intelligence question using deterministic analytics.",
+        "description": "Answer an approved Storage Atlas question using deterministic analytics.",
         "requestBody": {
           "required": true,
           "content": {

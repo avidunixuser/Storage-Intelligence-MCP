@@ -23,10 +23,10 @@ ensure_app() {
   printf '%s' "$app_id"
 }
 
-WEB_AUTH_CLIENT_ID="$(ensure_app "Storage Intelligence Web - $AZURE_ENV_NAME")"
-FUNCTION_AUTH_CLIENT_ID="$(ensure_app "Storage Intelligence Tools - $AZURE_ENV_NAME")"
+WEB_AUTH_CLIENT_ID="$(ensure_app "Storage Atlas Web - $AZURE_ENV_NAME")"
+FUNCTION_AUTH_CLIENT_ID="$(ensure_app "Storage Atlas Tools - $AZURE_ENV_NAME")"
 ADMIN_ROLE_ID="df3e3a1f-7f91-4cb7-a9f6-848ef6fb7a5b"
-ADMIN_APP_ROLES="[{\"allowedMemberTypes\":[\"User\"],\"description\":\"Manage read-only storage discovery and schedules.\",\"displayName\":\"Storage Intelligence Admin\",\"id\":\"$ADMIN_ROLE_ID\",\"isEnabled\":true,\"value\":\"StorageIntelligence.Admin\"}]"
+ADMIN_APP_ROLES="[{\"allowedMemberTypes\":[\"User\"],\"description\":\"Manage read-only storage discovery and schedules.\",\"displayName\":\"Storage Atlas Admin\",\"id\":\"$ADMIN_ROLE_ID\",\"isEnabled\":true,\"value\":\"StorageIntelligence.Admin\"}]"
 ADMIN_ROLE_FILE="$(mktemp)"
 trap 'rm -f "$ADMIN_ROLE_FILE"' EXIT
 printf '%s' "$ADMIN_APP_ROLES" >"$ADMIN_ROLE_FILE"

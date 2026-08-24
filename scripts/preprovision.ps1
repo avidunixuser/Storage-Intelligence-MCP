@@ -45,10 +45,10 @@ function Ensure-EntraApplication([string]$displayName) {
     return $appId
 }
 
-$webAppId = Ensure-EntraApplication "Storage Intelligence Web - $($env:AZURE_ENV_NAME)"
-$functionAppId = Ensure-EntraApplication "Storage Intelligence Tools - $($env:AZURE_ENV_NAME)"
+$webAppId = Ensure-EntraApplication "Storage Atlas Web - $($env:AZURE_ENV_NAME)"
+$functionAppId = Ensure-EntraApplication "Storage Atlas Tools - $($env:AZURE_ENV_NAME)"
 $adminRoleId = 'df3e3a1f-7f91-4cb7-a9f6-848ef6fb7a5b'
-$adminAppRoles = '[{"allowedMemberTypes":["User"],"description":"Manage read-only storage discovery and schedules.","displayName":"Storage Intelligence Admin","id":"' + $adminRoleId + '","isEnabled":true,"value":"StorageIntelligence.Admin"}]'
+$adminAppRoles = '[{"allowedMemberTypes":["User"],"description":"Manage read-only storage discovery and schedules.","displayName":"Storage Atlas Admin","id":"' + $adminRoleId + '","isEnabled":true,"value":"StorageIntelligence.Admin"}]'
 $adminRoleFile = [System.IO.Path]::GetTempFileName()
 try {
     Set-Content -LiteralPath $adminRoleFile -Value $adminAppRoles -NoNewline

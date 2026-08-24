@@ -1,4 +1,4 @@
-"""MCP and A2A protocol adapters for the storage intelligence agent."""
+"""MCP and A2A protocol adapters for the Storage Atlas agent."""
 
 from .service import StorageIntelligenceService
 

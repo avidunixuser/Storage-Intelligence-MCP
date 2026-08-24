@@ -25,7 +25,7 @@ def build_mcp_server(engine: IntelligenceEngine) -> MCPServer:
     @server.tool(
         name="investigate_storage",
         description=(
-            "Answer a storage intelligence question using deterministic analytics. "
+            "Answer a Storage Atlas question using deterministic analytics. "
             "Returns scope, evidence, assumptions, confidence, and structured findings."
         ),
     )
@@ -49,7 +49,7 @@ def build_mcp_server(engine: IntelligenceEngine) -> MCPServer:
 
     @server.resource(
         "storage-intelligence://capabilities",
-        name="Storage Intelligence capabilities",
+        name="Storage Atlas capabilities",
         mime_type="application/json",
     )
     def capabilities() -> str:

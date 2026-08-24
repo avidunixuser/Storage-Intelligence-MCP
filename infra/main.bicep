@@ -43,8 +43,8 @@ module foundry './foundry/main.bicep' = {
     location: location
     aiServices: 'si${token}'
     firstProjectName: 'storageintel'
-    projectDescription: 'Private read-only Storage Intelligence Agent'
-    displayName: 'Storage Intelligence Agent'
+    projectDescription: 'Private read-only Storage Atlas Agent'
+    displayName: 'Storage Atlas Agent'
     modelName: 'gpt-5.4-mini'
     modelFormat: 'OpenAI'
     modelVersion: '2026-03-17'

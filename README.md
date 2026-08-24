@@ -1,10 +1,10 @@
-# Storage Intelligence MCP/A2A Agent
+# Storage Atlas MCP/A2A Agent
 
-Production-like, read-only Azure storage intelligence pilot with a 2,500-account
+Production-like, read-only Azure Storage Atlas pilot with a 2,500-account
 synthetic estate spanning 339 subscriptions across Dev, QA, Perf, and Prod, deterministic
 analytics, private Foundry tools, and an Entra-protected web application.
 
-![Storage Intelligence MCP and A2A Azure architecture](docs/architecture/storage-intelligence-architecture.svg)
+![Storage Atlas MCP and A2A Azure architecture](docs/architecture/storage-intelligence-architecture.svg)
 
 Open the [editable Visio diagram](docs/architecture/storage-intelligence-architecture.vsdx),
 the [diagrams.net source](docs/architecture/storage-intelligence-architecture.drawio), or the
