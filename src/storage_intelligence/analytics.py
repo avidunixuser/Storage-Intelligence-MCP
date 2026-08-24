@@ -171,6 +171,8 @@ def _account_savings(row: dict[str, Any], adoption: float) -> dict[str, Any]:
     net = max(0, storage_savings - retrieval_and_ops)
     return {
         **_hierarchy(row),
+        "current_tier": row["tier"],
+        "current_size_tb": _round(row["capacity_tb"]),
         "eligible_tb": _round(eligible_tb),
         "net_monthly_savings_usd": _round(net),
         "target_tier": "Archive" if target_rate == 1.4 else "Cold",
