@@ -1352,11 +1352,11 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert health_segment.index('className: "source-grid"') < health_segment.index(
         'className: "metrics health-metrics"'
     )
-    assert index_html.index("/static/translations.js?v=20260825-storage-atlas") < index_html.index(
-        "/static/app.js?v=20260828-centered-brand"
+    assert index_html.index("/static/translations.js?v=20260828-powered-by") < index_html.index(
+        "/static/app.js?v=20260828-powered-by"
     )
-    assert "/static/styles.css?v=20260828-centered-brand" in index_html
-    assert "/static/app.js?v=20260828-centered-brand" in index_html
+    assert "/static/styles.css?v=20260828-powered-by" in index_html
+    assert "/static/app.js?v=20260828-powered-by" in index_html
     assert "<title>Storage Atlas</title>" in index_html
     assert 'title: "Overview", subtitle:' in app_script
     assert 'e("div", { className: "product-name" }, "Storage Atlas")' in app_script
@@ -1366,6 +1366,9 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert ".product-name { color: #173b67; font-size: 21px;" in styles
     assert ".mobile-brand { display: none; flex-direction: column; align-items: center;" in styles
     assert "h1 { margin: 7px 0 5px; font-size: clamp(20px, 2.5vw, 28px); font-weight: 500;" in styles
+    assert 'e("span", { className: "powered-label" }, "Powered by")' in app_script
+    assert ".powered-label { color: rgba(80,101,122,.72); font-size: 9px;" in styles
+    assert '"Powered by": "Con tecnología de"' in translations
     assert '"Storage Atlas": "Storage Atlas"' in translations
     assert 'function AvidunixuserLogo()' in app_script
     assert 'src: "/static/assets/avidunixuser-logo.png"' in app_script

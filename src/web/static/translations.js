@@ -40,6 +40,7 @@
     "Evidence-first recommendations": "Recomendaciones basadas en evidencia",
     "No estate mutations · Entra protected": "Sin cambios en el entorno · Protegido por Entra",
     "Authored by nrp": "Creado por nrp",
+    "Powered by": "Con tecnología de",
     "Powered by Microsoft Azure and Azure AI Foundry": "Con tecnología de Microsoft Azure y Azure AI Foundry",
     "MCP & A2A Enabled": "MCP y A2A habilitados",
     "Microsoft Entra authenticated": "Autenticado con Microsoft Entra",
