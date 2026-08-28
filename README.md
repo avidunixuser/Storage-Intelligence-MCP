@@ -273,6 +273,28 @@ See [product specification](docs/PRODUCT_SPEC.md),
 show the deployed UI-to-database topology, protocol endpoints, trust boundaries,
 managed identities, RBAC, VNet subnets, Private Link paths, and monitoring plane.
 
+## Caution
+
+Do not convert every application component into an AI agent by default. Most components
+perform fixed, deterministic operations where LLM use would add token cost, latency,
+variability, and failure modes without improving the result.
+
+| Component | Convert to an agent? | Recommendation |
+|---|---|---|
+| Azure inventory discovery | No | Keep the fixed, read-only Azure CLI workflow |
+| Cosmos DB persistence | No | Keep deterministic and transactional |
+| Scheduling | No | Keep cron-based |
+| Risk and savings calculations | No | Keep auditable formulas |
+| Data connectors | No | Keep deterministic ingestion |
+| MCP server | No | Treat it as a protocol interface |
+| A2A executor | Already agent-facing | Keep it as the agent adapter |
+| Investigation and explanation | Yes | Continue using the Foundry agent |
+
+The preferred architecture is one agent plus deterministic tools: components gather and
+calculate facts, while the agent selects tools, correlates results, explains findings, and
+handles ambiguous questions. Add specialist agents only when independent reasoning is
+valuable, such as for FinOps advice, security analysis, or remediation planning.
+
 ## Azure workflow
 
 The approved `.azure/deployment-plan.md` is the source of truth. Deployment uses:
