@@ -44,11 +44,11 @@ button:disabled { cursor: not-allowed; }
   background: rgba(247, 250, 252, 0.94);
   backdrop-filter: blur(18px);
 }
-.brand { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; font-weight: 750; letter-spacing: -0.02em; }
-.avidunixuser-logo { width: 58px; height: 58px; border-radius: 12px; object-fit: cover; flex: 0 0 auto; box-shadow: 0 8px 28px rgba(0,120,212,.18); }
+.brand { display: flex; flex-direction: column; align-items: center; gap: 8px; font-weight: 750; letter-spacing: -0.02em; text-align: center; }
+.avidunixuser-logo { width: 64px; height: 64px; border-radius: 13px; object-fit: cover; flex: 0 0 auto; box-shadow: 0 8px 28px rgba(0,120,212,.18); }
 .brand-copy { display: grid; gap: 1px; }
-.product-name { color: #173b67; font-size: 19px; font-weight: 700; letter-spacing: 0.01em; }
-.mobile-brand { display: none; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 18px; }
+.product-name { color: #173b67; font-size: 21px; font-weight: 700; letter-spacing: 0.01em; }
+.mobile-brand { display: none; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 18px; text-align: center; }
 .environment {
   display: inline-flex; margin: 28px 0 20px; padding: 7px 10px; border: 1px solid rgba(102,224,163,.25);
   border-radius: 99px; color: var(--green); background: rgba(102,224,163,.08); font-size: 12px;
@@ -97,7 +97,7 @@ button:disabled { cursor: not-allowed; }
 .mobile-view-nav { display: none; gap: 7px; margin: -8px 0 18px; overflow-x: auto; padding-bottom: 4px; }
 .mobile-view-nav .chip { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; }
 .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: .16em; font-size: 11px; font-weight: 800; }
-h1 { margin: 7px 0 5px; font-size: clamp(24px, 3vw, 34px); font-weight: 600; letter-spacing: -.035em; line-height: 1.08; }
+h1 { margin: 7px 0 5px; font-size: clamp(20px, 2.5vw, 28px); font-weight: 500; letter-spacing: -.025em; line-height: 1.12; }
 .subtitle { color: var(--muted); margin: 0; }
 .entra-authenticated-mark {
   position: relative; display: inline-grid; place-items: center; width: 22px; height: 22px;
