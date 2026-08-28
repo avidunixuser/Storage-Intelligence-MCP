@@ -4,6 +4,39 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Powered-by Footer Label
+
+- **Mode:** Modify the existing web UI and redeploy the existing Container App.
+- **Scope:** Add a visible `Powered by` label immediately before the Microsoft logo group
+  in the bottom-left navigation footer while preserving its accessible label.
+- **Implementation:** Insert a dedicated `.powered-label` text span as the first child of
+  the existing `.powered-logos` row, style it consistently with the subdued footer copy,
+  and add the corresponding Spanish translation.
+- **Infrastructure:** Reuse the existing AZD environment and Azure resources without
+  provisioning new services or changing permissions.
+- **Delivery:** Refresh static cache keys; run focused footer assertions, the complete test
+  suite, JavaScript and Python syntax checks, Bicep build, AZD package, deployment preview,
+  and RBAC verification. Build a uniquely tagged image in a bounded ACR access window,
+  restore private/default-deny registry posture, deploy a healthy revision at 100% traffic,
+  commit, push, create and merge a pull request, and verify `origin/main`.
+- **Preparation evidence:** The user approved the plan and reconfirmed the existing
+  subscription and Sweden Central. The complete 98-test suite, JavaScript syntax, Python
+  compilation, Bicep build, AZD package, footer markup/style/translation assertions, and
+  `git diff --check` passed.
+- **Validation proof:** On 2026-08-28, AZD 1.30.0 authentication and environment checks
+  confirmed environment `mcpa2a`, subscription `c82406dd-f84c-42df-9586-c6f02abda6df`,
+  and Sweden Central. `azd provision --preview --no-prompt` completed successfully with
+  no resource creates or deletes. The Bicep build, AZD package, complete 98-test suite,
+  syntax checks, Docker build-context review, nine applicable policy assignments, and
+  static resource-scoped RBAC review passed.
+- **Deployment proof:** `azd provision --no-prompt` confirmed no infrastructure changes.
+  ACR run `dtv` published `storage-intelligence:powered-by-20260828` with digest
+  `sha256:b5651fad42c9867ec1364c4880bafbe98fb475523873ef36b6a9204be6980227`.
+  Revision `ca-storage-intel-kxlgam3w--0000029` is Healthy, Provisioned,
+  `RunningAtMaxScale` with one replica and 100% traffic. The unauthenticated web endpoint
+  returns HTTP 401. ACR was restored to public access disabled, default `Deny`, and admin
+  credentials disabled. Live verification confirmed all required resource-scoped roles.
+
 ## Pending Change: Centered Navigation Brand and Compact Page Titles
 
 - **Mode:** Modify the existing web UI and redeploy the existing Container App.
@@ -942,6 +975,20 @@ Commit the validated change, push it, create a pull request, and merge it.
 
 ### Commands and results
 
+- 2026-08-28 Powered-by footer label deployment: `azd provision --no-prompt` confirmed
+  no infrastructure changes. ACR run `dtv` published
+  `storage-intelligence:powered-by-20260828` at digest
+  `sha256:b5651fad42c9867ec1364c4880bafbe98fb475523873ef36b6a9204be6980227`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000029` is Healthy, Provisioned,
+  `RunningAtMaxScale` with one replica and 100% traffic. The protected web endpoint
+  returns HTTP 401; ACR is private, default-deny, and admin-disabled. Live role queries
+  confirmed the web identity's resource-scoped roles.
+- 2026-08-28 Powered-by footer label validation: `azd version`, `azd auth login
+  --check-status`, and `azd env get-values` confirmed the approved authenticated context.
+  `azd provision --preview --no-prompt` completed successfully with no creates or deletes.
+  `az bicep build`, `azd package --all --no-prompt`, Python compilation, JavaScript syntax
+  validation, `git diff --check`, footer attribution assertions, and the complete 98-test
+  suite passed. Static RBAC and nine applicable Azure Policy assignments were reviewed.
 - 2026-08-28 Centered navigation brand and compact page-title deployment: `azd provision
   --no-prompt` confirmed no infrastructure changes. ACR run `dtu` published
   `storage-intelligence:centered-brand-20260828` at digest

@@ -875,6 +875,7 @@
           e("div", { className: "copyright" }, "© 2026 Avidunixuser. All rights reserved."),
           e("div", { className: "authored" }, "Authored by nrp"),
           e("div", { className: "powered-logos", "aria-label": "Powered by Microsoft Azure and Azure AI Foundry" },
+            e("span", { className: "powered-label" }, "Powered by"),
             e(MicrosoftMiniLogo),
             e(AzureMiniLogo),
             e(FoundryMiniLogo)
