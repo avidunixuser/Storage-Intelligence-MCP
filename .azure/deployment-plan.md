@@ -4,6 +4,43 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Navigation and Organization Labels
+
+- **Mode:** Modify the existing web UI and redeploy the existing Container App.
+- **Scope:** Enlarge the navigation logo and Storage Atlas label, rename the page-level
+  Storage Atlas heading to Overview, and replace Frito-Lay and Quaker Foods references
+  repository-wide with Avidunixuser Research and Avidunixuser OSS respectively.
+- **Implementation:** Increase the shared desktop/mobile logo from 46px to 52px and the
+  product label from 15px to 17px. Preserve Storage Atlas as the application, browser,
+  and navigation brand while changing only the Overview view's page heading. Update
+  synthetic subsidiary names and generated subscription slugs to remove legacy references.
+- **Infrastructure:** Reuse the existing AZD environment and Azure resources without
+  provisioning new services or changing permissions.
+- **Delivery:** Refresh static cache keys; run focused and full tests, JavaScript and Python
+  syntax checks, Bicep build, AZD package, deployment preview, and RBAC verification. Build
+  a uniquely tagged image inside a bounded ACR public-access window, restore the registry
+  to private/default-deny, deploy a healthy revision at 100% traffic, commit, push, create
+  and merge a pull request, and verify the merged commit on `origin/main`.
+- **Preparation evidence:** The user approved the plan and reconfirmed the existing
+  subscription and Sweden Central. The complete 98-test suite, JavaScript syntax, Python
+  compilation, Bicep build, AZD package, and `git diff --check` passed. Repository-wide
+  search confirmed the replaced organization names no longer occur.
+- **Validation proof:** On 2026-08-28, AZD 1.30.0 authentication and environment checks
+  confirmed environment `mcpa2a`, subscription `c82406dd-f84c-42df-9586-c6f02abda6df`,
+  and Sweden Central. `azd provision --preview --no-prompt` completed successfully with
+  no resource creates or deletes. The Bicep build, AZD package, complete 98-test suite,
+  JavaScript syntax, Python compilation, Docker build-context review, nine applicable
+  policy assignments, and static least-privilege RBAC review passed.
+- **Deployment proof:** `azd provision --no-prompt` confirmed no infrastructure changes.
+  ACR run `dts` published `storage-intelligence:navigation-overview-20260828` with digest
+  `sha256:4eeac727db352af467a648f3a2b0934b012ddc6dcb932ad0eaa5f88139d900d2`.
+  Revision `ca-storage-intel-kxlgam3w--0000026` is Healthy, Provisioned,
+  `RunningAtMaxScale` with one replica and 100% traffic. The unauthenticated web endpoint
+  returns HTTP 401. ACR was restored to public access disabled, default `Deny`, and admin
+  credentials disabled. Live verification confirmed resource-scoped `AcrPull`, Foundry
+  User, Website Contributor, and Communication and Email Service Owner assignments for
+  the web identity.
+
 ## Pending Change: Simplified Storage Atlas Header
 
 - **Mode:** Remove the adjacent Avidunixuser wordmark, retain the supplied logo, increase the
@@ -835,6 +872,22 @@ Commit the validated change, push it, create a pull request, and merge it.
 
 ### Commands and results
 
+- 2026-08-28 Navigation and organization label deployment: `azd provision --no-prompt`
+  confirmed no infrastructure changes. ACR run `dts` published
+  `storage-intelligence:navigation-overview-20260828` at digest
+  `sha256:4eeac727db352af467a648f3a2b0934b012ddc6dcb932ad0eaa5f88139d900d2`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000026` is Healthy, Provisioned,
+  `RunningAtMaxScale` with one replica and 100% traffic. The protected web endpoint
+  returns HTTP 401; ACR is private, default-deny, and admin-disabled. Live role queries
+  confirmed the resource-scoped roles required by the web identity.
+- 2026-08-28 Navigation and organization label validation: `azd version`, `azd auth
+  login --check-status`, and `azd env get-values` confirmed the approved authenticated
+  context. `azd provision --preview --no-prompt` completed successfully with no creates
+  or deletes. `az bicep build`, `azd package --all --no-prompt`, Python compilation,
+  JavaScript syntax validation, `git diff --check`, repository-wide legacy-name search,
+  and the complete 98-test suite passed. Static review confirmed the web identity retains
+  resource-scoped ACR, Foundry, and Function role assignments; nine applicable Azure
+  Policy assignments were reviewed.
 - 2026-08-24 Storage Atlas container deployment: `azd provision
   --no-prompt` updated the existing infrastructure and renamed the configured
   Entra registrations in place to `Storage Atlas Web - mcpa2a` and

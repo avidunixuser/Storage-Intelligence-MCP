@@ -42,8 +42,8 @@ MANAGEMENT_GROUPS = [
 
 SUBSIDIARIES = [
     "Avidunixuser North America",
-    "Frito-Lay North America",
-    "Quaker Foods North America",
+    "Avidunixuser Research",
+    "Avidunixuser OSS",
     "Avidunixuser Europe",
     "Avidunixuser APAC",
 ]
@@ -64,7 +64,7 @@ BASE_SUBSCRIPTIONS = [
         "name": "data-prod",
         "tenant_id": TENANTS[0]["id"],
         "management_group": "mg-americas-consumer",
-        "subsidiary": "Frito-Lay North America",
+        "subsidiary": "Avidunixuser Research",
         "environment": "Prod",
     },
     {
@@ -88,7 +88,7 @@ BASE_SUBSCRIPTIONS = [
         "name": "archive-estate",
         "tenant_id": TENANTS[0]["id"],
         "management_group": "mg-americas-consumer",
-        "subsidiary": "Quaker Foods North America",
+        "subsidiary": "Avidunixuser OSS",
         "environment": "Prod",
     },
 ]
@@ -96,12 +96,12 @@ BASE_SUBSCRIPTIONS = [
 MANAGEMENT_GROUP_SUBSIDIARIES = {
     "mg-americas-platform": [
         "Avidunixuser North America",
-        "Quaker Foods North America",
+        "Avidunixuser OSS",
     ],
     "mg-americas-consumer": [
-        "Frito-Lay North America",
+        "Avidunixuser Research",
         "Avidunixuser North America",
-        "Quaker Foods North America",
+        "Avidunixuser OSS",
     ],
     "mg-europe-enterprise": ["Avidunixuser Europe"],
     "mg-apac-data": ["Avidunixuser APAC"],
@@ -109,8 +109,8 @@ MANAGEMENT_GROUP_SUBSIDIARIES = {
 
 SUBSIDIARY_SLUGS = {
     "Avidunixuser North America": "avidna",
-    "Frito-Lay North America": "flna",
-    "Quaker Foods North America": "quaker",
+    "Avidunixuser Research": "research",
+    "Avidunixuser OSS": "oss",
     "Avidunixuser Europe": "europe",
     "Avidunixuser APAC": "apac",
 }

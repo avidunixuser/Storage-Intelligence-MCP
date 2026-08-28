@@ -40,7 +40,7 @@
   ];
   const riskTypeColors = Object.fromEntries(riskTypes.map((riskType) => [riskType.key, riskType.color]));
   const applicationViews = [
-    { id: "overview", label: "Overview", icon: "/static/assets/nav-overview.svg", eyebrow: "Estate command center", title: "Storage Atlas", subtitle: "Capacity, Cost, Risk, Impact, And Defensible Savings." },
+    { id: "overview", label: "Overview", icon: "/static/assets/nav-overview.svg", eyebrow: "Estate command center", title: "Overview", subtitle: "Capacity, Cost, Risk, Impact, And Defensible Savings." },
     { id: "health", label: "Data Health", icon: "/static/assets/nav-health.svg", eyebrow: "Connector observability", title: "Data Health", subtitle: "Inspect Source Status, Freshness Coverage, Stale Accounts, And Quality Gaps." },
     { id: "findings", label: "Findings", icon: "/static/assets/nav-findings.svg", eyebrow: "Actionable inbox", title: "Findings", subtitle: "Review Prioritized Risks, Anomalies, Freshness Issues, And Savings Actions." },
     { id: "savings", label: "Savings Simulator", icon: "/static/assets/nav-savings.svg", eyebrow: "FinOps modeling", title: "Savings Simulator", subtitle: "Compare tiering adoption scenarios with retrieval and early-deletion caveats." },
