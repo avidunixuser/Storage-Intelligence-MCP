@@ -118,6 +118,8 @@ def test_subscription_catalog_has_339_environment_mappings():
     assert len({item["name"] for item in SUBSCRIPTIONS}) == 339
     assert {item["environment"] for item in SUBSCRIPTIONS} == {"Dev", "QA", "Perf", "Prod"}
     assert all(item["tenant_id"] and item["management_group"] and item["subsidiary"] for item in SUBSCRIPTIONS)
+    subsidiaries = {item["subsidiary"] for item in SUBSCRIPTIONS}
+    assert {"Avidunixuser Research", "Avidunixuser OSS"} <= subsidiaries
 
 
 @pytest.mark.parametrize("question", QUESTIONS)
@@ -1351,14 +1353,16 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
         'className: "metrics health-metrics"'
     )
     assert index_html.index("/static/translations.js?v=20260825-storage-atlas") < index_html.index(
-        "/static/app.js?v=20260828-storage-atlas-label"
+        "/static/app.js?v=20260828-overview-organizations"
     )
-    assert "/static/styles.css?v=20260828-storage-atlas-label" in index_html
-    assert "/static/app.js?v=20260828-storage-atlas-label" in index_html
+    assert "/static/styles.css?v=20260828-overview-organizations" in index_html
+    assert "/static/app.js?v=20260828-overview-organizations" in index_html
     assert "<title>Storage Atlas</title>" in index_html
+    assert 'title: "Overview", subtitle:' in app_script
     assert 'e("div", { className: "product-name" }, "Storage Atlas")' in app_script
     assert 'className: "avidunixuser-wordmark"' not in app_script
-    assert ".product-name { color: #173b67; font-size: 15px;" in styles
+    assert ".avidunixuser-logo { width: 52px; height: 52px;" in styles
+    assert ".product-name { color: #173b67; font-size: 17px;" in styles
     assert '"Storage Atlas": "Storage Atlas"' in translations
     assert 'function AvidunixuserLogo()' in app_script
     assert 'src: "/static/assets/avidunixuser-logo.png"' in app_script
