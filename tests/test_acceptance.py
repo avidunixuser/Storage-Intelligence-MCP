@@ -1351,12 +1351,14 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
         'className: "metrics health-metrics"'
     )
     assert index_html.index("/static/translations.js?v=20260825-storage-atlas") < index_html.index(
-        "/static/app.js?v=20260828-avidunixuser"
+        "/static/app.js?v=20260828-storage-atlas-label"
     )
-    assert "/static/styles.css?v=20260828-avidunixuser" in index_html
-    assert "/static/app.js?v=20260828-avidunixuser" in index_html
+    assert "/static/styles.css?v=20260828-storage-atlas-label" in index_html
+    assert "/static/app.js?v=20260828-storage-atlas-label" in index_html
     assert "<title>Storage Atlas</title>" in index_html
     assert 'e("div", { className: "product-name" }, "Storage Atlas")' in app_script
+    assert 'className: "avidunixuser-wordmark"' not in app_script
+    assert ".product-name { color: #173b67; font-size: 15px;" in styles
     assert '"Storage Atlas": "Storage Atlas"' in translations
     assert 'function AvidunixuserLogo()' in app_script
     assert 'src: "/static/assets/avidunixuser-logo.png"' in app_script

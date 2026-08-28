@@ -47,8 +47,7 @@ button:disabled { cursor: not-allowed; }
 .brand { display: flex; align-items: center; gap: 12px; font-weight: 750; letter-spacing: -0.02em; }
 .avidunixuser-logo { width: 46px; height: 46px; border-radius: 10px; object-fit: cover; flex: 0 0 auto; box-shadow: 0 8px 28px rgba(0,120,212,.18); }
 .brand-copy { display: grid; gap: 1px; }
-.avidunixuser-wordmark { color: #173b67; font-family: "Segoe UI Variable", "Segoe UI", sans-serif; font-size: 14px; font-weight: 750; letter-spacing: .02em; }
-.product-name { color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: 0.01em; }
+.product-name { color: #173b67; font-size: 15px; font-weight: 700; letter-spacing: 0.01em; }
 .mobile-brand { display: none; align-items: center; gap: 10px; margin-bottom: 18px; }
 .environment {
   display: inline-flex; margin: 28px 0 20px; padding: 7px 10px; border: 1px solid rgba(102,224,163,.25);
