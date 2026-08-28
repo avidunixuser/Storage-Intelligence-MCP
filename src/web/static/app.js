@@ -222,8 +222,12 @@
     );
   }
 
-  function PepsiCoLogo() {
-    return e("span", { className: "pepsico-logo", role: "img", "aria-label": "PepsiCo" });
+  function AvidunixuserLogo() {
+    return e("img", {
+      className: "avidunixuser-logo",
+      src: "/static/assets/avidunixuser-logo.png",
+      alt: "Avidunixuser"
+    });
   }
 
   function MicrosoftMiniLogo() {
@@ -851,9 +855,9 @@
     return e("div", { className: "shell" },
       e("aside", { className: "sidebar" },
         e("div", { className: "brand" },
-          e(PepsiCoLogo),
+          e(AvidunixuserLogo),
           e("div", { className: "brand-copy" },
-            e("div", { className: "pepsico-wordmark" }, "PEPSICO"),
+            e("div", { className: "avidunixuser-wordmark" }, "Avidunixuser"),
             e("div", { className: "product-name" }, "Storage Atlas")
           )
         ),
@@ -869,7 +873,7 @@
         ),
         e("div", { className: "sidebar-footer" },
           e("div", { className: "sidebar-note" }, "Evidence-first recommendations", e("br"), "No estate mutations · Entra protected"),
-          e("div", { className: "copyright" }, "© 2026 PepsiCo. All rights reserved."),
+          e("div", { className: "copyright" }, "© 2026 Avidunixuser. All rights reserved."),
           e("div", { className: "authored" }, "Authored by nrp"),
           e("div", { className: "powered-logos", "aria-label": "Powered by Microsoft Azure and Azure AI Foundry" },
             e(MicrosoftMiniLogo),
@@ -886,7 +890,7 @@
       e("main", { className: "main" },
         e("header", { className: "topbar" },
           e("div", null,
-            e("div", { className: "mobile-brand" }, e(PepsiCoLogo), e("span", { className: "pepsico-wordmark" }, "PEPSICO")),
+            e("div", { className: "mobile-brand" }, e(AvidunixuserLogo), e("span", { className: "avidunixuser-wordmark" }, "Avidunixuser")),
             e("div", { className: "eyebrow" }, currentView.eyebrow),
             e("h1", null, currentView.title),
             e("p", { className: "subtitle" }, currentView.subtitle)
@@ -976,7 +980,7 @@
               e("form", { className: "catalog-form", onSubmit: (event) => addCatalogValue(event, "subsidiaries") },
                 e("label", { className: "account-field" },
                   e("span", { className: "field-label" }, "New subsidiary / business unit"),
-                  e("input", { name: "value", required: true, maxLength: 100, placeholder: "PepsiCo Foods", "aria-label": "New subsidiary or business unit" })
+                  e("input", { name: "value", required: true, maxLength: 100, placeholder: "Avidunixuser Labs", "aria-label": "New subsidiary or business unit" })
                 ),
                 e("button", { className: "ghost catalog-button" }, "Add subsidiary")
               ),

@@ -180,7 +180,7 @@ The normalized hierarchy is
 `tenant_id → management_group → subsidiary → subscription → storage account`, with every
 subscription carrying an environment classification of Dev, QA, Perf, or Prod.
 `business_unit` remains a compatibility alias for `subsidiary`. The deterministic fixture
-contains three synthetic PepsiCo tenants, four management groups, five subsidiaries, and
+contains three synthetic Avidunixuser tenants, four management groups, five subsidiaries, and
 339 mapped subscriptions. Azure CLI discovery reads management-group membership and
 environment tags/name conventions when
 authorized and otherwise surfaces a warning while retaining explicit tag or `Unassigned`
@@ -242,7 +242,7 @@ All view endpoints apply the same allowlisted portfolio filters and Entra bounda
 React shell uses explicit desktop/mobile navigation state, so each item is a real view
 rather than an anchor to hidden placeholder content.
 
-The desktop navigation footer carries PepsiCo copyright plus Microsoft/Azure marks and a
+The desktop navigation footer carries Avidunixuser copyright plus Microsoft/Azure marks and a
 vendored user-supplied Azure AI Foundry PNG with an accessible label and SHA-256 manifest.
 
 ## Localization

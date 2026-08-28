@@ -1351,13 +1351,21 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
         'className: "metrics health-metrics"'
     )
     assert index_html.index("/static/translations.js?v=20260825-storage-atlas") < index_html.index(
-        "/static/app.js?v=20260825-storage-atlas"
+        "/static/app.js?v=20260828-avidunixuser"
     )
-    assert "/static/styles.css?v=20260824-inventory-savings-icons" in index_html
-    assert "/static/app.js?v=20260825-storage-atlas" in index_html
+    assert "/static/styles.css?v=20260828-avidunixuser" in index_html
+    assert "/static/app.js?v=20260828-avidunixuser" in index_html
     assert "<title>Storage Atlas</title>" in index_html
     assert 'e("div", { className: "product-name" }, "Storage Atlas")' in app_script
     assert '"Storage Atlas": "Storage Atlas"' in translations
+    assert 'function AvidunixuserLogo()' in app_script
+    assert 'src: "/static/assets/avidunixuser-logo.png"' in app_script
+    assert 'alt: "Avidunixuser"' in app_script
+    avidunixuser_logo = static_root / "assets" / "avidunixuser-logo.png"
+    assert avidunixuser_logo.exists()
+    assert hashlib.sha256(avidunixuser_logo.read_bytes()).hexdigest().upper() == (
+        "E01511BB3866F931B76A14755C2CE5098F5C28F07DAB350A4C5F1B34E569982C"
+    )
     assert '<meta name="theme-color" content="#0078d4">' in index_html
     assert (
         'font-family: "Segoe UI Variable", "Segoe UI", Inter, ui-sans-serif, system-ui, '

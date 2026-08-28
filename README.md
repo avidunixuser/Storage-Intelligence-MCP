@@ -34,7 +34,7 @@ as the canonical MCP URL; `/mcp` redirects to the mounted transport path.
 
 ## Product experience
 
-- PepsiCo-branded responsive dashboard with pinned, locally served React assets.
+- Avidunixuser-branded responsive dashboard with the supplied, locally served logo and pinned React assets.
 - Persistent English/Spanish language switch in the top-right header for globally
   distributed teams in Hyderabad, Barcelona, Mexico, the US, and the UK. Navigation,
   forms, statuses, accessibility labels, dynamic counts, risk factors, built-in questions,
@@ -188,7 +188,7 @@ properties supply shared-key access, public network/blob access, private endpoin
 and replication SKU. Linked accounts appear in a dedicated dashboard section with compact
 accessible badges.
 
-The navigation footer displays `© 2026 PepsiCo. All rights reserved.` followed by tiny,
+The navigation footer displays `© 2026 Avidunixuser. All rights reserved.` followed by tiny,
 accessible Microsoft, Azure, and the supplied Azure AI Foundry image mark. The Foundry PNG
 is committed under `src/web/static/assets` with a SHA-256 manifest.
 
@@ -203,7 +203,7 @@ Upload an `.xlsx` workbook or UTF-8 `.csv` file with a header row and these colu
 | `management_group` | `mg-americas-platform` |
 | `subscription` | `platform-prod` |
 | `environment` | `Prod` |
-| `subsidiary` | `PepsiCo Beverages North America` |
+| `subsidiary` | `Avidunixuser North America` |
 | `region` | `eastus2` |
 | `tier` | `Cool` |
 
