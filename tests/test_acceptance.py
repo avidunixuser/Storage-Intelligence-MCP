@@ -1353,19 +1353,19 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
         'className: "metrics health-metrics"'
     )
     assert index_html.index("/static/translations.js?v=20260825-storage-atlas") < index_html.index(
-        "/static/app.js?v=20260828-stacked-brand"
+        "/static/app.js?v=20260828-centered-brand"
     )
-    assert "/static/styles.css?v=20260828-stacked-brand" in index_html
-    assert "/static/app.js?v=20260828-stacked-brand" in index_html
+    assert "/static/styles.css?v=20260828-centered-brand" in index_html
+    assert "/static/app.js?v=20260828-centered-brand" in index_html
     assert "<title>Storage Atlas</title>" in index_html
     assert 'title: "Overview", subtitle:' in app_script
     assert 'e("div", { className: "product-name" }, "Storage Atlas")' in app_script
     assert 'className: "avidunixuser-wordmark"' not in app_script
-    assert ".brand { display: flex; flex-direction: column; align-items: flex-start;" in styles
-    assert ".avidunixuser-logo { width: 58px; height: 58px;" in styles
-    assert ".product-name { color: #173b67; font-size: 19px;" in styles
-    assert ".mobile-brand { display: none; flex-direction: column;" in styles
-    assert "h1 { margin: 7px 0 5px; font-size: clamp(24px, 3vw, 34px); font-weight: 600;" in styles
+    assert ".brand { display: flex; flex-direction: column; align-items: center;" in styles
+    assert ".avidunixuser-logo { width: 64px; height: 64px;" in styles
+    assert ".product-name { color: #173b67; font-size: 21px;" in styles
+    assert ".mobile-brand { display: none; flex-direction: column; align-items: center;" in styles
+    assert "h1 { margin: 7px 0 5px; font-size: clamp(20px, 2.5vw, 28px); font-weight: 500;" in styles
     assert '"Storage Atlas": "Storage Atlas"' in translations
     assert 'function AvidunixuserLogo()' in app_script
     assert 'src: "/static/assets/avidunixuser-logo.png"' in app_script
