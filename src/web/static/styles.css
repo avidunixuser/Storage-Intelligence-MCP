@@ -45,20 +45,9 @@ button:disabled { cursor: not-allowed; }
   backdrop-filter: blur(18px);
 }
 .brand { display: flex; align-items: center; gap: 12px; font-weight: 750; letter-spacing: -0.02em; }
-.pepsico-logo {
-  position: relative; width: 34px; height: 34px; border-radius: 50%; overflow: hidden; flex: 0 0 auto;
-  background: #005cb9; border: 1px solid rgba(255,255,255,.38); box-shadow: 0 8px 28px rgba(0,92,185,.28);
-}
-.pepsico-logo::before {
-  content: ""; position: absolute; inset: -4px -3px 52% -3px; border-radius: 0 0 52% 48%;
-  background: #e32934; transform: rotate(-5deg);
-}
-.pepsico-logo::after {
-  content: ""; position: absolute; left: -3px; right: -3px; top: 14px; height: 7px;
-  border-radius: 45% 55% 48% 52%; background: #fff; transform: rotate(-7deg);
-}
+.avidunixuser-logo { width: 46px; height: 46px; border-radius: 10px; object-fit: cover; flex: 0 0 auto; box-shadow: 0 8px 28px rgba(0,120,212,.18); }
 .brand-copy { display: grid; gap: 1px; }
-.pepsico-wordmark { color: #173b67; font-family: "Segoe UI", sans-serif; font-size: 14px; font-weight: 800; letter-spacing: .08em; }
+.avidunixuser-wordmark { color: #173b67; font-family: "Segoe UI Variable", "Segoe UI", sans-serif; font-size: 14px; font-weight: 750; letter-spacing: .02em; }
 .product-name { color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: 0.01em; }
 .mobile-brand { display: none; align-items: center; gap: 10px; margin-bottom: 18px; }
 .environment {

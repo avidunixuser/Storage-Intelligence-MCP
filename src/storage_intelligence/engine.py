@@ -254,7 +254,7 @@ class IntelligenceEngine:
             tool, data, answer = (
                 "portfolio.compare_tenant",
                 analytics.compare(rows, "tenant_id"),
-                "Synthetic PepsiCo tenants are compared using the same deterministic portfolio metrics.",
+                "Synthetic Avidunixuser tenants are compared using the same deterministic portfolio metrics.",
             )
         elif "subscription" in normalized:
             tool, data, answer = (

@@ -4,6 +4,28 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Avidunixuser Branding
+
+- **Mode:** Replace the legacy PepsiCo presentation with the supplied Avidunixuser logo and
+  redeploy the existing Container App.
+- **Scope:** Update desktop/mobile branding, copyright, synthetic tenant/subsidiary names,
+  documentation, tests, and static cache keys. Remove every case variant of `PepsiCo`.
+- **Infrastructure:** Reuse AZD environment `mcpa2a`, subscription
+  `c82406dd-f84c-42df-9586-c6f02abda6df`, resource group
+  `rg-storage-intel-mcpa2a`, and Sweden Central. No new Azure resources.
+- **Validation proof:** The supplied PNG is committed with SHA-256
+  `E01511BB3866F931B76A14755C2CE5098F5C28F07DAB350A4C5F1B34E569982C`.
+  The complete 98-test suite, Python compilation, JavaScript syntax, Bicep build, AZD
+  package, `git diff --check`, repository-wide legacy-brand search, deployment preview,
+  and ACR-scoped `AcrPull` verification passed. The preview contained no creates or deletes.
+- **Deployment proof:** `azd provision --no-prompt` confirmed no infrastructure changes.
+  ACR run `dtq` published `storage-intelligence:avidunixuser-brand-20260828` with digest
+  `sha256:2e5818acfec2d25723f24addc2b983434cb807ff5093b219a8b0baafb71548d1`.
+  Revision `ca-storage-intel-kxlgam3w--0000024` is Healthy, Provisioned,
+  `RunningAtMaxScale` with one replica and 100% traffic. The unauthenticated endpoint
+  returns HTTP 401. ACR was restored to public access disabled, default `Deny`, and admin
+  credentials disabled.
+
 ## Pending Change: Storage Atlas Container Redeployment
 
 - **Mode:** Redeploy the existing Container App with the merged Storage Atlas branding.

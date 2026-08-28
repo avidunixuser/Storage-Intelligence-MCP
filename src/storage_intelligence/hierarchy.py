@@ -5,15 +5,15 @@ from typing import Any
 TENANTS = [
     {
         "id": "11111111-1111-4111-8111-111111111111",
-        "name": "PepsiCo Americas (Synthetic)",
+        "name": "Avidunixuser Americas (Synthetic)",
     },
     {
         "id": "22222222-2222-4222-8222-222222222222",
-        "name": "PepsiCo Europe (Synthetic)",
+        "name": "Avidunixuser Europe (Synthetic)",
     },
     {
         "id": "33333333-3333-4333-8333-333333333333",
-        "name": "PepsiCo APAC (Synthetic)",
+        "name": "Avidunixuser APAC (Synthetic)",
     },
 ]
 
@@ -41,11 +41,11 @@ MANAGEMENT_GROUPS = [
 ]
 
 SUBSIDIARIES = [
-    "PepsiCo Beverages North America",
+    "Avidunixuser North America",
     "Frito-Lay North America",
     "Quaker Foods North America",
-    "PepsiCo Europe",
-    "PepsiCo APAC",
+    "Avidunixuser Europe",
+    "Avidunixuser APAC",
 ]
 
 ENVIRONMENTS = ["Dev", "QA", "Perf", "Prod"]
@@ -56,7 +56,7 @@ BASE_SUBSCRIPTIONS = [
         "name": "platform-prod",
         "tenant_id": TENANTS[0]["id"],
         "management_group": "mg-americas-platform",
-        "subsidiary": "PepsiCo Beverages North America",
+        "subsidiary": "Avidunixuser North America",
         "environment": "Prod",
     },
     {
@@ -72,7 +72,7 @@ BASE_SUBSCRIPTIONS = [
         "name": "analytics-prod",
         "tenant_id": TENANTS[2]["id"],
         "management_group": "mg-apac-data",
-        "subsidiary": "PepsiCo APAC",
+        "subsidiary": "Avidunixuser APAC",
         "environment": "Prod",
     },
     {
@@ -80,7 +80,7 @@ BASE_SUBSCRIPTIONS = [
         "name": "business-apps",
         "tenant_id": TENANTS[1]["id"],
         "management_group": "mg-europe-enterprise",
-        "subsidiary": "PepsiCo Europe",
+        "subsidiary": "Avidunixuser Europe",
         "environment": "Prod",
     },
     {
@@ -95,24 +95,24 @@ BASE_SUBSCRIPTIONS = [
 
 MANAGEMENT_GROUP_SUBSIDIARIES = {
     "mg-americas-platform": [
-        "PepsiCo Beverages North America",
+        "Avidunixuser North America",
         "Quaker Foods North America",
     ],
     "mg-americas-consumer": [
         "Frito-Lay North America",
-        "PepsiCo Beverages North America",
+        "Avidunixuser North America",
         "Quaker Foods North America",
     ],
-    "mg-europe-enterprise": ["PepsiCo Europe"],
-    "mg-apac-data": ["PepsiCo APAC"],
+    "mg-europe-enterprise": ["Avidunixuser Europe"],
+    "mg-apac-data": ["Avidunixuser APAC"],
 }
 
 SUBSIDIARY_SLUGS = {
-    "PepsiCo Beverages North America": "pbna",
+    "Avidunixuser North America": "avidna",
     "Frito-Lay North America": "flna",
     "Quaker Foods North America": "quaker",
-    "PepsiCo Europe": "europe",
-    "PepsiCo APAC": "apac",
+    "Avidunixuser Europe": "europe",
+    "Avidunixuser APAC": "apac",
 }
 
 

@@ -94,9 +94,9 @@ estate of 2,500 Azure Storage accounts while retaining production connector cont
   rows/5 MB, normalizes friendly headers, and rejects invalid or duplicate records.
 - **Subscription topology:** the synthetic fixture exposes exactly 339 mapped subscriptions
   across Dev, QA, Perf, and Prod; all are selectable and validated against their hierarchy.
-- **PepsiCo branding:** the responsive shell presents a PepsiCo globe and wordmark in
+- **Avidunixuser branding:** the responsive shell presents the supplied Avidunixuser logo in
   desktop and compact mobile layouts without external asset requests.
-- **Footer attribution:** desktop navigation carries the PepsiCo copyright notice and
+- **Footer attribution:** desktop navigation carries the Avidunixuser copyright notice and
   compact accessible Microsoft, Azure, and the user-supplied Azure AI Foundry PNG served
   from the repository without external image requests.
 
