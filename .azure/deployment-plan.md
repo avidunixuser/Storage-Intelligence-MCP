@@ -4,6 +4,41 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Stacked Navigation Brand and Lighter Page Titles
+
+- **Mode:** Modify the existing web UI and redeploy the existing Container App.
+- **Scope:** Slightly enlarge the shared logo, stack the Storage Atlas product name beneath
+  it in the navigation brand, and reduce the size and weight of every page-level heading.
+- **Implementation:** Increase the shared logo from 52px to 58px and the product label from
+  17px to 19px. Stack both desktop and mobile branding vertically with left alignment.
+  Reduce the shared page `h1` scale from 28-42px to 24-34px and set its weight to 600,
+  applying consistently to Overview, Data Health, Findings, Savings Simulator, Agent
+  Investigation, and Admin.
+- **Infrastructure:** Reuse the existing AZD environment and Azure resources without
+  provisioning new services or changing permissions.
+- **Delivery:** Refresh static cache keys; run responsive contract checks, the full test
+  suite, JavaScript and Python syntax checks, Bicep build, AZD package, deployment preview,
+  and RBAC verification. Build a uniquely tagged image inside a bounded ACR access window,
+  restore private/default-deny registry posture, deploy a healthy revision at 100% traffic,
+  commit, push, create and merge a pull request, and verify the merge on `origin/main`.
+- **Preparation evidence:** The user approved the plan and reconfirmed the existing
+  subscription and Sweden Central. The complete 98-test suite, JavaScript syntax, Python
+  compilation, Bicep build, AZD package, responsive branding assertions, and
+  `git diff --check` passed.
+- **Validation proof:** On 2026-08-28, AZD 1.30.0 authentication and environment checks
+  confirmed environment `mcpa2a`, subscription `c82406dd-f84c-42df-9586-c6f02abda6df`,
+  and Sweden Central. `azd provision --preview --no-prompt` completed successfully with
+  no resource creates or deletes. The Bicep build, AZD package, complete 98-test suite,
+  JavaScript syntax, Python compilation, Docker build-context review, nine applicable
+  policy assignments, and static resource-scoped RBAC review passed.
+- **Deployment proof:** `azd provision --no-prompt` confirmed no infrastructure changes.
+  ACR run `dtt` published `storage-intelligence:stacked-brand-20260828` with digest
+  `sha256:50af255fb87e97f18720675ff20fdf55d0df6da970e63b021db1b0825977e1cb`.
+  Revision `ca-storage-intel-kxlgam3w--0000027` is Healthy, Provisioned,
+  `RunningAtMaxScale` with one replica and 100% traffic. The unauthenticated web endpoint
+  returns HTTP 401. ACR was restored to public access disabled, default `Deny`, and admin
+  credentials disabled. Live verification confirmed all required resource-scoped roles.
+
 ## Pending Change: Navigation and Organization Labels
 
 - **Mode:** Modify the existing web UI and redeploy the existing Container App.
@@ -872,6 +907,21 @@ Commit the validated change, push it, create a pull request, and merge it.
 
 ### Commands and results
 
+- 2026-08-28 Stacked navigation brand and page-title deployment: `azd provision
+  --no-prompt` confirmed no infrastructure changes. ACR run `dtt` published
+  `storage-intelligence:stacked-brand-20260828` at digest
+  `sha256:50af255fb87e97f18720675ff20fdf55d0df6da970e63b021db1b0825977e1cb`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000027` is Healthy, Provisioned,
+  `RunningAtMaxScale` with one replica and 100% traffic. The protected web endpoint
+  returns HTTP 401; ACR is private, default-deny, and admin-disabled. Live role queries
+  confirmed the web identity's resource-scoped roles.
+- 2026-08-28 Stacked navigation brand and page-title validation: `azd version`, `azd auth
+  login --check-status`, and `azd env get-values` confirmed the approved authenticated
+  context. `azd provision --preview --no-prompt` completed successfully with no creates
+  or deletes. `az bicep build`, `azd package --all --no-prompt`, Python compilation,
+  JavaScript syntax validation, `git diff --check`, responsive branding assertions, and
+  the complete 98-test suite passed. Static RBAC and nine applicable Azure Policy
+  assignments were reviewed.
 - 2026-08-28 Navigation and organization label deployment: `azd provision --no-prompt`
   confirmed no infrastructure changes. ACR run `dts` published
   `storage-intelligence:navigation-overview-20260828` at digest
