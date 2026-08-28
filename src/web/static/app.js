@@ -857,7 +857,6 @@
         e("div", { className: "brand" },
           e(AvidunixuserLogo),
           e("div", { className: "brand-copy" },
-            e("div", { className: "avidunixuser-wordmark" }, "Avidunixuser"),
             e("div", { className: "product-name" }, "Storage Atlas")
           )
         ),
@@ -890,7 +889,7 @@
       e("main", { className: "main" },
         e("header", { className: "topbar" },
           e("div", null,
-            e("div", { className: "mobile-brand" }, e(AvidunixuserLogo), e("span", { className: "avidunixuser-wordmark" }, "Avidunixuser")),
+            e("div", { className: "mobile-brand" }, e(AvidunixuserLogo), e("span", { className: "product-name" }, "Storage Atlas")),
             e("div", { className: "eyebrow" }, currentView.eyebrow),
             e("h1", null, currentView.title),
             e("p", { className: "subtitle" }, currentView.subtitle)

@@ -4,6 +4,23 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Simplified Storage Atlas Header
+
+- **Mode:** Remove the adjacent Avidunixuser wordmark, retain the supplied logo, increase the
+  Storage Atlas label from 11px to 15px, and redeploy the existing Container App.
+- **Infrastructure:** Reuse `mcpa2a`, the approved subscription, resource group, and Sweden
+  Central. No resource or permission changes.
+- **Validation proof:** The 98-test suite, JavaScript syntax, Bicep build, AZD package,
+  `git diff --check`, deployment preview, and live ACR-scoped `AcrPull` check passed.
+  The preview contained no creates or deletes.
+- **Deployment proof:** `azd provision --no-prompt` confirmed no infrastructure changes.
+  ACR run `dtr` published `storage-intelligence:storage-atlas-label-20260828` with digest
+  `sha256:130f46e1590f8f32f27b8e2dec3fa539c33cdd696517d4313546932e8f74a8d0`.
+  Revision `ca-storage-intel-kxlgam3w--0000025` is Healthy, Provisioned,
+  `RunningAtMaxScale` with one replica and 100% traffic. The unauthenticated endpoint
+  returns HTTP 401. ACR was restored to public access disabled, default `Deny`, and admin
+  credentials disabled.
+
 ## Pending Change: Avidunixuser Branding
 
 - **Mode:** Replace the legacy PepsiCo presentation with the supplied Avidunixuser logo and
