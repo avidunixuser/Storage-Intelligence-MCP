@@ -225,7 +225,7 @@
   function AvidunixuserLogo() {
     return e("img", {
       className: "avidunixuser-logo",
-      src: "/static/assets/avidunixuser-logo.png",
+      src: "/static/assets/avidunixuser-logo.png?v=20260831",
       alt: "Avidunixuser"
     });
   }
