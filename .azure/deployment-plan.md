@@ -4,6 +4,63 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Light Home-Page Logo
+
+- **Mode:** Replace the current shared home/navigation logo with the user-supplied light
+  PNG and redeploy the existing Container App.
+- **Scope:** Preserve the current logo path, responsive dimensions, centered alignment,
+  product label, accessibility text, and the existing `web` and `tools` AZD service tags.
+- **Asset:** Replace `src/web/static/assets/avidunixuser-logo.png` in place with the
+  600,759-byte supplied light PNG whose SHA-256 is
+  `EF8011511CD516A0B9A9E67B22D4A35BDE7CCC5662570913A8FC8CCCE20377B6`.
+- **Service tags:** Preserve `azd-service-name: web` on the Container App and
+  `azd-service-name: tools` on the Function App; verify each tag remains unique in the
+  target resource group before provisioning.
+- **Infrastructure:** Reuse the existing AZD environment and Azure resources without
+  provisioning new services or changing permissions.
+- **Delivery:** Refresh the image and application cache keys; validate the checksum and UI
+  reference, run the complete test suite, syntax checks, Bicep build, AZD package,
+  deployment preview, live tag and RBAC verification. Build a uniquely tagged image in a
+  bounded ACR access window, restore private/default-deny registry posture, deploy a
+  healthy revision at 100% traffic, commit, push, create and merge a pull request, and
+  verify `origin/main`.
+- **Preparation evidence:** The user approved the plan and reconfirmed subscription
+  `c82406dd-f84c-42df-9586-c6f02abda6df` in Sweden Central. The installed asset matches
+  the planned SHA-256. All 98 tests, JavaScript syntax, Python compilation, Bicep build,
+  AZD package, cache-busted UI assertions, and `git diff --check` passed.
+- **Validation steps:**
+  - [x] AZD installation and `azure.yaml` schema
+  - [x] Environment, authentication, subscription, and location
+  - [x] Provision preview
+  - [x] Build verification
+  - [x] Docker build-context review and package validation
+  - [x] Azure Policy review
+  - [x] Static least-privilege RBAC review
+  - [x] Unique live `web` and `tools` service-tag verification
+- **Validation proof:** AZD 1.30.0 authenticated as the expected tenant identity and loaded
+  environment `mcpa2a` with subscription `c82406dd-f84c-42df-9586-c6f02abda6df` and
+  `swedencentral`. `azd provision --preview --no-prompt` generated the Bicep deployment
+  preview successfully without creates or deletes. The schema-backed `azure.yaml`, pinned
+  Docker build context, Bicep build, AZD package, and all 98 tests passed. Nine applicable
+  policy assignments were reviewed. Static RBAC remains resource-scoped, including
+  `AcrPull`, Foundry User, Website Contributor, Communication and Email Service Owner,
+  storage data roles, Key Vault Secrets User, Durable Task Data Contributor, and monitoring
+  publisher. Live tag enumeration returned exactly one `web` resource
+  (`ca-storage-intel-kxlgam3w`) and one `tools` resource
+  (`func-storage-intel-kxlgam3w`).
+- **Deployment proof:** `azd provision --no-prompt` completed with no infrastructure
+  changes, and live `AcrPull` was confirmed for web identity
+  `023d769f-7ca3-4e9d-bfbf-6a94f63f358c`. ACR build `dty` produced
+  `acrlgvr.azurecr.io/storage-intelligence:light-logo-20260901-r2` with digest
+  `sha256:6332cf660cefc589d9599ee174d320b7d6b72791d2fe99bd64f8ef9d489b5e08`.
+  ACR was restored to public access disabled, default deny, and admin disabled. Container
+  App revision `ca-storage-intel-kxlgam3w--0000031` is healthy with one replica and 100%
+  traffic. The Entra-protected root, `/healthz`, and `/readyz` return HTTP 401 without a
+  token as expected. Live web and Function managed-identity roles match the resource-scoped
+  plan. The unchanged Function package was not republished because its private SCM endpoint
+  rejected the public AZD upload with HTTP 403; its `tools` tag and deployed service remain
+  unchanged.
+
 ## Pending Change: Updated Home-Page Logo
 
 - **Mode:** Replace the existing navigation/home-page logo with the user-supplied PNG and

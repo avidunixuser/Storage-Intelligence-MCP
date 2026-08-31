@@ -1353,10 +1353,10 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
         'className: "metrics health-metrics"'
     )
     assert index_html.index("/static/translations.js?v=20260828-powered-by") < index_html.index(
-        "/static/app.js?v=20260831-logo"
+        "/static/app.js?v=20260901-light-logo"
     )
     assert "/static/styles.css?v=20260828-powered-by" in index_html
-    assert "/static/app.js?v=20260831-logo" in index_html
+    assert "/static/app.js?v=20260901-light-logo" in index_html
     assert "<title>Storage Atlas</title>" in index_html
     assert 'title: "Overview", subtitle:' in app_script
     assert 'e("div", { className: "product-name" }, "Storage Atlas")' in app_script
@@ -1371,12 +1371,12 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert '"Powered by": "Con tecnología de"' in translations
     assert '"Storage Atlas": "Storage Atlas"' in translations
     assert 'function AvidunixuserLogo()' in app_script
-    assert 'src: "/static/assets/avidunixuser-logo.png?v=20260831"' in app_script
+    assert 'src: "/static/assets/avidunixuser-logo.png?v=20260901-light"' in app_script
     assert 'alt: "Avidunixuser"' in app_script
     avidunixuser_logo = static_root / "assets" / "avidunixuser-logo.png"
     assert avidunixuser_logo.exists()
     assert hashlib.sha256(avidunixuser_logo.read_bytes()).hexdigest().upper() == (
-        "4527075F7A83F91FB59436B6E1F7ED265BEA2070470DD27135BE182CB477A8B1"
+        "EF8011511CD516A0B9A9E67B22D4A35BDE7CCC5662570913A8FC8CCCE20377B6"
     )
     assert '<meta name="theme-color" content="#0078d4">' in index_html
     assert (
