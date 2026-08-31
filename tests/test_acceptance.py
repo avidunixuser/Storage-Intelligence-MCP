@@ -4,6 +4,7 @@ import base64
 import hashlib
 import json
 import os
+from types import SimpleNamespace
 from io import BytesIO
 from pathlib import Path
 
@@ -335,6 +336,71 @@ def test_web_api_and_auth_boundary(monkeypatch):
     answer = client.post("/api/query", json={"question": QUESTIONS[0], "filters": {}})
     assert answer.status_code == 200
     assert answer.json()["evidence"]
+
+
+def test_agent_query_returns_foundry_usage(monkeypatch):
+    monkeypatch.setenv("AUTH_DISABLED", "true")
+    from web import app as web_app
+
+    monkeypatch.setattr(
+        web_app,
+        "invoke_agent",
+        lambda question, filters: {
+            "conversation_id": "conversation-1",
+            "answer": "Foundry answer",
+            "model": "gpt-5.4-mini",
+            "usage": {
+                "input_tokens": 1200,
+                "output_tokens": 300,
+                "total_tokens": 1500,
+                "context_used_tokens": 1200,
+                "context_window": 400000,
+            },
+        },
+    )
+    response = TestClient(web_app.app).post(
+        "/api/agent/query",
+        json={"question": QUESTIONS[0], "filters": {"environment": "Prod"}},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["answer"] == "Foundry answer"
+    assert body["evidence"]
+    assert body["agent"] == {
+        "conversation_id": "conversation-1",
+        "model": "gpt-5.4-mini",
+        "usage": {
+            "input_tokens": 1200,
+            "output_tokens": 300,
+            "total_tokens": 1500,
+            "context_used_tokens": 1200,
+            "context_window": 400000,
+        },
+    }
+
+
+def test_foundry_response_payload_reports_model_tokens_and_context(monkeypatch):
+    monkeypatch.setenv("AZURE_AI_MODEL_CONTEXT_WINDOW", "400000")
+    from agent.invoke import _response_payload
+
+    payload = _response_payload(
+        SimpleNamespace(
+            output_text="Foundry answer",
+            usage=SimpleNamespace(input_tokens=800, output_tokens=200, total_tokens=1000),
+        ),
+        conversation_id="conversation-2",
+        model="gpt-5.4-mini",
+    )
+
+    assert payload["model"] == "gpt-5.4-mini"
+    assert payload["usage"] == {
+        "input_tokens": 800,
+        "output_tokens": 200,
+        "total_tokens": 1000,
+        "context_used_tokens": 800,
+        "context_window": 400000,
+    }
 
 
 @pytest.mark.parametrize(
@@ -1353,10 +1419,10 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
         'className: "metrics health-metrics"'
     )
     assert index_html.index("/static/translations.js?v=20260828-powered-by") < index_html.index(
-        "/static/app.js?v=20260901-light-logo"
+        "/static/app.js?v=20260831-agent-usage"
     )
-    assert "/static/styles.css?v=20260828-powered-by" in index_html
-    assert "/static/app.js?v=20260901-light-logo" in index_html
+    assert "/static/styles.css?v=20260831-agent-usage" in index_html
+    assert "/static/app.js?v=20260831-agent-usage" in index_html
     assert "<title>Storage Atlas</title>" in index_html
     assert 'title: "Overview", subtitle:' in app_script
     assert 'e("div", { className: "product-name" }, "Storage Atlas")' in app_script
@@ -1368,6 +1434,13 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert "h1 { margin: 7px 0 5px; font-size: clamp(20px, 2.5vw, 28px); font-weight: 500;" in styles
     assert 'e("span", { className: "powered-label" }, "Powered by")' in app_script
     assert ".powered-label { color: rgba(80,101,122,.72); font-size: 9px;" in styles
+    assert 'function AgentUsageTile(props)' in app_script
+    assert 'fetch("/api/agent/query"' in app_script
+    assert 'e(AgentUsageTile, { agent: agentUsage })' in app_script
+    assert 'e("span", { className: "agent-usage-label" }, "Model:")' in app_script
+    assert 'e("span", { className: "agent-usage-label" }, "Tokens:")' in app_script
+    assert 'e("span", { className: "agent-usage-label" }, "Context used:")' in app_script
+    assert ".agent-usage-tile {" in styles
     assert '"Powered by": "Con tecnología de"' in translations
     assert '"Storage Atlas": "Storage Atlas"' in translations
     assert 'function AvidunixuserLogo()' in app_script

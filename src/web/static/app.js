@@ -268,6 +268,34 @@
     );
   }
 
+  function AgentUsageTile(props) {
+    const agent = props.agent;
+    const usage = agent.usage;
+    const formatTokens = (value) => Number(value).toLocaleString();
+    const contextPercent = usage
+      ? (usage.context_used_tokens / usage.context_window * 100).toFixed(2)
+      : null;
+    return e("section", { className: "agent-usage-tile", "aria-label": "Foundry model and token usage" },
+      e("div", { className: "agent-usage-row" },
+        e("span", { className: "agent-usage-label" }, "Model:"),
+        e("strong", null, agent.model)
+      ),
+      e("div", { className: "agent-usage-row" },
+        e("span", { className: "agent-usage-label" }, "Tokens:"),
+        e("strong", null, usage
+          ? formatTokens(usage.input_tokens) + " / " + formatTokens(usage.output_tokens) + " / " + formatTokens(usage.total_tokens)
+          : "No usage yet")
+      ),
+      e("div", { className: "agent-usage-hint" }, "input / output / total"),
+      e("div", { className: "agent-usage-row" },
+        e("span", { className: "agent-usage-label" }, "Context used:"),
+        e("strong", null, usage
+          ? formatTokens(usage.context_used_tokens) + " / " + formatTokens(usage.context_window) + " (" + contextPercent + "%)"
+          : "No usage yet")
+      )
+    );
+  }
+
   function DatabricksLogo() {
     return e("span", { className: "databricks-logo", role: "img", "aria-label": "Databricks", title: "Databricks" },
       e("span", { className: "databricks-layer layer-one" }),
@@ -370,6 +398,10 @@
     const [savingQuestion, setSavingQuestion] = useState(false);
     const [questionStatus, setQuestionStatus] = useState("");
     const [response, setResponse] = useState(null);
+    const [agentUsage, setAgentUsage] = useState({
+      model: "gpt-5.4-mini",
+      usage: null
+    });
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
     const [refreshKey, setRefreshKey] = useState(0);
@@ -751,7 +783,7 @@
       setError("");
       const activeFilters = {};
       Object.entries(filters).forEach(([key, value]) => value && (activeFilters[key] = value));
-      fetch("/api/query", {
+      fetch("/api/agent/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: window.StorageI18n.canonicalize(question), filters: activeFilters })
@@ -762,6 +794,7 @@
         }))
         .then((body) => {
           setResponse(body);
+          setAgentUsage(body.agent);
           setInvestigationHistory((history) => [
             {
               question: question,
@@ -871,6 +904,7 @@
           )
         ),
         e("div", { className: "sidebar-footer" },
+          e(AgentUsageTile, { agent: agentUsage }),
           e("div", { className: "sidebar-note" }, "Evidence-first recommendations", e("br"), "No estate mutations · Entra protected"),
           e("div", { className: "copyright" }, "© 2026 Avidunixuser. All rights reserved."),
           e("div", { className: "authored" }, "Authored by nrp"),

@@ -18,6 +18,8 @@ from fastapi import BackgroundTasks, Depends, FastAPI, File, Header, HTTPExcepti
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from croniter import croniter
+from azure.core.exceptions import AzureError
+from openai import OpenAIError
 from openpyxl import load_workbook
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, ValidationError, field_validator
 
@@ -53,6 +55,7 @@ from storage_intelligence.synthetic import dataset_fingerprint
 from protocols.a2a_server import register_a2a_routes
 from protocols.mcp_server import build_mcp_http_app, build_mcp_server
 from protocols.service import StorageIntelligenceService
+from agent.invoke import invoke_agent
 from web.notifications import (
     NotificationConfigurationError,
     NotificationDeliveryError,
@@ -1671,6 +1674,30 @@ def query(
         return ENGINE.answer(payload.question, payload.filters)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/agent/query")
+def agent_query(
+    payload: QueryRequest,
+    _: Annotated[dict[str, Any], Depends(_principal)],
+) -> dict[str, Any]:
+    try:
+        result = ENGINE.answer(payload.question, payload.filters)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    try:
+        agent_result = invoke_agent(payload.question, payload.filters)
+    except KeyError as exc:
+        raise HTTPException(status_code=503, detail="Foundry agent configuration is incomplete") from exc
+    except (AzureError, OpenAIError, RuntimeError) as exc:
+        raise HTTPException(status_code=502, detail="Foundry agent request failed") from exc
+    result["answer"] = agent_result["answer"]
+    result["agent"] = {
+        "conversation_id": agent_result["conversation_id"],
+        "model": agent_result["model"],
+        "usage": agent_result["usage"],
+    }
+    return result
 
 
 @app.get("/api/questions")
