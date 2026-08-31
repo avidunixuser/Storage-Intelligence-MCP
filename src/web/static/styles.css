@@ -463,11 +463,6 @@ select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
 .ask:disabled { border-color: #c8c8c8; background: #e1dfdd; color: #8a8886; }
 .response { margin-top: 15px; padding: 15px; border-radius: 12px; background: rgba(239,244,248,.76); border: 1px solid var(--line); }
 .response-answer { font-size: 14px; line-height: 1.6; }
-.structured-answer { display: grid; gap: 8px; }
-.structured-answer h3, .structured-answer h4 { margin: 8px 0 0; color: #173b67; font-size: 14px; line-height: 1.35; }
-.structured-answer p { margin: 0; }
-.structured-answer ul, .structured-answer ol { display: grid; gap: 5px; margin: 0; padding-left: 22px; }
-.structured-answer code { padding: 1px 4px; border-radius: 4px; background: rgba(0,120,212,.08); font-size: .92em; }
 .query-cost { display: grid; gap: 5px; margin-top: 14px; padding: 11px 12px; border: 1px solid rgba(0,120,212,.2); border-radius: 9px; background: rgba(255,255,255,.72); }
 .query-cost-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; color: #173b67; font-size: 12px; }
 .query-cost-head strong { font-size: 13px; }

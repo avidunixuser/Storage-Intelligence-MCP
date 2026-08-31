@@ -1451,10 +1451,10 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
         'className: "metrics health-metrics"'
     )
     assert index_html.index("/static/translations.js?v=20260828-powered-by") < index_html.index(
-        "/static/app.js?v=20260831-structured-agent"
+        "/static/app.js?v=20260831-plain-agent"
     )
-    assert "/static/styles.css?v=20260831-structured-agent" in index_html
-    assert "/static/app.js?v=20260831-structured-agent" in index_html
+    assert "/static/styles.css?v=20260831-plain-agent" in index_html
+    assert "/static/app.js?v=20260831-plain-agent" in index_html
     assert "<title>Storage Atlas</title>" in index_html
     assert 'title: "Overview", subtitle:' in app_script
     assert 'e("div", { className: "product-name" }, "Storage Atlas")' in app_script
@@ -1473,12 +1473,15 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert 'e("span", { className: "agent-usage-label" }, "Tokens:")' in app_script
     assert 'e("span", { className: "agent-usage-label" }, "Context used:")' in app_script
     assert ".agent-usage-tile {" in styles
-    assert 'function StructuredAgentAnswer(props)' in app_script
-    assert 'function AgentInlineText(props)' in app_script
+    assert 'function StructuredAgentAnswer(props)' not in app_script
+    assert 'function AgentInlineText(props)' not in app_script
     assert 'function QueryCost(props)' in app_script
-    assert 'e(StructuredAgentAnswer, { answer: response.answer })' in app_script
+    assert 'e("div", { className: "response-answer" }, response.answer)' in app_script
     assert 'e(QueryCost, { cost: response.agent.cost })' in app_script
-    assert ".structured-answer {" in styles
+    assert ".structured-answer {" not in styles
+    instructions = (Path(__file__).resolve().parents[1] / "src" / "agent" / "instructions.md").read_text()
+    assert "at most two short plain-text paragraphs" in instructions
+    assert "Do not repeat scope, timestamps, confidence, evidence" in instructions
     assert ".query-cost {" in styles
     assert '"Powered by": "Con tecnología de"' in translations
     assert '"Storage Atlas": "Storage Atlas"' in translations
