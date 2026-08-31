@@ -4,6 +4,41 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Updated Home-Page Logo
+
+- **Mode:** Replace the existing navigation/home-page logo with the user-supplied PNG and
+  redeploy the existing Container App.
+- **Scope:** Preserve the current logo path, responsive dimensions, alignment, product
+  label, accessibility text, and surrounding navigation layout.
+- **Asset:** Replace `src/web/static/assets/avidunixuser-logo.png` in place with the
+  419,682-byte supplied PNG whose SHA-256 is
+  `4527075F7A83F91FB59436B6E1F7ED265BEA2070470DD27135BE182CB477A8B1`.
+- **Infrastructure:** Reuse the existing AZD environment and Azure resources without
+  provisioning new services or changing permissions.
+- **Delivery:** Refresh the application cache key; validate the committed checksum and UI
+  reference, run the complete test suite, syntax checks, Bicep build, AZD package,
+  deployment preview, and RBAC verification. Build a uniquely tagged image in a bounded
+  ACR access window, restore private/default-deny registry posture, deploy a healthy
+  revision at 100% traffic, commit, push, create and merge a pull request, and verify
+  `origin/main`.
+- **Preparation evidence:** The user approved the plan and reconfirmed the existing
+  subscription and Sweden Central. The supplied asset checksum matched after installation.
+  The complete 98-test suite, JavaScript syntax, Python compilation, Bicep build, AZD
+  package, cache-busted UI reference, and `git diff --check` passed.
+- **Validation proof:** On 2026-08-31, AZD 1.30.0 authentication and environment checks
+  confirmed environment `mcpa2a`, subscription `c82406dd-f84c-42df-9586-c6f02abda6df`,
+  and Sweden Central. `azd provision --preview --no-prompt` completed successfully with
+  no resource creates or deletes. The Bicep build, AZD package, complete 98-test suite,
+  syntax checks, Docker build-context review, nine applicable policy assignments, and
+  static resource-scoped RBAC review passed.
+- **Deployment proof:** `azd provision --no-prompt` confirmed no infrastructure changes.
+  ACR run `dtw` published `storage-intelligence:logo-20260831` with digest
+  `sha256:2ef39ba0f066e6756d582e0a013cf2d6a2f375a5c44004c218513800a910d1d0`.
+  Revision `ca-storage-intel-kxlgam3w--0000030` is Healthy, Provisioned,
+  `RunningAtMaxScale` with one replica and 100% traffic. The unauthenticated web endpoint
+  returns HTTP 401. ACR was restored to public access disabled, default `Deny`, and admin
+  credentials disabled. Live verification confirmed all required resource-scoped roles.
+
 ## Pending Change: Powered-by Footer Label
 
 - **Mode:** Modify the existing web UI and redeploy the existing Container App.
@@ -975,6 +1010,21 @@ Commit the validated change, push it, create a pull request, and merge it.
 
 ### Commands and results
 
+- 2026-08-31 Updated home-page logo deployment: `azd provision --no-prompt` confirmed
+  no infrastructure changes. ACR run `dtw` published
+  `storage-intelligence:logo-20260831` at digest
+  `sha256:2ef39ba0f066e6756d582e0a013cf2d6a2f375a5c44004c218513800a910d1d0`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000030` is Healthy, Provisioned,
+  `RunningAtMaxScale` with one replica and 100% traffic. The protected web endpoint
+  returns HTTP 401; ACR is private, default-deny, and admin-disabled. Live role queries
+  confirmed the web identity's resource-scoped roles.
+- 2026-08-31 Updated home-page logo validation: the installed PNG matched SHA-256
+  `4527075F7A83F91FB59436B6E1F7ED265BEA2070470DD27135BE182CB477A8B1`.
+  `azd version`, `azd auth login --check-status`, and `azd env get-values` confirmed the
+  approved authenticated context. `azd provision --preview --no-prompt` completed
+  successfully with no creates or deletes. `az bicep build`, `azd package --all
+  --no-prompt`, syntax checks, `git diff --check`, and the complete 98-test suite passed.
+  Static RBAC and nine applicable Azure Policy assignments were reviewed.
 - 2026-08-28 Powered-by footer label deployment: `azd provision --no-prompt` confirmed
   no infrastructure changes. ACR run `dtv` published
   `storage-intelligence:powered-by-20260828` at digest
