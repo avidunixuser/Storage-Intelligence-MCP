@@ -4,6 +4,67 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Structured Agent Results and Query Cost
+
+- **Mode:** Improve Agent Investigation presentation and add an estimated model cost to
+  each completed query result.
+- **Scope:** Structure the Foundry answer for readable rendering, preserve deterministic
+  evidence and trust metadata, and calculate cost only from response token usage.
+- **Root cause:** Foundry already returns Markdown-like headings and lists, but the current
+  `response-answer` div collapses whitespace and renders the answer as one unstructured
+  block.
+- **Presentation:** Add a safe React renderer for paragraphs, headings, ordered/unordered
+  lists, bold text, and inline code without injecting model-generated HTML. Keep the
+  deterministic account reasons, trust envelope, and JSON evidence below the answer.
+- **Pricing:** Calculate an explicitly labeled USD estimate server-side from response usage.
+  Use configurable rates with current public baseline defaults per one million tokens:
+  `$0.75` input, `$0.075` cached input, and `$4.50` output. Return the rate basis and cached
+  token count with each result; exclude infrastructure, negotiated pricing, taxes, and
+  non-model charges.
+- **Placement:** Show "Estimated query cost" as the final section of each completed Agent
+  Investigation result, after its evidence payload.
+- **Infrastructure:** Reuse the existing Foundry deployment, private Function tool,
+  Container App, ACR, managed identities, and unchanged `web` and `tools` AZD service tags.
+- **Delivery:** Update usage extraction, configuration, API contract, structured renderer,
+  styles, documentation, cache keys, and tests; validate locally and in Azure; rebuild with
+  a unique image tag; preserve private ACR posture and unique service tags; deploy a healthy
+  revision; then commit, push, create and merge a pull request.
+- **Preparation evidence:** The user approved configurable public baseline pricing and
+  reconfirmed subscription `c82406dd-f84c-42df-9586-c6f02abda6df` in Sweden Central. The
+  safe React renderer supports headings, paragraphs, lists, bold text, and inline code
+  without HTML injection. The server accounts for cached input and uses half-up rounding at
+  six USD decimal places. Existing agents now receive a new definition version so the
+  Markdown formatting instruction is applied. All 100 tests, JavaScript syntax, Python
+  compilation, Bicep build, AZD package, and `git diff --check` passed.
+- **Validation steps:**
+  - [x] AZD installation and schema
+  - [x] Environment, authentication, subscription, and location
+  - [x] Provision preview
+  - [x] Build verification
+  - [x] Docker context and package validation
+  - [x] Azure Policy review
+  - [x] Static least-privilege RBAC review
+  - [x] Unique live `web` and `tools` tag verification
+- **Validation proof:** AZD 1.30.0 authenticated to the expected tenant and environment
+  `mcpa2a` with the confirmed subscription and Sweden Central. `azd provision --preview
+  --no-prompt` completed successfully without creates or deletes. All 100 tests,
+  JavaScript syntax, Python compilation, Bicep build, AZD package, Docker context, and
+  `git diff --check` passed. Nine applicable policy assignments were reviewed. Static
+  resource-scoped Foundry User and AcrPull assignments remain intact, and live tag
+  enumeration returned exactly one `web` Container App and one `tools` Function App.
+- **Deployment proof:** `azd provision --no-prompt` applied the three configurable pricing
+  rates and retained live AcrPull. ACR build `dt13` produced
+  `acrlgvr.azurecr.io/storage-intelligence:structured-agent-cost-20260831` with digest
+  `sha256:3573d009fca3c80ecf07b6c3566bc2debfc4b19c2b7c9e9b026152f6d07abdbf`.
+  ACR was restored to public access disabled, default deny, and admin disabled. Container
+  App revision `ca-storage-intel-kxlgam3w--0000037` is healthy with one replica and 100%
+  traffic. Foundry agent version 2 was published with Markdown formatting instructions.
+  The exact growth-anomaly smoke query returned headings and lists, no retired organization
+  labels, 8,128 input tokens, 0 cached input tokens, 2,766 output tokens, and an estimated
+  cost of `$0.018543 USD`. The unauthenticated root and agent endpoint return HTTP 401.
+  Exactly one `web` and one `tools` tagged resource remain, and the web identity retains
+  resource-scoped Foundry User and AcrPull roles.
+
 ## Pending Change: Model and Token Usage Tile
 
 - **Mode:** Add a compact model and token-usage tile above the existing

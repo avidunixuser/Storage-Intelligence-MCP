@@ -46,17 +46,10 @@ def deploy_agent() -> dict[str, str]:
         AIProjectClient(credential=credential, endpoint=endpoint) as client,
     ):
         try:
-            existing = client.agents.get(agent_name)
-            result = {
-                "name": existing.name,
-                "version": str(existing.versions.latest.version),
-                "id": existing.id,
-                "status": "existing",
-            }
-            print(json.dumps(result))
-            return result
+            client.agents.get(agent_name)
+            status = "updated"
         except ResourceNotFoundError:
-            pass
+            status = "created"
         version = client.agents.create_version(
             agent_name=agent_name,
             definition=PromptAgentDefinition(
@@ -69,7 +62,7 @@ def deploy_agent() -> dict[str, str]:
             "name": version.name,
             "version": str(version.version),
             "id": version.id,
-            "status": "created",
+            "status": status,
         }
         print(json.dumps(result))
         return result

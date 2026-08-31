@@ -1696,6 +1696,7 @@ def agent_query(
         "conversation_id": agent_result["conversation_id"],
         "model": agent_result["model"],
         "usage": agent_result["usage"],
+        "cost": agent_result["cost"],
     }
     return result
 

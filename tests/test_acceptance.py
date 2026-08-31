@@ -353,8 +353,17 @@ def test_agent_query_returns_foundry_usage(monkeypatch):
                 "input_tokens": 1200,
                 "output_tokens": 300,
                 "total_tokens": 1500,
+                "cached_input_tokens": 200,
                 "context_used_tokens": 1200,
                 "context_window": 400000,
+            },
+            "cost": {
+                "estimated_cost_usd": 0.002115,
+                "currency": "USD",
+                "input_cost_per_million": 0.75,
+                "cached_input_cost_per_million": 0.075,
+                "output_cost_per_million": 4.5,
+                "disclaimer": "Estimate excludes infrastructure, negotiated pricing, taxes, and non-model charges.",
             },
         },
     )
@@ -374,8 +383,17 @@ def test_agent_query_returns_foundry_usage(monkeypatch):
             "input_tokens": 1200,
             "output_tokens": 300,
             "total_tokens": 1500,
+            "cached_input_tokens": 200,
             "context_used_tokens": 1200,
             "context_window": 400000,
+        },
+        "cost": {
+            "estimated_cost_usd": 0.002115,
+            "currency": "USD",
+            "input_cost_per_million": 0.75,
+            "cached_input_cost_per_million": 0.075,
+            "output_cost_per_million": 4.5,
+            "disclaimer": "Estimate excludes infrastructure, negotiated pricing, taxes, and non-model charges.",
         },
     }
 
@@ -387,7 +405,12 @@ def test_foundry_response_payload_reports_model_tokens_and_context(monkeypatch):
     payload = _response_payload(
         SimpleNamespace(
             output_text="Foundry answer",
-            usage=SimpleNamespace(input_tokens=800, output_tokens=200, total_tokens=1000),
+            usage=SimpleNamespace(
+                input_tokens=800,
+                output_tokens=200,
+                total_tokens=1000,
+                input_tokens_details=SimpleNamespace(cached_tokens=100),
+            ),
         ),
         conversation_id="conversation-2",
         model="gpt-5.4-mini",
@@ -398,8 +421,17 @@ def test_foundry_response_payload_reports_model_tokens_and_context(monkeypatch):
         "input_tokens": 800,
         "output_tokens": 200,
         "total_tokens": 1000,
+        "cached_input_tokens": 100,
         "context_used_tokens": 800,
         "context_window": 400000,
+    }
+    assert payload["cost"] == {
+        "estimated_cost_usd": 0.001433,
+        "currency": "USD",
+        "input_cost_per_million": 0.75,
+        "cached_input_cost_per_million": 0.075,
+        "output_cost_per_million": 4.5,
+        "disclaimer": "Estimate excludes infrastructure, negotiated pricing, taxes, and non-model charges.",
     }
 
 
@@ -1419,10 +1451,10 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
         'className: "metrics health-metrics"'
     )
     assert index_html.index("/static/translations.js?v=20260828-powered-by") < index_html.index(
-        "/static/app.js?v=20260831-agent-usage"
+        "/static/app.js?v=20260831-structured-agent"
     )
-    assert "/static/styles.css?v=20260831-agent-usage" in index_html
-    assert "/static/app.js?v=20260831-agent-usage" in index_html
+    assert "/static/styles.css?v=20260831-structured-agent" in index_html
+    assert "/static/app.js?v=20260831-structured-agent" in index_html
     assert "<title>Storage Atlas</title>" in index_html
     assert 'title: "Overview", subtitle:' in app_script
     assert 'e("div", { className: "product-name" }, "Storage Atlas")' in app_script
@@ -1441,6 +1473,13 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert 'e("span", { className: "agent-usage-label" }, "Tokens:")' in app_script
     assert 'e("span", { className: "agent-usage-label" }, "Context used:")' in app_script
     assert ".agent-usage-tile {" in styles
+    assert 'function StructuredAgentAnswer(props)' in app_script
+    assert 'function AgentInlineText(props)' in app_script
+    assert 'function QueryCost(props)' in app_script
+    assert 'e(StructuredAgentAnswer, { answer: response.answer })' in app_script
+    assert 'e(QueryCost, { cost: response.agent.cost })' in app_script
+    assert ".structured-answer {" in styles
+    assert ".query-cost {" in styles
     assert '"Powered by": "Con tecnología de"' in translations
     assert '"Storage Atlas": "Storage Atlas"' in translations
     assert 'function AvidunixuserLogo()' in app_script
