@@ -4,6 +4,68 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Model and Token Usage Tile
+
+- **Mode:** Add a compact model and token-usage tile above the existing
+  "Evidence-first recommendations" navigation footer content.
+- **Scope:** Display the configured model, request token usage, and context consumption
+  without changing MCP, A2A, authentication, infrastructure, or existing AZD service tags.
+- **Data behavior:** The interactive `/api/query`, MCP, and A2A paths are deterministic and
+  currently emit no model usage metadata. Per the approved behavior, only Agent
+  Investigation "Ask" will invoke the existing Foundry agent. The web API will return the
+  agent answer plus its response usage; MCP and A2A remain deterministic and token-free.
+- **Usage contract:** Return and display the response model/deployment, input tokens, output
+  tokens, total tokens, and input-token context consumption against the documented
+  400,000-token `gpt-5.4-mini` context window. Before the first agent request, show the
+  configured model and a clear "No usage yet" state rather than fabricated counters.
+- **Security and cost:** Reuse the Container App's managed identity and existing Foundry
+  User role. Do not expose credentials or add anonymous model access. Each Agent
+  Investigation submission intentionally incurs one Foundry agent request.
+- **Infrastructure:** Reuse the existing AZD environment, Container App, Function App,
+  Foundry deployment, ACR, and resource-scoped managed identities.
+- **Delivery:** Add accessible footer markup and compact responsive styling, cache-bust the
+  static application assets, extend acceptance coverage, run the full test/build/package
+  checks, preserve unique `web` and `tools` tags, complete Azure validation, build a
+  uniquely tagged image while restoring private ACR posture, deploy a healthy Container App
+  revision, then commit, push, create and merge a pull request.
+- **Preparation evidence:** The user approved the plan and confirmed subscription
+  `c82406dd-f84c-42df-9586-c6f02abda6df` in Sweden Central. Agent Investigation now has a
+  dedicated Entra-protected Foundry route that preserves deterministic evidence and adds
+  the agent answer plus model/usage metadata. The footer tile starts with a no-usage state
+  and updates from the latest response. The Container App receives the documented
+  400,000-token context limit as configuration. All 100 tests, JavaScript syntax, Python
+  compilation, Bicep build, AZD package, and `git diff --check` passed.
+- **Validation steps:**
+  - [x] AZD installation and `azure.yaml` schema
+  - [x] Environment, authentication, subscription, and location
+  - [x] Provision preview
+  - [x] Build verification
+  - [x] Docker build-context review and package validation
+  - [x] Azure Policy review
+  - [x] Static least-privilege RBAC review
+  - [x] Unique live `web` and `tools` service-tag verification
+- **Validation proof:** AZD 1.30.0 authenticated to the expected tenant and loaded
+  environment `mcpa2a`, subscription `c82406dd-f84c-42df-9586-c6f02abda6df`, and Sweden
+  Central. `azd provision --preview --no-prompt` completed successfully without creates or
+  deletes. The schema-backed AZD configuration, all 100 tests, JavaScript syntax, Python
+  compilation, Bicep build, AZD package, and Docker context passed. Nine applicable policy
+  assignments were reviewed. Static RBAC confirms the web identity retains resource-scoped
+  Foundry User and AcrPull assignments. Live tag enumeration returned exactly one `web`
+  Container App and one `tools` Function App.
+- **Deployment proof:** `azd provision --no-prompt` applied the context-window setting and
+  retained live AcrPull. ACR build `dt12` produced
+  `acrlgvr.azurecr.io/storage-intelligence:agent-usage-20260831-r3` with digest
+  `sha256:14586ec3b92a22c104b55823fc0c680fb36119b59083cb49282b954b4cd18ac9`.
+  ACR was restored to public access disabled, default deny, and admin disabled. Container
+  App revision `ca-storage-intel-kxlgam3w--0000035` is healthy with one replica and 100%
+  traffic. The current Function package was deployed through its private endpoint and its
+  health check passed. A private-network Foundry invocation returned model
+  `gpt-5.4-mini`, 8,097 input tokens, 1,396 output tokens, 9,493 total tokens, and context
+  usage of 8,097 / 400,000; retired organization labels were absent. The root and agent
+  query endpoint return HTTP 401 without an Entra token. Exactly one `web` and one `tools`
+  tagged resource remain, and the web identity retains resource-scoped Foundry User and
+  AcrPull roles.
+
 ## Pending Change: Light Home-Page Logo
 
 - **Mode:** Replace the current shared home/navigation logo with the user-supplied light

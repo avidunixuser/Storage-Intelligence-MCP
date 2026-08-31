@@ -96,11 +96,14 @@ Entra-protected UI cannot be blocked by a private dependency. Application versio
 
 ## Functional views
 
-- **Agent Investigation** runs scoped deterministic tools, displays the full trust
-  envelope and structured result, explains why every returned account was flagged, keeps
-  evidence citations aligned with all unique returned accounts, offers a broad reusable
-  catalog of operational/financial/platform questions, saves new authenticated questions
-  for future sessions, and retains the latest eight investigations in-session.
+- **Agent Investigation** invokes the managed-identity-authenticated Foundry agent, which
+  uses the scoped deterministic tools, while the navigation usage tile reports the model,
+  per-response input/output/total tokens, and context-window consumption. The view displays
+  the full trust envelope and structured result, explains why every returned account was
+  flagged, keeps evidence citations aligned with all unique returned accounts, offers a
+  broad reusable catalog of operational/financial/platform questions, saves new
+  authenticated questions for future sessions, and retains the latest eight investigations
+  in-session. MCP and A2A requests remain deterministic and do not consume model tokens.
 - **Savings Simulator** models 1-100% tiering adoption, compares 10/25/50% baselines,
   ranks the top 20 candidates, and retains retrieval/retention caveats.
 - **Findings** combines risk, robust growth anomalies, data freshness, and savings actions

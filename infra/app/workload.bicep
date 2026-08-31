@@ -999,6 +999,10 @@ resource webApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: modelDeploymentName
             }
             {
+              name: 'AZURE_AI_MODEL_CONTEXT_WINDOW'
+              value: '400000'
+            }
+            {
               name: 'COSMOS_INVENTORY_ENABLED'
               value: 'true'
             }

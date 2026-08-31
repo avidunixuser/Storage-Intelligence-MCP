@@ -130,3 +130,7 @@ def deploy_function() -> dict[str, str | int]:
             }
         time.sleep(5)
     raise RuntimeError(f"Private Function health failed ({last_status}): {last_body}")
+
+
+if __name__ == "__main__":
+    print(deploy_function())
