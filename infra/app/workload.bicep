@@ -1003,6 +1003,18 @@ resource webApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: '400000'
             }
             {
+              name: 'AZURE_AI_INPUT_COST_PER_MILLION_USD'
+              value: '0.75'
+            }
+            {
+              name: 'AZURE_AI_CACHED_INPUT_COST_PER_MILLION_USD'
+              value: '0.075'
+            }
+            {
+              name: 'AZURE_AI_OUTPUT_COST_PER_MILLION_USD'
+              value: '4.50'
+            }
+            {
               name: 'COSMOS_INVENTORY_ENABLED'
               value: 'true'
             }

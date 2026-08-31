@@ -296,6 +296,89 @@
     );
   }
 
+  function AgentInlineText(props) {
+    const parts = String(props.text).split(/(\*\*[^*]+\*\*|`[^`]+`)/g).filter(Boolean);
+    return parts.map((part, index) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return e("strong", { key: index }, part.slice(2, -2));
+      }
+      if (part.startsWith("`") && part.endsWith("`")) {
+        return e("code", { key: index }, part.slice(1, -1));
+      }
+      return part;
+    });
+  }
+
+  function StructuredAgentAnswer(props) {
+    const lines = String(props.answer || "").split(/\r?\n/);
+    const blocks = [];
+    let list = [];
+    let listType = "";
+
+    function flushList() {
+      if (!list.length) return;
+      const tag = listType === "ordered" ? "ol" : "ul";
+      blocks.push(e(tag, { key: "list-" + blocks.length },
+        list.map((item, index) => e("li", { key: index }, e(AgentInlineText, { text: item })))
+      ));
+      list = [];
+      listType = "";
+    }
+
+    lines.forEach((rawLine, index) => {
+      const line = rawLine.trim();
+      if (!line) {
+        flushList();
+        return;
+      }
+      const heading = line.match(/^(#{1,3})\s+(.+)$/);
+      const ordered = line.match(/^\d+\.\s+(.+)$/);
+      const unordered = line.match(/^[-*]\s+(.+)$/);
+      if (heading) {
+        flushList();
+        const level = Math.min(4, heading[1].length + 2);
+        blocks.push(e("h" + level, { key: "heading-" + index }, e(AgentInlineText, { text: heading[2] })));
+        return;
+      }
+      if (ordered || unordered) {
+        const nextType = ordered ? "ordered" : "unordered";
+        if (listType && listType !== nextType) flushList();
+        listType = nextType;
+        list.push((ordered || unordered)[1]);
+        return;
+      }
+      const nextLine = (lines[index + 1] || "").trim();
+      const looksLikeHeading = line.length <= 80
+        && !/[.!?;:]$/.test(line)
+        && (/^[-*]\s+/.test(nextLine) || /^\d+\.\s+/.test(nextLine));
+      flushList();
+      if (looksLikeHeading) {
+        blocks.push(e("h3", { key: "heading-" + index }, e(AgentInlineText, { text: line })));
+      } else {
+        blocks.push(e("p", { key: "paragraph-" + index }, e(AgentInlineText, { text: line })));
+      }
+    });
+    flushList();
+    return e("div", { className: "response-answer structured-answer" }, blocks);
+  }
+
+  function QueryCost(props) {
+    const cost = props.cost;
+    if (!cost) return null;
+    return e("section", { className: "query-cost", "aria-label": "Estimated query cost" },
+      e("div", { className: "query-cost-head" },
+        e("span", null, "Estimated query cost"),
+        e("strong", null, "$" + Number(cost.estimated_cost_usd).toFixed(6) + " " + cost.currency)
+      ),
+      e("div", { className: "query-cost-rates" },
+        "Rates per 1M tokens · input $" + cost.input_cost_per_million.toFixed(3)
+        + " · cached input $" + cost.cached_input_cost_per_million.toFixed(3)
+        + " · output $" + cost.output_cost_per_million.toFixed(2)
+      ),
+      e("div", { className: "query-cost-disclaimer" }, cost.disclaimer)
+    );
+  }
+
   function DatabricksLogo() {
     return e("span", { className: "databricks-logo", role: "img", "aria-label": "Databricks", title: "Databricks" },
       e("span", { className: "databricks-layer layer-one" }),
@@ -1376,7 +1459,7 @@
             e("div", { className: "account-note" }, "Type any new storage question, save it once, and it becomes a reusable option for future investigations."),
             questionStatus && e("div", { className: "success" }, questionStatus),
             response && e("div", { className: "response" },
-              e("div", { className: "response-answer" }, response.answer),
+              e(StructuredAgentAnswer, { answer: response.answer }),
               response.account_reasons && response.account_reasons.length > 0 && e("div", { className: "response-reasons" },
                 e("div", { className: "response-reasons-head" },
                   e("div", { className: "response-reasons-title" }, "Why these accounts were flagged"),
@@ -1420,7 +1503,8 @@
                 e("div", { className: "trust-item" }, e("div", { className: "trust-label" }, "Confidence"), e("div", { className: "trust-value" }, response.confidence.level + " · " + response.confidence.score)),
                 e("div", { className: "trust-item" }, e("div", { className: "trust-label" }, "Evidence"), e("div", { className: "trust-value" }, response.evidence.length + " cited accounts"))
               ),
-              e("pre", null, JSON.stringify(response.data, null, 2))
+              e("pre", null, JSON.stringify(response.data, null, 2)),
+              e(QueryCost, { cost: response.agent.cost })
             ),
             e("div", { className: "investigation-history" },
               e("div", { className: "panel-head" },
