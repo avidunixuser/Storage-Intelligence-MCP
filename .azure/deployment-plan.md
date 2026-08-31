@@ -4,6 +4,74 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Remove Structured Agent Answer Formatting
+
+- **Mode:** Modify the existing Agent Investigation presentation and redeploy the current
+  Container App.
+- **Scope:** Remove the Markdown-specific answer renderer and the Foundry instruction that
+  forces headings and lists. Restore the concise plain answer presentation while retaining
+  deterministic account reasons, trust metadata, evidence, model/token telemetry, and the
+  estimated query-cost footer.
+- **Application changes:** Delete the client-side Markdown parsing components and their
+  structured-answer CSS, render `response.answer` directly in the existing answer element,
+  remove the forced Markdown sentence from the agent instructions, update the README and
+  acceptance assertions, and refresh static asset cache keys.
+- **Infrastructure:** Reuse the existing Foundry deployment, private Function tool,
+  Container App, ACR, managed identities, pricing configuration, and unchanged unique
+  `web` and `tools` AZD service tags. No new resources, permissions, or public access.
+- **Azure context:** Reuse AZD environment `mcpa2a`, subscription
+  `ME-MngEnvMCAP585394-nrp-at-microsoft-dot-com`
+  (`c82406dd-f84c-42df-9586-c6f02abda6df`), tenant
+  `da5fd6a4-899f-4b53-b4e9-7e3e5a8a58b6`, resource group
+  `rg-storage-intel-mcpa2a`, and Sweden Central.
+- **Validation:** Run the complete existing acceptance suite, JavaScript syntax check,
+  Python compilation, Bicep build, AZD package and deployment preview, service-tag and
+  least-privilege RBAC checks, then verify the deployed Entra-protected endpoint.
+- **Delivery:** Publish a new Foundry agent version so the simplified instruction takes
+  effect, build a uniquely tagged image within a bounded ACR access window, restore ACR to
+  private/default-deny/admin-disabled posture, deploy a healthy revision at 100% traffic,
+  commit and push the changes, create and merge a pull request, and verify `origin/main`.
+- **Preparation evidence:** The user approved retaining the separate account reasons,
+  trust/evidence, model/token telemetry, and cost footer while removing only the redundant
+  Markdown answer structure. The user confirmed the existing `mcpa2a` subscription and
+  Sweden Central context. The Markdown parser and CSS were removed, the answer now uses the
+  original plain response element, and Foundry instructions request a concise direct answer
+  without repeating UI-rendered metadata. All 100 tests, JavaScript syntax, Python
+  compilation, Bicep build, and `git diff --check` passed. The existing deployment adds no
+  resources; the Container Apps quota API reports a managed-environment limit of 50.
+- **Validation steps:**
+  - [x] AZD installation and schema
+  - [x] Environment, authentication, subscription, and location
+  - [x] Provision preview
+  - [x] Build verification
+  - [x] Docker context and package validation
+  - [x] Azure Policy review
+  - [x] Static least-privilege RBAC review
+  - [x] Unique live `web` and `tools` tag verification
+- **Validation proof:** On 2026-08-31, AZD 1.30.0 authenticated as the expected tenant
+  identity and loaded environment `mcpa2a`, subscription
+  `c82406dd-f84c-42df-9586-c6f02abda6df`, and Sweden Central. The schema-backed
+  `azure.yaml` packaged successfully. `azd provision --preview --no-prompt` completed
+  without resource creates or deletes. All 100 tests, JavaScript syntax, Python
+  compilation, Bicep build, Docker build-context review, AZD package, and
+  `git diff --check` passed. Applicable policy assignments were reviewed. Static
+  resource-scoped roles remain unchanged and sufficient for the web and Function managed
+  identities. Live tag enumeration returned exactly one `web` Container App and one
+  `tools` Function App.
+- **Deployment proof:** `azd provision --no-prompt` completed with no infrastructure
+  changes and live AcrPull was confirmed for the web identity. ACR build `dt16` produced
+  `acrlgvr.azurecr.io/storage-intelligence:plain-agent-20260831-r2` with digest
+  `sha256:c3c52586dbe53c62aec38c7d919706c7836525c280b459beba41dc78c267b988`.
+  ACR was restored to public access disabled, default deny, and admin disabled. Container
+  App revision `ca-storage-intel-kxlgam3w--0000039` is healthy with one replica and 100%
+  traffic. Foundry agent version 4 was published. A private-network smoke query returned
+  two short plain-text paragraphs with no Markdown headings, lists, or repeated
+  scope/evidence boilerplate; model usage and the `$0.006940 USD` cost estimate remained
+  available. The unauthenticated root and agent endpoints return HTTP 401. Exactly one
+  `web` and one `tools` tagged resource remain, and the web identity retains its
+  resource-scoped Foundry User, AcrPull, Website Contributor, and Communication and Email
+  Service Owner assignments.
+
 ## Pending Change: Structured Agent Results and Query Cost
 
 - **Mode:** Improve Agent Investigation presentation and add an estimated model cost to

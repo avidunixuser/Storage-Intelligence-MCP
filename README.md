@@ -98,11 +98,11 @@ Entra-protected UI cannot be blocked by a private dependency. Application versio
 
 - **Agent Investigation** invokes the managed-identity-authenticated Foundry agent, which
   uses the scoped deterministic tools, while the navigation usage tile reports the model,
-  per-response input/output/total tokens, and context-window consumption. Foundry Markdown
-  is rendered as safe headings, paragraphs, lists, emphasis, and inline code. Each result
-  ends with an estimated USD model cost calculated from configurable input, cached-input,
-  and output rates; this estimate excludes infrastructure, negotiated pricing, taxes, and
-  non-model charges. The view displays the full trust envelope and structured result,
+  per-response input/output/total tokens, and context-window consumption. The Foundry
+  response is displayed as a concise plain-text answer without redundant Markdown
+  structure. Each result ends with an estimated USD model cost calculated from configurable
+  input, cached-input, and output rates; this estimate excludes infrastructure, negotiated
+  pricing, taxes, and non-model charges. The view displays the full trust envelope,
   explains why every returned account was flagged, keeps evidence citations aligned with
   all unique returned accounts, offers a broad reusable catalog of
   operational/financial/platform questions, saves new authenticated questions for future
