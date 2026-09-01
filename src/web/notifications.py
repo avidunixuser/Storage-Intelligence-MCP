@@ -16,6 +16,17 @@ from azure.identity import DefaultAzureCredential
 
 from storage_intelligence.analytics import AT_RISK_THRESHOLD, risk_score
 
+AZURE_SERVICE_FIELDS = (
+    ("databricks_workspace", "Azure Databricks"),
+    ("fabric_lakehouse", "Microsoft Fabric"),
+    ("sap_system", "SAP on Azure"),
+    ("azure_data_factory", "Azure Data Factory"),
+    ("sftp_enabled", "Azure Storage SFTP"),
+    ("application_insights_resource", "Application Insights"),
+    ("azure_function_app", "Azure Functions"),
+    ("log_analytics_workspace", "Log Analytics"),
+)
+
 
 class NotificationConfigurationError(RuntimeError):
     pass
@@ -62,6 +73,16 @@ def _recommended_action(account: dict[str, Any], factors: list[str], score: floa
     return "Validate the current posture and confirm the accountable project owner."
 
 
+def _azure_service_usage(account: dict[str, Any]) -> str:
+    services: list[str] = []
+    for field, label in AZURE_SERVICE_FIELDS:
+        value = account.get(field)
+        if not value:
+            continue
+        services.append(label if value is True else f"{label}: {value}")
+    return "; ".join(services) or "No linked Azure service recorded"
+
+
 def notification_rows(accounts: list[dict[str, Any]]) -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
     for account in accounts:
@@ -77,6 +98,7 @@ def notification_rows(accounts: list[dict[str, Any]]) -> list[dict[str, str]]:
                 "region": str(account["region"]),
                 "tier": str(account["tier"]),
                 "project": str(account.get("project_name") or "Unassigned"),
+                "azure_service_usage": _azure_service_usage(account),
                 "risk": f"{risk['score']}/100",
                 "findings": "; ".join(factors[:5]) if factors else "No explicit risk factor recorded",
                 "action": _recommended_action(account, factors, risk["score"]),
@@ -88,8 +110,82 @@ def notification_rows(accounts: list[dict[str, Any]]) -> list[dict[str, str]]:
 def render_notification(accounts: list[dict[str, Any]]) -> tuple[str, str, str]:
     rows = notification_rows(accounts)
     subject = f"Action required: review {len(rows)} Azure Storage account{'s' if len(rows) != 1 else ''}"
+    body_rows: list[str] = []
+    for index, row in enumerate(rows):
+        background = "#ffffff" if index % 2 == 0 else "#f7fafd"
+        score = float(row["risk"].split("/", 1)[0])
+        risk_color = "#a4262c" if score >= AT_RISK_THRESHOLD else "#8a6d1d"
+        body_rows.append(
+            f'<tr style="background:{background}">'
+            '<td style="border-bottom:1px solid #dbe6f1;padding:14px 12px;vertical-align:top">'
+            f'<strong style="color:#0f3b5d;font-size:14px">{html.escape(row["account"])}</strong>'
+            f'<div style="color:#5b7083;font-size:11px;margin-top:4px">Subscription · '
+            f'{html.escape(row["subscription"])}</div>'
+            "</td>"
+            '<td style="border-bottom:1px solid #dbe6f1;padding:14px 12px;vertical-align:top">'
+            f'<div style="color:#0f6cbd;font-weight:600">{html.escape(row["azure_service_usage"])}</div>'
+            "</td>"
+            '<td style="border-bottom:1px solid #dbe6f1;padding:14px 12px;vertical-align:top">'
+            f'<strong>Management group · {html.escape(row["management_group"])}</strong>'
+            f'<div style="color:#5b7083;margin-top:4px">Business unit · '
+            f'{html.escape(row["business_unit"])}</div>'
+            "</td>"
+            '<td style="border-bottom:1px solid #dbe6f1;padding:14px 12px;vertical-align:top">'
+            f'<strong>Environment · {html.escape(row["environment"])}</strong>'
+            f'<div style="color:#5b7083;margin-top:4px">Region · {html.escape(row["region"])}'
+            f'<br>Tier · {html.escape(row["tier"])}</div>'
+            "</td>"
+            '<td style="border-bottom:1px solid #dbe6f1;padding:14px 12px;vertical-align:top">'
+            f'<strong>Project · {html.escape(row["project"])}</strong>'
+            f'<div style="color:{risk_color};font-weight:700;margin-top:6px">Risk {html.escape(row["risk"])}</div>'
+            "</td>"
+            '<td style="border-bottom:1px solid #dbe6f1;padding:14px 12px;vertical-align:top">'
+            f'<div style="color:#334e68">{html.escape(row["findings"])}</div>'
+            f'<div style="border-left:3px solid #0078d4;color:#0f3b5d;margin-top:10px;padding-left:9px">'
+            f'<strong>Recommended action</strong><br>{html.escape(row["action"])}</div>'
+            "</td>"
+            "</tr>"
+        )
+    html_body = (
+        '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
+        '<body style="background:#eef3f8;color:#1c2b3a;font-family:Segoe UI,Arial,sans-serif;margin:0;padding:24px">'
+        '<table role="presentation" style="border-collapse:collapse;margin:0 auto;max-width:1200px;width:100%">'
+        '<tr><td style="background:#0078d4;border-radius:10px 10px 0 0;color:#ffffff;padding:24px 28px">'
+        '<div style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase">Microsoft Azure</div>'
+        '<div style="font-size:26px;font-weight:700;margin-top:5px">Storage Atlas</div>'
+        '<div style="color:#deecf9;font-size:14px;margin-top:6px">Project owner action notification</div>'
+        "</td></tr>"
+        '<tr><td style="background:#ffffff;padding:26px 28px 14px">'
+        '<h1 style="color:#0f3b5d;font-size:21px;margin:0 0 10px">Azure Storage account review requested</h1>'
+        '<p style="color:#445d70;font-size:14px;line-height:1.55;margin:0">Storage Atlas identified '
+        f'<strong>{len(rows)} account{"s" if len(rows) != 1 else ""}</strong> for owner review. '
+        "Validate the findings, confirm the accountable project owner, and record a remediation date.</p>"
+        '<table role="presentation" style="border-collapse:collapse;margin-top:18px;width:100%"><tr>'
+        '<td style="background:#e8f3fc;border-left:4px solid #0078d4;border-radius:4px;color:#0f3b5d;'
+        'font-size:13px;padding:12px 14px"><strong>Review scope:</strong> Azure service associations, '
+        "governance context, risk signals, and recommended actions.</td></tr></table>"
+        "</td></tr>"
+        '<tr><td style="background:#ffffff;padding:12px 28px 28px">'
+        '<table aria-label="Azure Storage accounts requiring owner review" role="table" '
+        'style="border:1px solid #c7d8e8;border-collapse:separate;border-radius:7px;border-spacing:0;'
+        'font-size:12px;overflow:hidden;width:100%">'
+        '<thead><tr style="background:#0f6cbd;color:#ffffff">'
+        '<th style="padding:11px 12px;text-align:left">Storage account</th>'
+        '<th style="padding:11px 12px;text-align:left">Azure service usage</th>'
+        '<th style="padding:11px 12px;text-align:left">Management group / business unit</th>'
+        '<th style="padding:11px 12px;text-align:left">Environment / region / tier</th>'
+        '<th style="padding:11px 12px;text-align:left">Project / risk</th>'
+        '<th style="padding:11px 12px;text-align:left">Key findings / action</th>'
+        f'</tr></thead><tbody>{"".join(body_rows)}</tbody></table>'
+        "</td></tr>"
+        '<tr><td style="background:#f7fafd;border-top:1px solid #dbe6f1;border-radius:0 0 10px 10px;'
+        'color:#617386;font-size:11px;line-height:1.5;padding:16px 28px">'
+        "<strong>Advisory only.</strong> This notification does not change Azure resources. "
+        "Service associations reflect the latest inventory metadata available to Storage Atlas."
+        "</td></tr></table></body></html>"
+    )
     columns = [
-        ("account", "Account"),
+        ("account", "Storage account"),
         ("subscription", "Subscription"),
         ("management_group", "Management group"),
         ("business_unit", "Business unit"),
@@ -97,34 +193,13 @@ def render_notification(accounts: list[dict[str, Any]]) -> tuple[str, str, str]:
         ("region", "Region"),
         ("tier", "Tier"),
         ("project", "Project"),
+        ("azure_service_usage", "Azure service usage"),
         ("risk", "Risk"),
         ("findings", "Key findings"),
         ("action", "Recommended action"),
     ]
-    header_cells = "".join(
-        f'<th style="border:1px solid #cbd5e1;background:#eaf1f8;padding:8px;text-align:left">{html.escape(label)}</th>'
-        for _, label in columns
-    )
-    body_rows = "".join(
-        "<tr>"
-        + "".join(
-            f'<td style="border:1px solid #cbd5e1;padding:8px;vertical-align:top">{html.escape(row[key])}</td>'
-            for key, _ in columns
-        )
-        + "</tr>"
-        for row in rows
-    )
-    html_body = (
-        "<!doctype html><html><body style=\"font-family:Segoe UI,Arial,sans-serif;color:#1c2b3a\">"
-        "<h2>Azure Storage account review requested</h2>"
-        "<p>The Storage Atlas application identified the following accounts for owner review. "
-        "Please validate the findings, assign an accountable owner, and record a remediation date.</p>"
-        '<table style="border-collapse:collapse;width:100%;font-size:12px"><thead><tr>'
-        f"{header_cells}</tr></thead><tbody>{body_rows}</tbody></table>"
-        "<p style=\"color:#617386;font-size:11px\">This notification is advisory and does not change Azure resources.</p>"
-        "</body></html>"
-    )
     plain_lines = [
+        "MICROSOFT AZURE | STORAGE ATLAS",
         "Azure Storage account review requested",
         "",
         "Validate the findings, assign an accountable owner, and record a remediation date.",
@@ -133,7 +208,13 @@ def render_notification(accounts: list[dict[str, Any]]) -> tuple[str, str, str]:
         " | ".join("---" for _ in columns),
     ]
     plain_lines.extend(" | ".join(row[key] for key, _ in columns) for row in rows)
-    plain_lines.extend(["", "This notification is advisory and does not change Azure resources."])
+    plain_lines.extend(
+        [
+            "",
+            "This notification is advisory and does not change Azure resources.",
+            "Service associations reflect the latest inventory metadata available to Storage Atlas.",
+        ]
+    )
     return subject, html_body, "\n".join(plain_lines)
 
 
