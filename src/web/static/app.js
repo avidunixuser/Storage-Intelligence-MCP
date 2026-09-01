@@ -104,24 +104,43 @@
   }
 
   function AccountCheckbox(props) {
+    const label = props.label || ("Select account for owner notification: " + props.name);
     return e("label", {
-      className: "account-select-control",
-      title: "Select account for owner notification: " + props.name
+      className: "account-select-control" + (props.text ? " labeled" : ""),
+      title: label
     },
       e("input", {
         type: "checkbox",
         checked: props.checked,
+        disabled: props.disabled,
+        ref: (input) => {
+          if (input) input.indeterminate = Boolean(props.indeterminate);
+        },
         onChange: (event) => props.onChange(event.target.checked),
-        "aria-label": "Select account for owner notification: " + props.name
+        "aria-label": label
       }),
-      e("span", { className: "account-select-box", "aria-hidden": "true" })
+      e("span", { className: "account-select-box", "aria-hidden": "true" }),
+      props.text && e("span", { className: "account-select-text" }, props.text)
     );
   }
 
   function NotificationToolbar(props) {
     const status = props.status;
+    const visibleIds = Array.from(new Set(props.visibleIds || []));
+    const selected = new Set(props.selectedIds);
+    const allSelected = visibleIds.length > 0 && visibleIds.every((accountId) => selected.has(accountId));
+    const partiallySelected = !allSelected && visibleIds.some((accountId) => selected.has(accountId));
     return e("div", { className: "notification-toolbar-wrap" },
       e("div", { className: "notification-toolbar" },
+        e(AccountCheckbox, {
+          name: "all visible accounts",
+          label: "Select all " + visibleIds.length + " visible accounts for owner notification",
+          text: "Select all",
+          checked: allSelected,
+          indeterminate: partiallySelected,
+          disabled: props.busy || visibleIds.length === 0,
+          onChange: (checked) => props.onSelectAll(visibleIds, checked)
+        }),
         e("span", { className: "notification-selection-count" }, props.selectedIds.length + " selected"),
         e("button", {
           type: "button",
@@ -149,8 +168,10 @@
           e("div", { className: "panel-meta" }, props.data ? props.data.count + " matches · scrollable" : "Loading…"),
           e(NotificationToolbar, {
             selectedIds: selectedIds,
+            visibleIds: accounts.map((account) => account.account_id),
             busy: props.notificationBusy,
             status: props.notificationStatus,
+            onSelectAll: props.onSelectAll,
             onNotify: props.onNotify
           })
         )
@@ -592,10 +613,6 @@
     function toggleAccountSelection(surface, accountId, checked) {
       setAccountSelections((current) => {
         const next = new Set(current[surface] || []);
-        if (checked && next.size >= 100 && !next.has(accountId)) {
-          setNotificationStatus(surface, "error", "Select no more than 100 accounts per notification.");
-          return current;
-        }
         if (checked) next.add(accountId);
         else next.delete(accountId);
         setNotificationStatuses((statuses) => Object.assign({}, statuses, { [surface]: null }));
@@ -603,28 +620,63 @@
       });
     }
 
+    function toggleVisibleAccountSelection(surface, visibleIds, checked) {
+      setAccountSelections((current) => {
+        const next = new Set(current[surface] || []);
+        new Set(visibleIds).forEach((accountId) => {
+          if (checked) next.add(accountId);
+          else next.delete(accountId);
+        });
+        setNotificationStatuses((statuses) => Object.assign({}, statuses, { [surface]: null }));
+        return Object.assign({}, current, { [surface]: Array.from(next) });
+      });
+    }
+
     function notifyProjectOwners(surface, accountIds) {
       if (!accountIds.length || notificationBusy[surface]) return;
+      const uniqueIds = Array.from(new Set(accountIds));
+      const batches = [];
+      for (let index = 0; index < uniqueIds.length; index += 100) {
+        batches.push(uniqueIds.slice(index, index + 100));
+      }
+      let accepted = 0;
+      let recipient = "";
+      const operationIds = [];
       setNotificationBusy((current) => Object.assign({}, current, { [surface]: true }));
       setNotificationStatuses((current) => Object.assign({}, current, { [surface]: null }));
-      fetch("/api/notifications/project-owners", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ account_ids: accountIds })
-      })
-        .then((result) => result.json().then((body) => {
-          if (!result.ok) throw new Error(apiError(body, "Project-owner notification could not be sent"));
-          return body;
-        }))
-        .then((body) => {
-          setAccountSelections((current) => Object.assign({}, current, { [surface]: [] }));
+      batches.reduce((chain, batch) => chain.then(() =>
+        fetch("/api/notifications/project-owners", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ account_ids: batch })
+        })
+          .then((result) => result.json().then((body) => {
+            if (!result.ok) throw new Error(apiError(body, "Project-owner notification could not be sent"));
+            return body;
+          }))
+          .then((body) => {
+            accepted += body.account_count;
+            recipient = body.recipient;
+            operationIds.push(body.operation_id);
+            const acceptedIds = new Set(batch);
+            setAccountSelections((current) => Object.assign({}, current, {
+              [surface]: (current[surface] || []).filter((accountId) => !acceptedIds.has(accountId))
+            }));
+          })
+      ), Promise.resolve())
+        .then(() => {
           setNotificationStatus(
             surface,
             "success",
-            "Notification accepted for " + body.account_count + " account(s) to " + body.recipient + ". Operation " + body.operation_id + "."
+            "Notifications accepted for " + accepted + " account(s) to " + recipient
+              + " across " + operationIds.length + " batch(es)."
           );
         })
-        .catch((err) => setNotificationStatus(surface, "error", err.message))
+        .catch((err) => setNotificationStatus(
+          surface,
+          "error",
+          err.message + " " + accepted + " of " + uniqueIds.length + " account(s) were accepted."
+        ))
         .finally(() => setNotificationBusy((current) => Object.assign({}, current, { [surface]: false })));
     }
 
@@ -1081,8 +1133,10 @@
                 ),
                 e(NotificationToolbar, {
                   selectedIds: selectedIds("platform", portfolio.platform_accounts.map((account) => account.account_id)),
+                  visibleIds: portfolio.platform_accounts.map((account) => account.account_id),
                   busy: notificationBusy.platform,
                   status: notificationStatuses.platform,
+                  onSelectAll: (ids, checked) => toggleVisibleAccountSelection("platform", ids, checked),
                   onNotify: (ids) => notifyProjectOwners("platform", ids)
                 })
               )
@@ -1205,8 +1259,10 @@
                   e("div", { className: "panel-meta" }, bars.length + " accounts · score ≥ " + portfolio.risk_threshold),
                   e(NotificationToolbar, {
                     selectedIds: selectedIds("risk", bars.map((row) => row.account_id)),
+                    visibleIds: bars.map((row) => row.account_id),
                     busy: notificationBusy.risk,
                     status: notificationStatuses.risk,
+                    onSelectAll: (ids, checked) => toggleVisibleAccountSelection("risk", ids, checked),
                     onNotify: (ids) => notifyProjectOwners("risk", ids)
                   })
                 )
@@ -1422,8 +1478,10 @@
                   e("div", { className: "response-reasons-title" }, "Why these accounts were flagged"),
                   e(NotificationToolbar, {
                     selectedIds: selectedIds("agent", response.account_reasons.map((item) => item.account_id)),
+                    visibleIds: response.account_reasons.map((item) => item.account_id),
                     busy: notificationBusy.agent,
                     status: notificationStatuses.agent,
+                    onSelectAll: (ids, checked) => toggleVisibleAccountSelection("agent", ids, checked),
                     onNotify: (ids) => notifyProjectOwners("agent", ids)
                   })
                 ),
@@ -1524,8 +1582,10 @@
                     e("div", { className: "panel-meta" }, "Current state compared with recommended target"),
                     e(NotificationToolbar, {
                       selectedIds: selectedIds("savings", savingsResult.simulation.top_accounts.map((account) => account.account_id)),
+                      visibleIds: savingsResult.simulation.top_accounts.map((account) => account.account_id),
                       busy: notificationBusy.savings,
                       status: notificationStatuses.savings,
+                      onSelectAll: (ids, checked) => toggleVisibleAccountSelection("savings", ids, checked),
                       onNotify: (ids) => notifyProjectOwners("savings", ids)
                     })
                   )
@@ -1590,8 +1650,10 @@
                         e("div", { className: "panel-meta" }, filteredFindings.length + " findings · scrollable"),
                         e(NotificationToolbar, {
                           selectedIds: selectedIds("findings", filteredFindings.map((finding) => finding.account_id)),
+                          visibleIds: filteredFindings.map((finding) => finding.account_id),
                           busy: notificationBusy.findings,
                           status: notificationStatuses.findings,
+                          onSelectAll: (ids, checked) => toggleVisibleAccountSelection("findings", ids, checked),
                           onNotify: (ids) => notifyProjectOwners("findings", ids)
                         })
                       )
@@ -1689,6 +1751,7 @@
                     selectedIds: (visibleIds) => selectedIds("posture", visibleIds),
                     notificationBusy: notificationBusy.posture,
                     notificationStatus: notificationStatuses.posture,
+                    onSelectAll: (ids, checked) => toggleVisibleAccountSelection("posture", ids, checked),
                     onToggle: (accountId, checked) => toggleAccountSelection("posture", accountId, checked),
                     onNotify: (ids) => notifyProjectOwners("posture", ids)
                   })

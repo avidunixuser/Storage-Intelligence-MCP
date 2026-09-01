@@ -339,17 +339,26 @@ select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
   position: relative; display: inline-grid; place-items: center; width: 20px; height: 20px;
   border-radius: 5px; cursor: pointer; flex: 0 0 20px;
 }
+.account-select-control.labeled {
+  grid-template-columns: 20px auto; justify-items: start; width: auto; min-width: max-content;
+  gap: 4px; color: var(--text); font-size: 10px; flex-basis: auto;
+}
 .account-select-control input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .account-select-box {
   display: block; width: 16px; height: 16px; border: 1px solid #91a2b3;
   border-radius: 4px; background: #fff; transition: border-color .15s ease, background .15s ease;
 }
 .account-select-control input:checked + .account-select-box { border-color: var(--accent); background: var(--accent); }
+.account-select-control input:indeterminate + .account-select-box { border-color: var(--accent); background: var(--accent); }
+.account-select-control input:indeterminate + .account-select-box::after {
+  content: ""; display: block; width: 8px; margin: 7px 0 0 3px; border-top: 2px solid #fff;
+}
 .account-select-control input:checked + .account-select-box::after {
   content: ""; display: block; width: 7px; height: 4px; margin: 4px 0 0 4px;
   border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg);
 }
 .account-select-control input:focus-visible + .account-select-box { outline: 2px solid var(--blue); outline-offset: 2px; }
+.account-select-control input:disabled + .account-select-box { cursor: not-allowed; opacity: .55; }
 .selected { border-color: var(--accent-border) !important; box-shadow: 0 0 0 2px var(--accent-soft); }
 .risk-type-dot { width: 7px; height: 7px; border-radius: 50%; }
 .risk-overview-panel { margin-top: 16px; }
