@@ -1096,6 +1096,51 @@ def test_azure_cli_tenant_discovery(monkeypatch):
     assert result["accounts"][0]["application_insights_resource"] == "appi-beverages-prod"
 
 
+def test_management_group_discovery_hides_azure_cli_failure(monkeypatch, caplog):
+    from storage_intelligence import discovery
+
+    raw_error = (
+        "(AuthorizationFailed) The client 'secret-client-id' with object id "
+        "'secret-object-id' cannot perform Microsoft.Management/register/action."
+    )
+
+    def fake_az(arguments, timeout=180):
+        del timeout
+        assert arguments == ["account", "management-group", "list"]
+        raise discovery.AzureCliDiscoveryError(raw_error)
+
+    monkeypatch.setattr(discovery, "_run_az", fake_az)
+    groups, warnings = discovery._management_group_subscriptions()
+
+    assert groups == {}
+    assert warnings == [discovery.MANAGEMENT_GROUP_WARNING]
+    assert "AuthorizationFailed" not in warnings[0]
+    assert "secret-client-id" not in warnings[0]
+    assert raw_error in caplog.text
+
+
+def test_management_group_subscription_failure_is_sanitized_and_deduplicated(
+    monkeypatch,
+):
+    from storage_intelligence import discovery
+
+    def fake_az(arguments, timeout=180):
+        del timeout
+        if arguments == ["account", "management-group", "list"]:
+            return [{"name": "mg-one"}, {"name": "mg-two"}]
+        raise discovery.AzureCliDiscoveryError(
+            "AuthorizationFailed for subscription secret-subscription-id"
+        )
+
+    monkeypatch.setattr(discovery, "_run_az", fake_az)
+    groups, warnings = discovery._management_group_subscriptions()
+
+    assert groups == {}
+    assert warnings == [discovery.MANAGEMENT_GROUP_WARNING]
+    assert "AuthorizationFailed" not in warnings[0]
+    assert "secret-subscription-id" not in warnings[0]
+
+
 def test_admin_tenant_discovery_ingests_accounts(monkeypatch):
     monkeypatch.setenv("AUTH_DISABLED", "true")
     from web import app as web_app
