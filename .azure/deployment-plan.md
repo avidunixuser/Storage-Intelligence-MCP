@@ -4,6 +4,57 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Clean Tenant Discovery Authorization Warnings
+
+- **Mode:** Modify the existing Admin discovery experience and redeploy the current
+  Container App.
+- **Problem:** The "Tenant-wide storage account discovery & retrieval" tile exposes a raw
+  Azure CLI `AuthorizationFailed` exception when management-group provider registration is
+  unavailable to the Container App managed identity.
+- **Root cause:** `_management_group_subscriptions` inserts the complete Azure CLI standard
+  error into its API warning when `az account management-group list` cannot register or read
+  `Microsoft.Management`. The Admin page renders that warning verbatim. Storage-account
+  discovery itself still succeeds from the identity's authorized subscriptions, with
+  management-group values available from account tags and subscription metadata.
+- **Planned behavior:** Keep management-group enrichment best-effort. Convert every
+  management-group CLI failure into a concise, stable warning that says discovery continued
+  using subscription and tag metadata. Never return raw CLI output, client IDs, object IDs,
+  subscription IDs, command details, or Azure exception text through the discovery API.
+  Preserve detailed diagnostics in server logs at warning level for operators.
+- **Compatibility:** Successful management-group enumeration remains unchanged. Storage
+  account discovery, Cosmos persistence, schedules, inventory fields, and Admin controls are
+  unchanged. The UI may continue rendering the warning returned by the API because its
+  content is now safe and actionable.
+- **Architecture:** Reuse the existing Container App, managed identity, discovery API, ACR,
+  Cosmos DB, Foundry, and current AZD deployment. No new Azure resources are planned.
+- **Classification / scale / budget / compliance:** Existing production internal tool,
+  existing scale and cost profile, no additional spend, and no data-residency or compliance
+  change.
+- **Azure context:** Reuse subscription
+  `ME-MngEnvMCAP585394-nrp-at-microsoft-dot-com`
+  (`c82406dd-f84c-42df-9586-c6f02abda6df`) and Sweden Central, as confirmed by the user.
+- **Recipe:** Existing AZD with Bicep. No infrastructure change is required.
+- **Validation and delivery:** Add focused regression coverage for top-level and per-group
+  failures, raw-detail suppression, successful enrichment, and discovery continuation. Run
+  the targeted and complete existing tests, Python and JavaScript syntax checks, Bicep build,
+  AZD package/preview, policy review, and RBAC checks. Rebuild a uniquely tagged image,
+  restore the private/default-deny/admin-disabled ACR posture, deploy one healthy revision at
+  100% traffic, verify behavior inside the deployed replica, then commit, push, create, and
+  merge a pull request.
+- **Preparation evidence:** The complete 109-test suite passes, including focused coverage
+  for top-level and per-group management-group authorization failures, warning
+  deduplication, successful enrichment, and suppression of raw identity and Azure exception
+  details. Python compilation, JavaScript syntax validation, and `git diff --check` pass.
+- **Deployment evidence:** `azd provision --no-prompt` confirmed no infrastructure changes
+  and live `AcrPull` propagation. ACR run `dt1c` published
+  `storage-intelligence:admin-warning-20260901` at digest
+  `sha256:59b5e1eeb682ac3fd7da6c161a585a1f6fdcc7fe2e2a5ade23bf59af0c57c329`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000044` is healthy, provisioned, has
+  one replica, and receives 100% traffic. In-replica verification confirmed the stable
+  sanitized warning and suppression of the raw authorization code, client ID, object ID,
+  and subscription ID. The public endpoint remains protected by Entra. ACR is
+  public-disabled, default-deny, and admin-disabled.
+
 ## Pending Change: Query-Aligned Agent Notifications
 
 - **Mode:** Align Agent Investigation notification content with the question and displayed
@@ -1479,6 +1530,16 @@ Commit the validated change, push it, create a pull request, and merge it.
 
 ### Commands and results
 
+- 2026-09-01 tenant-discovery warning validation: `azd version`, `azd auth login
+  --check-status`, and `azd env get-values` confirmed AZD 1.30.0 and the approved
+  subscription, tenant, `mcpa2a` environment, and Sweden Central location. `azd provision
+  --preview --no-prompt` succeeded in 50 seconds with no creates or deletes; reported
+  modifications are the environment's documented Azure normalization drift. `azd package
+  --all --no-prompt`, Bicep compilation, Python compilation, JavaScript syntax validation,
+  `git diff --check`, and the complete 109-test suite passed. All nine applicable policy
+  assignments were reviewed. No infrastructure or RBAC changes are present; static review
+  reconfirmed resource-scoped Communication Services, ACR, Foundry, Function, storage,
+  Durable Task Scheduler, Key Vault, monitoring, and Cosmos assignments.
 - 2026-09-01 query-aligned notification validation: `azd version`, `azd auth login
   --check-status`, and `azd env get-values` confirmed AZD 1.30.0 and the approved
   subscription, tenant, `mcpa2a` environment, and Sweden Central location. `azd provision

@@ -171,7 +171,10 @@ Configure the runtime with:
 The managed identity or automation principal must be granted read-only access in every
 target subscription/tenant. This project deliberately does not assign tenant-wide
 `Reader` roles. Cross-tenant discovery works only after the identity is explicitly
-authorized in each tenant.
+authorized in each tenant. Management-group enrichment is best-effort: if the identity
+cannot enumerate management groups, discovery continues from authorized subscriptions and
+account tags, and the Admin page shows a concise warning without exposing Azure CLI
+exception or identity details.
 
 Run discovery directly:
 

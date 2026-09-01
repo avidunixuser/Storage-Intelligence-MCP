@@ -2,12 +2,20 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 import shutil
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+
+LOGGER = logging.getLogger(__name__)
+MANAGEMENT_GROUP_WARNING = (
+    "Management-group enrichment unavailable; discovery continued using "
+    "subscription and tag metadata."
+)
 
 
 class AzureCliDiscoveryError(RuntimeError):
@@ -134,7 +142,8 @@ def _management_group_subscriptions() -> tuple[dict[str, str], list[str]]:
     try:
         groups = _run_az(["account", "management-group", "list"])
     except AzureCliDiscoveryError as exc:
-        return {}, [f"Management-group discovery unavailable: {exc}"]
+        LOGGER.warning("Management-group discovery unavailable: %s", exc)
+        return {}, [MANAGEMENT_GROUP_WARNING]
 
     for group in groups or []:
         group_id = str(group.get("name") or group.get("id") or "").rsplit("/", 1)[-1]
@@ -152,7 +161,9 @@ def _management_group_subscriptions() -> tuple[dict[str, str], list[str]]:
                 ]
             )
         except AzureCliDiscoveryError as exc:
-            warnings.append(f"Management group {group_id} could not be enumerated: {exc}")
+            LOGGER.warning("Management group %s could not be enumerated: %s", group_id, exc)
+            if MANAGEMENT_GROUP_WARNING not in warnings:
+                warnings.append(MANAGEMENT_GROUP_WARNING)
             continue
         for subscription in subscriptions or []:
             subscription_id = str(
