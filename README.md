@@ -98,13 +98,16 @@ Entra-protected UI cannot be blocked by a private dependency. Application versio
 
 - **Agent Investigation** invokes the managed-identity-authenticated Foundry agent, which
   uses the scoped deterministic tools, while the navigation usage tile reports the model,
-  per-response input/output/total tokens, and context-window consumption. The Foundry
-  response is displayed as a concise plain-text answer without redundant Markdown
-  structure. Each result ends with an estimated USD model cost calculated from configurable
-  input, cached-input, and output rates; this estimate excludes infrastructure, negotiated
-  pricing, taxes, and non-model charges. The view displays the full trust envelope,
-  explains why every returned account was flagged, keeps evidence citations aligned with
-  all unique returned accounts, offers a broad reusable catalog of
+  per-response input/output/total tokens, context-window consumption, and the cumulative
+  calculated token cost for the current UTC calendar month. Each successful query writes
+  retry-safe token and cost metadata to the existing Cosmos DB inventory container, so the
+  monthly total survives restarts and resets in the UI on the first UTC day of each month
+  while prior months remain retained. The current query's estimated USD model cost appears
+  above the owner-notification controls; estimates exclude infrastructure, negotiated
+  pricing, taxes, and non-model charges. The redundant Foundry narrative is hidden while
+  the view displays the full trust envelope, explains why every returned account was
+  flagged, keeps evidence citations aligned with all unique returned accounts, and offers
+  a broad reusable catalog of
   operational/financial/platform questions, saves new authenticated questions for future
   sessions, and retains the latest eight investigations in-session. MCP and A2A requests
   remain deterministic and do not consume model tokens.

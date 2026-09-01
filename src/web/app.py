@@ -24,6 +24,7 @@ from openpyxl import load_workbook
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from storage_intelligence import IntelligenceEngine, generate_accounts
+from storage_intelligence.agent_usage import get_monthly_agent_usage, record_agent_usage
 from storage_intelligence.analytics import (
     AT_RISK_THRESHOLD,
     freshness,
@@ -1691,14 +1692,29 @@ def agent_query(
         raise HTTPException(status_code=503, detail="Foundry agent configuration is incomplete") from exc
     except (AzureError, OpenAIError, RuntimeError) as exc:
         raise HTTPException(status_code=502, detail="Foundry agent request failed") from exc
+    try:
+        monthly_usage = record_agent_usage(agent_result)
+    except (AzureError, RuntimeError) as exc:
+        raise HTTPException(status_code=503, detail="Agent usage could not be persisted") from exc
     result["answer"] = agent_result["answer"]
     result["agent"] = {
         "conversation_id": agent_result["conversation_id"],
         "model": agent_result["model"],
         "usage": agent_result["usage"],
         "cost": agent_result["cost"],
+        "monthly_usage": monthly_usage,
     }
     return result
+
+
+@app.get("/api/agent/usage")
+def agent_usage(
+    _: Annotated[dict[str, Any], Depends(_principal)],
+) -> dict[str, Any]:
+    try:
+        return {"monthly_usage": get_monthly_agent_usage()}
+    except (AzureError, RuntimeError) as exc:
+        raise HTTPException(status_code=503, detail="Agent usage could not be loaded") from exc
 
 
 @app.get("/api/questions")

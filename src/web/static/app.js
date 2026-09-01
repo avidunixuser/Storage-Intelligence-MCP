@@ -271,6 +271,7 @@
   function AgentUsageTile(props) {
     const agent = props.agent;
     const usage = agent.usage;
+    const monthlyUsage = agent.monthly_usage;
     const formatTokens = (value) => Number(value).toLocaleString();
     const contextPercent = usage
       ? (usage.context_used_tokens / usage.context_window * 100).toFixed(2)
@@ -292,6 +293,15 @@
         e("strong", null, usage
           ? formatTokens(usage.context_used_tokens) + " / " + formatTokens(usage.context_window) + " (" + contextPercent + "%)"
           : "No usage yet")
+      ),
+      e("div", { className: "agent-usage-row agent-monthly-cost" },
+        e("span", { className: "agent-usage-label" }, "Cumulative token cost/month:"),
+        e("strong", null, monthlyUsage
+          ? "$" + Number(monthlyUsage.estimated_cost_usd).toFixed(6) + " " + monthlyUsage.currency
+          : "Loading…")
+      ),
+      monthlyUsage && e("div", { className: "agent-usage-hint" },
+        monthlyUsage.query_count + " queries · resets " + monthlyUsage.resets_at.slice(0, 10) + " UTC"
       )
     );
   }
@@ -417,7 +427,8 @@
     const [response, setResponse] = useState(null);
     const [agentUsage, setAgentUsage] = useState({
       model: "gpt-5.4-mini",
-      usage: null
+      usage: null,
+      monthly_usage: null
     });
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
@@ -483,6 +494,18 @@
           setQuestionOptions(body.questions);
           setQuestion((current) => current || (body.questions[0] ? translateText(body.questions[0].question) : ""));
         })
+        .catch((err) => setError(err.message));
+    }, []);
+
+    useEffect(() => {
+      fetch("/api/agent/usage")
+        .then((result) => result.json().then((body) => {
+          if (!result.ok) throw new Error(apiError(body, "Agent usage could not be loaded"));
+          return body;
+        }))
+        .then((body) => setAgentUsage((current) => Object.assign({}, current, {
+          monthly_usage: body.monthly_usage
+        })))
         .catch((err) => setError(err.message));
     }, []);
 
@@ -1393,7 +1416,7 @@
             e("div", { className: "account-note" }, "Type any new storage question, save it once, and it becomes a reusable option for future investigations."),
             questionStatus && e("div", { className: "success" }, questionStatus),
             response && e("div", { className: "response" },
-              e("div", { className: "response-answer" }, response.answer),
+              e(QueryCost, { cost: response.agent.cost }),
               response.account_reasons && response.account_reasons.length > 0 && e("div", { className: "response-reasons" },
                 e("div", { className: "response-reasons-head" },
                   e("div", { className: "response-reasons-title" }, "Why these accounts were flagged"),
@@ -1437,8 +1460,7 @@
                 e("div", { className: "trust-item" }, e("div", { className: "trust-label" }, "Confidence"), e("div", { className: "trust-value" }, response.confidence.level + " · " + response.confidence.score)),
                 e("div", { className: "trust-item" }, e("div", { className: "trust-label" }, "Evidence"), e("div", { className: "trust-value" }, response.evidence.length + " cited accounts"))
               ),
-              e("pre", null, JSON.stringify(response.data, null, 2)),
-              e(QueryCost, { cost: response.agent.cost })
+              e("pre", null, JSON.stringify(response.data, null, 2))
             ),
             e("div", { className: "investigation-history" },
               e("div", { className: "panel-head" },

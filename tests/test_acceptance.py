@@ -4,6 +4,7 @@ import base64
 import hashlib
 import json
 import os
+from datetime import UTC, datetime
 from types import SimpleNamespace
 from io import BytesIO
 from pathlib import Path
@@ -367,6 +368,19 @@ def test_agent_query_returns_foundry_usage(monkeypatch):
             },
         },
     )
+    monthly_usage = {
+        "period": "2026-09",
+        "period_start": "2026-09-01T00:00:00+00:00",
+        "resets_at": "2026-10-01T00:00:00+00:00",
+        "query_count": 4,
+        "input_tokens": 4800,
+        "cached_input_tokens": 200,
+        "output_tokens": 1200,
+        "total_tokens": 6000,
+        "estimated_cost_usd": 0.00846,
+        "currency": "USD",
+    }
+    monkeypatch.setattr(web_app, "record_agent_usage", lambda result: monthly_usage)
     response = TestClient(web_app.app).post(
         "/api/agent/query",
         json={"question": QUESTIONS[0], "filters": {"environment": "Prod"}},
@@ -395,7 +409,99 @@ def test_agent_query_returns_foundry_usage(monkeypatch):
             "output_cost_per_million": 4.5,
             "disclaimer": "Estimate excludes infrastructure, negotiated pricing, taxes, and non-model charges.",
         },
+        "monthly_usage": monthly_usage,
     }
+
+
+def test_agent_usage_endpoint_restores_current_month(monkeypatch):
+    monkeypatch.setenv("AUTH_DISABLED", "true")
+    from web import app as web_app
+
+    expected = {
+        "period": "2026-09",
+        "period_start": "2026-09-01T00:00:00+00:00",
+        "resets_at": "2026-10-01T00:00:00+00:00",
+        "query_count": 2,
+        "input_tokens": 1600,
+        "cached_input_tokens": 100,
+        "output_tokens": 400,
+        "total_tokens": 2000,
+        "estimated_cost_usd": 0.002866,
+        "currency": "USD",
+    }
+    monkeypatch.setattr(web_app, "get_monthly_agent_usage", lambda: expected)
+
+    response = TestClient(web_app.app).get("/api/agent/usage")
+
+    assert response.status_code == 200
+    assert response.json() == {"monthly_usage": expected}
+
+
+def test_agent_usage_is_idempotent_and_resets_by_utc_month():
+    from storage_intelligence.agent_usage import get_monthly_agent_usage, record_agent_usage
+
+    class FakeContainer:
+        def __init__(self):
+            self.items = {}
+            self.partitions = []
+
+        def upsert_item(self, *, body):
+            self.items[body["id"]] = body
+
+        def query_items(self, *, query, parameters, partition_key):
+            self.partitions.append(partition_key)
+            period = next(item["value"] for item in parameters if item["name"] == "@period")
+            items = [
+                item
+                for item in self.items.values()
+                if item["subscription_id"] == partition_key and item["period"] == period
+            ]
+            return [
+                {
+                    "query_count": len(items),
+                    "input_tokens": sum(item["input_tokens"] for item in items),
+                    "cached_input_tokens": sum(item["cached_input_tokens"] for item in items),
+                    "output_tokens": sum(item["output_tokens"] for item in items),
+                    "total_tokens": sum(item["total_tokens"] for item in items),
+                    "estimated_cost_usd": sum(item["estimated_cost_usd"] for item in items),
+                }
+            ]
+
+    container = FakeContainer()
+    agent_result = {
+        "conversation_id": "conversation-monthly-1",
+        "model": "gpt-5.4-mini",
+        "usage": {
+            "input_tokens": 1200,
+            "cached_input_tokens": 200,
+            "output_tokens": 300,
+            "total_tokens": 1500,
+        },
+        "cost": {"estimated_cost_usd": 0.002115, "currency": "USD"},
+    }
+    september = datetime(2026, 9, 30, 23, 59, tzinfo=UTC)
+
+    first = record_agent_usage(agent_result, now=september, container=container)
+    duplicate = record_agent_usage(agent_result, now=september, container=container)
+    october = get_monthly_agent_usage(
+        now=datetime(2026, 10, 1, tzinfo=UTC),
+        container=container,
+    )
+
+    assert first == duplicate
+    assert first["query_count"] == 1
+    assert first["total_tokens"] == 1500
+    assert first["estimated_cost_usd"] == 0.002115
+    assert first["resets_at"] == "2026-10-01T00:00:00+00:00"
+    assert october["query_count"] == 0
+    assert october["total_tokens"] == 0
+    assert october["estimated_cost_usd"] == 0.0
+    assert len(container.items) == 1
+    assert container.partitions == [
+        "__agent_usage__:2026-09",
+        "__agent_usage__:2026-09",
+        "__agent_usage__:2026-10",
+    ]
 
 
 def test_foundry_response_payload_reports_model_tokens_and_context(monkeypatch):
@@ -1451,10 +1557,10 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
         'className: "metrics health-metrics"'
     )
     assert index_html.index("/static/translations.js?v=20260828-powered-by") < index_html.index(
-        "/static/app.js?v=20260831-plain-agent"
+        "/static/app.js?v=20260901-monthly-usage"
     )
-    assert "/static/styles.css?v=20260831-plain-agent" in index_html
-    assert "/static/app.js?v=20260831-plain-agent" in index_html
+    assert "/static/styles.css?v=20260901-monthly-usage" in index_html
+    assert "/static/app.js?v=20260901-monthly-usage" in index_html
     assert "<title>Storage Atlas</title>" in index_html
     assert 'title: "Overview", subtitle:' in app_script
     assert 'e("div", { className: "product-name" }, "Storage Atlas")' in app_script
@@ -1468,6 +1574,7 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert ".powered-label { color: rgba(80,101,122,.72); font-size: 9px;" in styles
     assert 'function AgentUsageTile(props)' in app_script
     assert 'fetch("/api/agent/query"' in app_script
+    assert 'fetch("/api/agent/usage")' in app_script
     assert 'e(AgentUsageTile, { agent: agentUsage })' in app_script
     assert 'e("span", { className: "agent-usage-label" }, "Model:")' in app_script
     assert 'e("span", { className: "agent-usage-label" }, "Tokens:")' in app_script
@@ -1476,9 +1583,13 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
     assert 'function StructuredAgentAnswer(props)' not in app_script
     assert 'function AgentInlineText(props)' not in app_script
     assert 'function QueryCost(props)' in app_script
-    assert 'e("div", { className: "response-answer" }, response.answer)' in app_script
+    assert 'className: "response-answer"' not in app_script
     assert 'e(QueryCost, { cost: response.agent.cost })' in app_script
     assert ".structured-answer {" not in styles
+    assert '"Cumulative token cost/month:"' in app_script
+    assert app_script.index('e(QueryCost, { cost: response.agent.cost })') < app_script.index(
+        'className: "response-reasons-title"'
+    )
     instructions = (Path(__file__).resolve().parents[1] / "src" / "agent" / "instructions.md").read_text()
     assert "at most two short plain-text paragraphs" in instructions
     assert "Do not repeat scope, timestamps, confidence, evidence" in instructions
