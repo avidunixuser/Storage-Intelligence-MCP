@@ -4,6 +4,90 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Persistent Monthly Agent Usage
+
+- **Mode:** Modify the Agent Investigation UI and persist Foundry token usage and estimated
+  cost in the existing Cosmos DB account.
+- **Scope:** Remove the narrative answer above "Why these accounts were flagged", move the
+  per-query cost card above the notification controls, and add a persistent cumulative
+  token-cost value to the navigation usage tile.
+- **Monthly semantics:** Use UTC calendar months as approved by the user. The displayed
+  cumulative totals reset to zero on the first day of each UTC month. Retain prior monthly
+  events in Cosmos DB rather than deleting them, so resets do not destroy audit history.
+- **Persistence model:** Store one immutable `agent-query-usage` document per successful
+  Foundry response in the existing `storage-intelligence` database and `storage-accounts`
+  container. Use `__agent_usage__:YYYY-MM` as `subscription_id`/partition key and derive
+  the document ID from the Foundry conversation ID for retry-safe idempotency. Persist
+  model, input/cached/output/total tokens, calculated USD cost, currency, UTC timestamp,
+  and month. Do not persist question text or agent answer.
+- **Aggregation:** Query only the active UTC-month partition and return query count,
+  cumulative token counts, cumulative calculated cost, period, and next UTC reset time.
+  Use the same Cosmos client session for each write-and-read cycle. Expose an authenticated
+  usage endpoint so the tile restores the current month after a Container App restart or
+  before the first query of a browser session.
+- **Failure behavior:** Treat usage persistence as required for successful agent-query
+  accounting. Surface an explicit service error if Cosmos cannot record or read usage;
+  do not silently report an unpersisted success-shaped cumulative total.
+- **UI:** Remove `response.answer` from the result view. Keep "Why these accounts were
+  flagged", the owner-notification controls, trust metadata, and evidence. Render the
+  current query's cost immediately above the flagged-account heading/notification button.
+  Add `Cumulative token cost/month` to the navigation usage tile using the persisted
+  current-month aggregate.
+- **Infrastructure:** Reuse the existing private Cosmos DB account, managed identities,
+  Foundry agent, Container App, ACR, and unique `web` and `tools` AZD service tags.
+  The existing web Cosmos DB data contributor role already covers the target database, so
+  no new resource, credential, role, or public endpoint is required.
+- **Validation:** Add idempotency, UTC rollover, aggregation, persistence-failure, API,
+  restart-restoration, UI placement, and cache-key tests. Run the complete existing test
+  suite, JavaScript and Python syntax checks, Bicep build, AZD package/preview, policy,
+  service-tag, and static/live RBAC validation.
+- **Delivery:** Rebuild with a unique image tag in a bounded ACR access window, restore
+  private/default-deny/admin-disabled ACR posture, deploy one healthy revision at 100%
+  traffic, verify persistence from the private Container App network, then commit, push,
+  create and merge a pull request, and verify `origin/main`.
+- **Preparation evidence:** The user approved UTC calendar-month resets and reconfirmed the
+  existing `mcpa2a` subscription and Sweden Central context. The implementation writes
+  retry-safe per-conversation usage documents without question or answer content, queries
+  only the active month partition, exposes an authenticated restoration endpoint, removes
+  the narrative answer, moves per-query cost above notification controls, and displays the
+  persisted monthly total. All 102 tests, JavaScript syntax, Python compilation, Bicep
+  build, and `git diff --check` passed. No resources are added; the Container Apps quota
+  API reports a managed-environment limit of 50.
+- **Validation steps:**
+  - [x] AZD installation and schema
+  - [x] Environment, authentication, subscription, and location
+  - [x] Provision preview
+  - [x] Build verification
+  - [x] Docker context and package validation
+  - [x] Azure Policy review
+  - [x] Static least-privilege RBAC review
+  - [x] Unique live `web` and `tools` tag verification
+- **Validation proof:** On 2026-09-01, AZD 1.30.0 authenticated as the expected tenant
+  identity and loaded environment `mcpa2a`, subscription
+  `c82406dd-f84c-42df-9586-c6f02abda6df`, and Sweden Central. The schema-backed
+  `azure.yaml` packaged successfully. `azd provision --preview --no-prompt` completed
+  without resource creates or deletes. All 102 tests, JavaScript syntax, Python
+  compilation, Bicep build, Docker build-context review, AZD package, and
+  `git diff --check` passed. Applicable policy assignments were reviewed. Static review
+  confirmed the existing Cosmos DB data contributor assignment is database-scoped and
+  sufficient for the web identity; Foundry User and AcrPull remain resource-scoped. Live
+  tag enumeration returned exactly one `web` Container App and one `tools` Function App.
+- **Deployment proof:** After refreshing the tenant-authorized Azure CLI device-code
+  session, `azd provision --no-prompt` completed with no infrastructure changes. Live
+  AcrPull and the database-scoped Cosmos DB Built-in Data Contributor assignment were
+  confirmed for the web identity. ACR build `dt17` produced
+  `acrlgvr.azurecr.io/storage-intelligence:monthly-usage-20260901` with digest
+  `sha256:fd5d79be390affa0743dee5d6ecda0a49adb5e1dd4732620dd453fc60e560f5b`.
+  ACR was restored to public access disabled, default deny, and admin disabled. Container
+  App revision `ca-storage-intel-kxlgam3w--0000040` is healthy with one replica and 100%
+  traffic. A private-network Foundry query persisted one Cosmos usage document containing
+  8,053 input tokens, 168 output tokens, 8,221 total tokens, and `$0.006796 USD`; the
+  document contains no question or answer. After restarting the revision, a newly created
+  replica restored the identical September aggregate with an October 1 UTC reset date.
+  The unauthenticated root, usage, and agent query endpoints return HTTP 401. Exactly one
+  `web` and one `tools` tagged resource remain, and all required resource-scoped roles are
+  intact.
+
 ## Pending Change: Remove Structured Agent Answer Formatting
 
 - **Mode:** Modify the existing Agent Investigation presentation and redeploy the current
