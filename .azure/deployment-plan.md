@@ -4,6 +4,49 @@
 
 Generated: 2026-08-11
 
+## Deployed Change: Select All Notification Accounts
+
+- **Mode:** Add bulk account selection to every existing owner-notification surface and
+  redeploy the current Container App.
+- **Scope:** Place an accessible select-all checkbox at the top of each section that already
+  renders account checkboxes and a "Notify project owners" button. Selection remains scoped
+  to the accounts displayed in that section.
+- **Affected surfaces:** Platform-linked accounts, risk concentration, Agent Investigation,
+  Savings Simulator recommendations, Findings, and Data Health posture drilldowns.
+- **Selection behavior:** Deduplicate visible account IDs. Checking "Select all" adds every
+  visible account to that surface; clearing it removes every visible account while leaving
+  any selection outside the current filtered view intact. The control is checked only when
+  all visible accounts are selected and indeterminate for a partial visible selection.
+- **Notification behavior:** Per user approval, allow all visible accounts to be selected
+  and submit them sequentially in automatic batches of 100 through the existing endpoint.
+  Keep the backend request limit of 100 to bound each email. Remove each accepted batch
+  from the selection as it succeeds so a retry cannot resend it; if a later batch fails,
+  leave unsent accounts selected and report how many accounts were already accepted.
+- **Accessibility:** Give the checkbox a visible label, account-count-aware accessible name,
+  native checked/indeterminate state, keyboard focus styling, and disabled state when no
+  accounts are visible or while notification delivery is running.
+- **Infrastructure:** Reuse the current Container App, ACR, Foundry, Cosmos DB, Azure
+  Communication Services, managed identities, and unchanged unique `web` and `tools` AZD
+  service tags. No new resources, roles, credentials, or public access.
+- **Validation:** Add UI coverage for all six toolbars, select-all state wiring, unique-ID
+  selection, 100-account batching, success/partial-failure messaging, and refreshed cache
+  keys. Run the complete tests, JavaScript/Python syntax checks, Bicep build, AZD package
+  and preview, policy, tag, and RBAC checks.
+- **Delivery:** Build a uniquely tagged image in a bounded ACR access window, restore
+  private/default-deny/admin-disabled registry posture, deploy a healthy revision at 100%
+  traffic, then commit, push, create and merge a pull request, and verify `origin/main`.
+- **Preparation evidence:** The complete 102-test suite passes. Python compilation,
+  JavaScript syntax validation, Bicep compilation, and `git diff --check` also pass.
+- **Deployment evidence:** `azd provision --no-prompt` confirmed no infrastructure
+  changes and live `AcrPull` propagation. ACR run `dt19` published
+  `storage-intelligence:select-all-20260901-r2` at digest
+  `sha256:af2a7388f7598876659f0df4f5f7f5fbd39b42ed3a10ac744327457a257b30f3`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000041` is healthy, provisioned,
+  has one replica, and receives 100% traffic. Runtime inspection found all six notification
+  toolbars and automatic 100-account batching in the deployed bundle; local `/healthz`
+  returned healthy. The unauthenticated public endpoint redirects to the tenant's Entra
+  sign-in flow. ACR is public-disabled, default-deny, and admin-disabled.
+
 ## Pending Change: Persistent Monthly Agent Usage
 
 - **Mode:** Modify the Agent Investigation UI and persist Foundry token usage and estimated
@@ -1342,6 +1385,29 @@ Commit the validated change, push it, create a pull request, and merge it.
 
 ### Commands and results
 
+- 2026-09-01 select-all notification deployment: `azd provision --no-prompt` confirmed
+  no infrastructure changes and the two AZD service tags remained unique. Live `AcrPull`
+  was confirmed before image deployment. The first asynchronous build run, `dt18`, failed
+  after its bounded access window closed too early; the registry posture was restored
+  automatically. Synchronous retry `dt19` succeeded and published
+  `storage-intelligence:select-all-20260901-r2` at digest
+  `sha256:af2a7388f7598876659f0df4f5f7f5fbd39b42ed3a10ac744327457a257b30f3`.
+  Revision `ca-storage-intel-kxlgam3w--0000041` is healthy and provisioned with one replica
+  and 100% traffic. In-replica checks returned healthy from `/healthz` and confirmed six
+  deployed notification toolbars plus the 100-account batching code. The public endpoint
+  redirects unauthenticated clients to Entra. ACR is public-disabled, default-deny, and
+  admin-disabled. Live role queries reconfirmed the web identity's resource-scoped
+  `AcrPull`, `Foundry User`, `Website Contributor`, Communication Services role, and
+  database-scoped Cosmos DB Built-in Data Contributor, plus all seven Function data roles.
+- 2026-09-01 select-all notification validation: `azd version`, `azd auth login
+  --check-status`, and `azd env get-values` confirmed AZD 1.30.0 and the approved
+  subscription, tenant, `mcpa2a` environment, and Sweden Central location. `azd provision
+  --preview --no-prompt` succeeded in 52 seconds with no creates or deletes; reported
+  modifications are Azure normalization-only drift already documented for this environment.
+  `azd package --all --no-prompt`, Bicep compilation, Python compilation, JavaScript syntax
+  validation, `git diff --check`, and the complete 102-test suite passed. All nine applicable
+  policy assignments were reviewed; the change adds no resources or RBAC, and static review
+  reconfirmed the existing resource-scoped web and Function managed-identity assignments.
 - 2026-08-31 Updated home-page logo deployment: `azd provision --no-prompt` confirmed
   no infrastructure changes. ACR run `dtw` published
   `storage-intelligence:logo-20260831` at digest

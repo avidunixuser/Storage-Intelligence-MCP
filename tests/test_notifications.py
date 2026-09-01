@@ -139,12 +139,24 @@ def test_notification_ui_and_infrastructure_cover_every_account_surface():
     for surface in ("platform", "risk", "agent", "savings", "findings", "posture"):
         assert f'notifyProjectOwners("{surface}", ids)' in app_script
         assert f'toggleAccountSelection("{surface}"' in app_script
+        assert f'toggleVisibleAccountSelection("{surface}", ids, checked)' in app_script
     assert 'fetch("/api/notifications/project-owners"' in app_script
     assert 'disabled: props.busy || props.selectedIds.length === 0' in app_script
     assert "function AccountCheckbox(props)" in app_script
     assert "function NotificationToolbar(props)" in app_script
+    assert "function toggleVisibleAccountSelection(surface, visibleIds, checked)" in app_script
+    assert 'text: "Select all"' in app_script
+    assert 'indeterminate: partiallySelected' in app_script
+    assert "const visibleIds = Array.from(new Set(props.visibleIds || []));" in app_script
+    assert "for (let index = 0; index < uniqueIds.length; index += 100)" in app_script
+    assert '" across " + operationIds.length + " batch(es)."' in app_script
+    assert '" of " + uniqueIds.length + " account(s) were accepted."' in app_script
+    assert "const acceptedIds = new Set(batch);" in app_script
+    assert app_script.count("visibleIds:") == 6
+    assert app_script.count("onSelectAll:") == 7
     assert ".notify-owners-button:disabled" in styles
     assert ".account-select-control input:checked + .account-select-box" in styles
+    assert ".account-select-control input:indeterminate + .account-select-box" in styles
     assert '"Notify project owners": "Notificar a los propietarios del proyecto"' in translations
 
     assert "azure-communication-email==1.1.0" in pyproject

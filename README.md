@@ -50,9 +50,11 @@ as the canonical MCP URL; `/mcp` redirects to the mounted transport path.
   attributes, and upsert them to private Cosmos DB before updating the in-memory inventory.
 - Account rows in Overview, Agent Investigation, Savings Simulator, Findings, and Data
   Health include accessible checkboxes plus a tile-level **Notify project owners** action.
-  The action remains disabled until that tile has a selection and batches up to 100
-  selected accounts into one actionable Azure Communication Services email. The pilot
-  recipient is fixed server-side to `nrp@microsoft.com`.
+  Each notification toolbar includes **Select all** for the unique accounts visible in that
+  section. A single notification action sends larger selections sequentially in bounded
+  batches of 100 accounts per actionable Azure Communication Services email. The action
+  remains disabled until that tile has a selection, and the pilot recipient is fixed
+  server-side to `nrp@microsoft.com`.
 - Administrator-only tenant discovery that runs read-only Azure CLI commands across all
   authorized subscriptions and imports tenant, management-group, subsidiary/business-unit,
   environment, storage account, region, tier, SKU, access/network posture, and

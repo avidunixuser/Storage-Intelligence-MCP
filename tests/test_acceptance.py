@@ -1557,10 +1557,10 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
         'className: "metrics health-metrics"'
     )
     assert index_html.index("/static/translations.js?v=20260828-powered-by") < index_html.index(
-        "/static/app.js?v=20260901-monthly-usage"
+        "/static/app.js?v=20260901-select-all"
     )
-    assert "/static/styles.css?v=20260901-monthly-usage" in index_html
-    assert "/static/app.js?v=20260901-monthly-usage" in index_html
+    assert "/static/styles.css?v=20260901-select-all" in index_html
+    assert "/static/app.js?v=20260901-select-all" in index_html
     assert "<title>Storage Atlas</title>" in index_html
     assert 'title: "Overview", subtitle:' in app_script
     assert 'e("div", { className: "product-name" }, "Storage Atlas")' in app_script
