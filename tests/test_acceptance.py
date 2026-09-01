@@ -389,6 +389,7 @@ def test_agent_query_returns_foundry_usage(monkeypatch):
     assert response.status_code == 200
     body = response.json()
     assert body["answer"] == "Foundry answer"
+    assert body["question"] == QUESTIONS[0]
     assert body["evidence"]
     assert body["agent"] == {
         "conversation_id": "conversation-1",
@@ -1557,10 +1558,10 @@ def test_hierarchy_controls_and_foundry_mark_are_global():
         'className: "metrics health-metrics"'
     )
     assert index_html.index("/static/translations.js?v=20260828-powered-by") < index_html.index(
-        "/static/app.js?v=20260901-select-all"
+        "/static/app.js?v=20260901-query-email"
     )
-    assert "/static/styles.css?v=20260901-select-all" in index_html
-    assert "/static/app.js?v=20260901-select-all" in index_html
+    assert "/static/styles.css?v=20260901-query-email" in index_html
+    assert "/static/app.js?v=20260901-query-email" in index_html
     assert "<title>Storage Atlas</title>" in index_html
     assert 'title: "Overview", subtitle:' in app_script
     assert 'e("div", { className: "product-name" }, "Storage Atlas")' in app_script

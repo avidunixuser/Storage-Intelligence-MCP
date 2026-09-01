@@ -83,11 +83,39 @@ def _azure_service_usage(account: dict[str, Any]) -> str:
     return "; ".join(services) or "No linked Azure service recorded"
 
 
-def notification_rows(accounts: list[dict[str, Any]]) -> list[dict[str, str]]:
+def _investigation_action(tool: str | None) -> str:
+    if tool == "cost.tier_savings":
+        return (
+            "Validate the proposed target tier against access patterns, retrieval and operation "
+            "charges, and early-deletion exposure before implementation."
+        )
+    if tool and tool.startswith("cost."):
+        return "Validate the identified cost driver or savings opportunity and agree an owner action."
+    if tool and tool.startswith("capacity."):
+        return "Validate the capacity signal and update the growth, lifecycle, or capacity plan."
+    if tool and tool.startswith("databricks."):
+        return "Review the storage finding with the Databricks owner and validate the proposed remediation."
+    if tool and tool.startswith("evidence."):
+        return "Refresh or validate the cited evidence before making a remediation decision."
+    if tool and tool.startswith("risk."):
+        return "Review the described risk with the project owner and record a remediation date."
+    if tool and tool.startswith("portfolio."):
+        return "Review the portfolio finding with accountable owners and record the agreed next step."
+    return "Review this query-specific finding with the project owner and record the agreed next step."
+
+
+def notification_rows(
+    accounts: list[dict[str, Any]],
+    *,
+    findings: dict[str, str] | None = None,
+    tool: str | None = None,
+) -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
     for account in accounts:
         risk = risk_score(account)
         factors = [str(factor) for factor in risk["risk_factors"]]
+        account_id = str(account["account_id"])
+        query_finding = findings.get(account_id) if findings is not None else None
         rows.append(
             {
                 "account": str(account["name"]),
@@ -99,22 +127,42 @@ def notification_rows(accounts: list[dict[str, Any]]) -> list[dict[str, str]]:
                 "tier": str(account["tier"]),
                 "project": str(account.get("project_name") or "Unassigned"),
                 "azure_service_usage": _azure_service_usage(account),
-                "risk": f"{risk['score']}/100",
-                "findings": "; ".join(factors[:5]) if factors else "No explicit risk factor recorded",
-                "action": _recommended_action(account, factors, risk["score"]),
+                "signal": "Query finding" if findings is not None else f"Risk {risk['score']}/100",
+                "signal_tone": "#0f6cbd"
+                if findings is not None
+                else "#a4262c"
+                if risk["score"] >= AT_RISK_THRESHOLD
+                else "#8a6d1d",
+                "findings": query_finding
+                if query_finding
+                else "; ".join(factors[:5])
+                if factors
+                else "No explicit risk factor recorded",
+                "action": _investigation_action(tool)
+                if findings is not None
+                else _recommended_action(account, factors, risk["score"]),
             }
         )
     return rows
 
 
-def render_notification(accounts: list[dict[str, Any]]) -> tuple[str, str, str]:
-    rows = notification_rows(accounts)
-    subject = f"Action required: review {len(rows)} Azure Storage account{'s' if len(rows) != 1 else ''}"
+def render_notification(
+    accounts: list[dict[str, Any]],
+    *,
+    question: str | None = None,
+    tool: str | None = None,
+    findings: dict[str, str] | None = None,
+) -> tuple[str, str, str]:
+    normalized_question = " ".join(question.split()) if question else None
+    rows = notification_rows(accounts, findings=findings, tool=tool)
+    subject = (
+        f"Agent investigation: {normalized_question[:120]}"
+        if normalized_question
+        else f"Action required: review {len(rows)} Azure Storage account{'s' if len(rows) != 1 else ''}"
+    )
     body_rows: list[str] = []
     for index, row in enumerate(rows):
         background = "#ffffff" if index % 2 == 0 else "#f7fafd"
-        score = float(row["risk"].split("/", 1)[0])
-        risk_color = "#a4262c" if score >= AT_RISK_THRESHOLD else "#8a6d1d"
         body_rows.append(
             f'<tr style="background:{background}">'
             '<td style="border-bottom:1px solid #dbe6f1;padding:14px 12px;vertical-align:top">'
@@ -137,7 +185,8 @@ def render_notification(accounts: list[dict[str, Any]]) -> tuple[str, str, str]:
             "</td>"
             '<td style="border-bottom:1px solid #dbe6f1;padding:14px 12px;vertical-align:top">'
             f'<strong>Project · {html.escape(row["project"])}</strong>'
-            f'<div style="color:{risk_color};font-weight:700;margin-top:6px">Risk {html.escape(row["risk"])}</div>'
+            f'<div style="color:{row["signal_tone"]};font-weight:700;margin-top:6px">'
+            f'{html.escape(row["signal"])}</div>'
             "</td>"
             '<td style="border-bottom:1px solid #dbe6f1;padding:14px 12px;vertical-align:top">'
             f'<div style="color:#334e68">{html.escape(row["findings"])}</div>'
@@ -146,6 +195,20 @@ def render_notification(accounts: list[dict[str, Any]]) -> tuple[str, str, str]:
             "</td>"
             "</tr>"
         )
+    heading = "Agent Investigation owner review" if normalized_question else "Azure Storage account review requested"
+    question_summary = (
+        '<table role="presentation" style="border-collapse:collapse;margin-top:18px;width:100%"><tr>'
+        '<td style="background:#e8f3fc;border-left:4px solid #0078d4;border-radius:4px;color:#0f3b5d;'
+        f'font-size:13px;padding:12px 14px"><strong>Question:</strong> {html.escape(normalized_question)}</td>'
+        "</tr></table>"
+        if normalized_question
+        else ""
+    )
+    review_scope = (
+        "Query-specific findings, Azure service associations, governance context, and aligned owner actions."
+        if normalized_question
+        else "Azure service associations, governance context, risk signals, and recommended actions."
+    )
     html_body = (
         '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
         '<body style="background:#eef3f8;color:#1c2b3a;font-family:Segoe UI,Arial,sans-serif;margin:0;padding:24px">'
@@ -156,14 +219,15 @@ def render_notification(accounts: list[dict[str, Any]]) -> tuple[str, str, str]:
         '<div style="color:#deecf9;font-size:14px;margin-top:6px">Project owner action notification</div>'
         "</td></tr>"
         '<tr><td style="background:#ffffff;padding:26px 28px 14px">'
-        '<h1 style="color:#0f3b5d;font-size:21px;margin:0 0 10px">Azure Storage account review requested</h1>'
+        f'<h1 style="color:#0f3b5d;font-size:21px;margin:0 0 10px">{heading}</h1>'
         '<p style="color:#445d70;font-size:14px;line-height:1.55;margin:0">Storage Atlas identified '
         f'<strong>{len(rows)} account{"s" if len(rows) != 1 else ""}</strong> for owner review. '
         "Validate the findings, confirm the accountable project owner, and record a remediation date.</p>"
+        f"{question_summary}"
         '<table role="presentation" style="border-collapse:collapse;margin-top:18px;width:100%"><tr>'
         '<td style="background:#e8f3fc;border-left:4px solid #0078d4;border-radius:4px;color:#0f3b5d;'
-        'font-size:13px;padding:12px 14px"><strong>Review scope:</strong> Azure service associations, '
-        "governance context, risk signals, and recommended actions.</td></tr></table>"
+        'font-size:13px;padding:12px 14px"><strong>Review scope:</strong> '
+        f"{review_scope}</td></tr></table>"
         "</td></tr>"
         '<tr><td style="background:#ffffff;padding:12px 28px 28px">'
         '<table aria-label="Azure Storage accounts requiring owner review" role="table" '
@@ -174,7 +238,7 @@ def render_notification(accounts: list[dict[str, Any]]) -> tuple[str, str, str]:
         '<th style="padding:11px 12px;text-align:left">Azure service usage</th>'
         '<th style="padding:11px 12px;text-align:left">Management group / business unit</th>'
         '<th style="padding:11px 12px;text-align:left">Environment / region / tier</th>'
-        '<th style="padding:11px 12px;text-align:left">Project / risk</th>'
+        '<th style="padding:11px 12px;text-align:left">Project / risk or query signal</th>'
         '<th style="padding:11px 12px;text-align:left">Key findings / action</th>'
         f'</tr></thead><tbody>{"".join(body_rows)}</tbody></table>'
         "</td></tr>"
@@ -194,7 +258,7 @@ def render_notification(accounts: list[dict[str, Any]]) -> tuple[str, str, str]:
         ("tier", "Tier"),
         ("project", "Project"),
         ("azure_service_usage", "Azure service usage"),
-        ("risk", "Risk"),
+        ("signal", "Risk / query signal"),
         ("findings", "Key findings"),
         ("action", "Recommended action"),
     ]
@@ -202,6 +266,7 @@ def render_notification(accounts: list[dict[str, Any]]) -> tuple[str, str, str]:
         "MICROSOFT AZURE | STORAGE ATLAS",
         "Azure Storage account review requested",
         "",
+        *([f"Question: {normalized_question}", ""] if normalized_question else []),
         "Validate the findings, assign an accountable owner, and record a remediation date.",
         "",
         " | ".join(label for _, label in columns),
@@ -227,6 +292,9 @@ def _result_value(result: Any, key: str) -> str:
 def send_project_owner_notification(
     accounts: list[dict[str, Any]],
     *,
+    question: str | None = None,
+    tool: str | None = None,
+    findings: dict[str, str] | None = None,
     client: EmailSender | None = None,
     endpoint: str | None = None,
     sender: str | None = None,
@@ -240,7 +308,12 @@ def send_project_owner_notification(
     recipient = recipient or _required_setting("PROJECT_OWNER_NOTIFICATION_RECIPIENT")
     managed_identity_client_id = os.getenv("AZURE_CLIENT_ID", "").strip() or None
     email_client = client or _email_client(endpoint, managed_identity_client_id)
-    subject, html_body, plain_text = render_notification(accounts)
+    subject, html_body, plain_text = render_notification(
+        accounts,
+        question=question,
+        tool=tool,
+        findings=findings,
+    )
     message = {
         "senderAddress": sender,
         "recipients": {

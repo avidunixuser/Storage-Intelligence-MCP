@@ -632,7 +632,7 @@
       });
     }
 
-    function notifyProjectOwners(surface, accountIds) {
+    function notifyProjectOwners(surface, accountIds, investigation) {
       if (!accountIds.length || notificationBusy[surface]) return;
       const uniqueIds = Array.from(new Set(accountIds));
       const batches = [];
@@ -648,7 +648,10 @@
         fetch("/api/notifications/project-owners", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ account_ids: batch })
+          body: JSON.stringify({
+            account_ids: batch,
+            investigation: investigation || undefined
+          })
         })
           .then((result) => result.json().then((body) => {
             if (!result.ok) throw new Error(apiError(body, "Project-owner notification could not be sent"));
@@ -1482,7 +1485,10 @@
                     busy: notificationBusy.agent,
                     status: notificationStatuses.agent,
                     onSelectAll: (ids, checked) => toggleVisibleAccountSelection("agent", ids, checked),
-                    onNotify: (ids) => notifyProjectOwners("agent", ids)
+                    onNotify: (ids) => notifyProjectOwners("agent", ids, {
+                      question: response.question,
+                      filters: response.scope.filters || {}
+                    })
                   })
                 ),
                 response.account_reasons.map((item) =>
