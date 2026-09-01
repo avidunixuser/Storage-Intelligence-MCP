@@ -54,7 +54,10 @@ as the canonical MCP URL; `/mcp` redirects to the mounted transport path.
   section. A single notification action sends larger selections sequentially in bounded
   batches of 100 accounts per actionable Azure Communication Services email. The action
   remains disabled until that tile has a selection, and the pilot recipient is fixed
-  server-side to `nrp@microsoft.com`.
+  server-side to `nrp@microsoft.com`. The dual-format notification uses an email-safe
+  Microsoft Azure theme and identifies each account's recorded Azure service associations
+  (Databricks, Fabric, SAP, Data Factory, Storage SFTP, Application Insights, Functions,
+  and Log Analytics) in the review table.
 - Administrator-only tenant discovery that runs read-only Azure CLI commands across all
   authorized subscriptions and imports tenant, management-group, subsidiary/business-unit,
   environment, storage account, region, tier, SKU, access/network posture, and

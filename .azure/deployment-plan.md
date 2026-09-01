@@ -4,6 +4,49 @@
 
 Generated: 2026-08-11
 
+## Deployed Change: Azure-Themed Notification Email
+
+- **Mode:** Modify the existing project-owner notification email and redeploy the current
+  Container App.
+- **Scope:** Replace the current basic HTML message with an email-client-safe Microsoft
+  Azure visual treatment using inline styles, Segoe UI, Azure blue accents, a branded
+  header, account-count summary, clearer hierarchy, alternating table rows, risk badges,
+  and a concise advisory footer. Keep a complete plain-text alternative.
+- **Azure service usage:** Add an `Azure service usage` column for every account. Derive it
+  only from trusted inventory attributes already collected by Storage Atlas: Azure
+  Databricks workspace, Microsoft Fabric lakehouse, SAP on Azure system, Azure Data Factory,
+  Azure Storage SFTP, Application Insights, Azure Functions, and Log Analytics. Include
+  the associated resource name where available; render `No linked Azure service recorded`
+  when inventory has no association.
+- **Security and compatibility:** Continue escaping every inventory-derived value before
+  HTML rendering. Use no scripts, remote CSS, tracking pixels, external image dependencies,
+  credentials, or user-supplied recipients. Preserve disabled engagement tracking and the
+  server-side fixed recipient.
+- **Architecture:** Reuse the existing Python notification renderer, Azure Communication
+  Services Email resource, managed identity, Container App, private ACR, Cosmos DB, Foundry,
+  and unchanged `web` and `tools` AZD service tags. No infrastructure, RBAC, API contract,
+  batching, or recurring-cost change is required.
+- **Validation:** Add focused tests for all service mappings, empty associations, HTML
+  escaping, Azure theme markers, semantic table content, plain-text parity, and the existing
+  dual-format sender contract. Run the complete test suite, Python and JavaScript syntax
+  checks, Bicep build, AZD package/preview, policy review, and static/live RBAC checks.
+- **Delivery:** After approval, validate through `azure-validate`, provision through
+  `azure-deploy`, confirm `AcrPull`, build a uniquely tagged image inside the bounded ACR
+  access window, restore public-disabled/default-deny/admin-disabled registry posture,
+  deploy one healthy Container App revision at 100% traffic, verify the template from the
+  deployed container, then commit, push, create and merge a pull request.
+- **Preparation evidence:** The complete 104-test suite passes. Python compilation,
+  JavaScript syntax validation, Bicep compilation, and `git diff --check` also pass.
+- **Deployment evidence:** `azd provision --no-prompt` confirmed no infrastructure
+  changes and live `AcrPull` propagation. ACR run `dt1a` published
+  `storage-intelligence:azure-email-20260901` at digest
+  `sha256:26f9b27213be7ddfbdfdf598045351527aea23d4fb3526cfbed0d3b0e3534463`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000042` is healthy, provisioned,
+  has one replica, and receives 100% traffic. In-replica rendering confirmed the Azure
+  theme, service-usage column, Data Factory association, and expected subject. Local
+  `/healthz` returned healthy and the unauthenticated public endpoint redirects to Entra.
+  ACR is public-disabled, default-deny, and admin-disabled.
+
 ## Deployed Change: Select All Notification Accounts
 
 - **Mode:** Add bulk account selection to every existing owner-notification surface and
@@ -1385,6 +1428,28 @@ Commit the validated change, push it, create a pull request, and merge it.
 
 ### Commands and results
 
+- 2026-09-01 Azure-themed notification deployment: `azd provision --no-prompt` confirmed
+  no infrastructure changes and the `web` and `tools` AZD tags remained unique. Live
+  `AcrPull` was confirmed before ACR run `dt1a` published
+  `storage-intelligence:azure-email-20260901` at digest
+  `sha256:26f9b27213be7ddfbdfdf598045351527aea23d4fb3526cfbed0d3b0e3534463`.
+  Revision `ca-storage-intel-kxlgam3w--0000042` is healthy and provisioned with one replica
+  and 100% traffic. In-replica checks rendered the Azure-themed 4,440-character HTML
+  message with the service-usage column and returned healthy from `/healthz`. The public
+  endpoint redirects unauthenticated clients to Entra. ACR is public-disabled,
+  default-deny, and admin-disabled. Live role queries reconfirmed resource-scoped
+  Communication and Email Service Owner, `AcrPull`, Foundry, Function, and database-scoped
+  Cosmos DB access for the web identity.
+- 2026-09-01 Azure-themed notification validation: `azd version`, `azd auth login
+  --check-status`, and `azd env get-values` confirmed AZD 1.30.0 and the approved
+  subscription, tenant, `mcpa2a` environment, and Sweden Central location. `azd provision
+  --preview --no-prompt` succeeded in 56 seconds with no creates or deletes; reported
+  modifications are the environment's previously documented Azure normalization drift.
+  `azd package --all --no-prompt`, Bicep compilation, Python compilation, JavaScript syntax
+  validation, `git diff --check`, and the complete 104-test suite passed. All nine applicable
+  policy assignments were reviewed. The change adds no infrastructure or RBAC; static review
+  reconfirmed the existing resource-scoped Azure Communication Services, ACR, Foundry,
+  Function, storage, Durable Task Scheduler, Key Vault, monitoring, and Cosmos assignments.
 - 2026-09-01 select-all notification deployment: `azd provision --no-prompt` confirmed
   no infrastructure changes and the two AZD service tags remained unique. Live `AcrPull`
   was confirmed before image deployment. The first asynchronous build run, `dt18`, failed

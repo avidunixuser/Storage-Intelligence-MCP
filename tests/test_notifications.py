@@ -26,6 +26,7 @@ def test_notification_template_is_actionable_and_escapes_account_data():
     account = dict(generate_accounts(1)[0])
     account["name"] = "<script>alert('x')</script>"
     account["project_name"] = "Project <Critical>"
+    account["azure_data_factory"] = "adf-<critical>"
 
     subject, html_body, plain_text = render_notification([account])
 
@@ -33,8 +34,15 @@ def test_notification_template_is_actionable_and_escapes_account_data():
     assert "<script>" not in html_body
     assert "&lt;script&gt;" in html_body
     assert "Project &lt;Critical&gt;" in html_body
+    assert "Azure Data Factory: adf-&lt;critical&gt;" in html_body
+    assert "Azure Data Factory: adf-<critical>" in plain_text
+    assert 'background:#0078d4' in html_body
+    assert 'background:#0f6cbd' in html_body
+    assert "Microsoft Azure" in html_body
+    assert "Storage Atlas" in html_body
+    assert 'aria-label="Azure Storage accounts requiring owner review"' in html_body
     for heading in (
-        "Account",
+        "Storage account",
         "Subscription",
         "Management group",
         "Business unit",
@@ -42,6 +50,7 @@ def test_notification_template_is_actionable_and_escapes_account_data():
         "Region",
         "Tier",
         "Project",
+        "Azure service usage",
         "Risk",
         "Key findings",
         "Recommended action",
@@ -49,6 +58,58 @@ def test_notification_template_is_actionable_and_escapes_account_data():
         assert heading in html_body
         assert heading in plain_text
     assert "This notification is advisory and does not change Azure resources." in plain_text
+
+
+def test_notification_template_lists_every_known_azure_service_association():
+    account = dict(generate_accounts(1)[0])
+    account.update(
+        {
+            "databricks_workspace": "dbw-analytics",
+            "fabric_lakehouse": "lakehouse-sales",
+            "sap_system": "SAP-S4HANA",
+            "azure_data_factory": "adf-ingestion",
+            "sftp_enabled": True,
+            "application_insights_resource": "appi-orders",
+            "azure_function_app": "func-processor",
+            "log_analytics_workspace": "law-operations",
+        }
+    )
+
+    _, html_body, plain_text = render_notification([account])
+
+    associations = (
+        "Azure Databricks: dbw-analytics",
+        "Microsoft Fabric: lakehouse-sales",
+        "SAP on Azure: SAP-S4HANA",
+        "Azure Data Factory: adf-ingestion",
+        "Azure Storage SFTP",
+        "Application Insights: appi-orders",
+        "Azure Functions: func-processor",
+        "Log Analytics: law-operations",
+    )
+    for association in associations:
+        assert association in html_body
+        assert association in plain_text
+
+
+def test_notification_template_marks_accounts_without_a_service_association():
+    account = dict(generate_accounts(1)[0])
+    for field in (
+        "databricks_workspace",
+        "fabric_lakehouse",
+        "sap_system",
+        "azure_data_factory",
+        "sftp_enabled",
+        "application_insights_resource",
+        "azure_function_app",
+        "log_analytics_workspace",
+    ):
+        account[field] = None
+
+    _, html_body, plain_text = render_notification([account])
+
+    assert "No linked Azure service recorded" in html_body
+    assert "No linked Azure service recorded" in plain_text
 
 
 def test_notification_sender_uses_dual_format_message_and_fixed_recipient():
