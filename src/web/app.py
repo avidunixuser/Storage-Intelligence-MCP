@@ -230,6 +230,13 @@ class SavingsSimulationRequest(BaseModel):
     filters: dict[str, str] = Field(default_factory=dict)
 
 
+class NotificationInvestigationContext(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    question: str = Field(min_length=3, max_length=500)
+    filters: dict[str, str] = Field(default_factory=dict)
+
+
 class ProjectOwnerNotificationRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -237,6 +244,7 @@ class ProjectOwnerNotificationRequest(BaseModel):
         min_length=1,
         max_length=100,
     )
+    investigation: NotificationInvestigationContext | None = None
 
     @field_validator("account_ids")
     @classmethod
@@ -1425,8 +1433,42 @@ def notify_project_owners(
                 "errors": unknown,
             },
         )
+    findings: dict[str, str] | None = None
+    tool: str | None = None
+    question: str | None = None
+    if payload.investigation:
+        try:
+            investigation = ENGINE.answer(
+                payload.investigation.question,
+                payload.investigation.filters,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        reasons_by_id = {
+            str(item["account_id"]): str(item["reason"])
+            for item in investigation["account_reasons"]
+        }
+        mismatched = [
+            account_id for account_id in payload.account_ids if account_id not in reasons_by_id
+        ]
+        if mismatched:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "message": "Selected accounts no longer match the investigation; rerun the query",
+                    "errors": mismatched,
+                },
+            )
+        findings = {account_id: reasons_by_id[account_id] for account_id in payload.account_ids}
+        tool = str(investigation["tool"])
+        question = payload.investigation.question
     try:
-        return send_project_owner_notification(accounts)
+        return send_project_owner_notification(
+            accounts,
+            question=question,
+            tool=tool,
+            findings=findings,
+        )
     except NotificationConfigurationError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except NotificationDeliveryError as exc:
@@ -1697,6 +1739,7 @@ def agent_query(
     except (AzureError, RuntimeError) as exc:
         raise HTTPException(status_code=503, detail="Agent usage could not be persisted") from exc
     result["answer"] = agent_result["answer"]
+    result["question"] = payload.question
     result["agent"] = {
         "conversation_id": agent_result["conversation_id"],
         "model": agent_result["model"],

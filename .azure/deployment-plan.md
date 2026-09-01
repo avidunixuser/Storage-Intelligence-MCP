@@ -4,6 +4,57 @@
 
 Generated: 2026-08-11
 
+## Pending Change: Query-Aligned Agent Notifications
+
+- **Mode:** Align Agent Investigation notification content with the question and displayed
+  account findings, then redeploy the current Container App.
+- **Root cause:** The Agent Investigation response already contains deterministic
+  `account_reasons`, but the notification request sends only account IDs. The server then
+  discards the investigation context and independently calculates security-risk findings and
+  actions for the email.
+- **API design:** Add an optional, strictly validated investigation context containing the
+  canonical question and active filters. The client sends this context only from Agent
+  Investigation. The server reruns `ENGINE.answer` against current trusted inventory,
+  verifies every selected account belongs to that result, and uses the recomputed
+  per-account reasons. Do not trust client-supplied finding or action text.
+- **Email behavior:** For Agent Investigation notifications, include the question in the
+  subject and review summary, replace security-derived findings with the exact deterministic
+  reasons shown under "Why these accounts were flagged", label each row as a query finding,
+  and generate an action aligned to the selected deterministic tool category (tier savings,
+  cost, capacity, Databricks, evidence, risk, or portfolio analysis). Preserve the existing
+  security-risk email behavior for notifications sent from other pages.
+- **Batching and failures:** Carry the same investigation context through every existing
+  sequential batch of 100. Reject stale or mismatched account selections with HTTP 422 and
+  require the administrator to rerun the investigation; do not silently fall back to
+  unrelated security recommendations.
+- **Security and architecture:** Continue resolving accounts server-side, escaping all email
+  values, fixing the recipient server-side, disabling engagement tracking, and using managed
+  identity. Reuse the existing Container App, Azure Communication Services Email, ACR,
+  Cosmos DB, Foundry, and unchanged `web` and `tools` AZD service tags. No infrastructure,
+  RBAC, or recurring-cost change is required.
+- **Validation:** Add focused coverage for the tier-savings question, exact displayed-finding
+  parity, query-aligned actions, mismatched-account rejection, legacy non-agent behavior,
+  client context wiring, batching, and HTML/plain-text escaping. Run the complete tests,
+  syntax checks, Bicep build, AZD package/preview, policy review, and static/live RBAC checks.
+- **Delivery:** After approval, validate through `azure-validate`, provision through
+  `azure-deploy`, confirm `AcrPull`, build a uniquely tagged image inside the bounded ACR
+  access window, restore private/default-deny/admin-disabled registry posture, deploy and
+  inspect one healthy revision at 100% traffic, then commit, push, create and merge a pull
+  request.
+- **Preparation evidence:** The complete 107-test suite passes, including exact
+  tier-savings finding parity, tool-aligned action rendering, stale-selection rejection, and
+  legacy non-agent email behavior. Python compilation, JavaScript syntax validation, Bicep
+  compilation, and `git diff --check` also pass.
+- **Deployment evidence:** `azd provision --no-prompt` confirmed no infrastructure changes
+  and live `AcrPull` propagation. ACR run `dt1b` published
+  `storage-intelligence:query-email-20260901` at digest
+  `sha256:b244148ecb3ed61292b4da029cdc797b640995423548dd843dece3d90397b3d4`.
+  Container App revision `ca-storage-intel-kxlgam3w--0000043` is healthy, provisioned, has
+  one replica, and receives 100% traffic. In-replica rendering confirmed exact tier-savings
+  finding parity, the `Query finding` label, tier-aligned action text, and absence of the
+  unrelated public-access and managed-identity recommendations. The public endpoint remains
+  protected by Entra. ACR is public-disabled, default-deny, and admin-disabled.
+
 ## Deployed Change: Azure-Themed Notification Email
 
 - **Mode:** Modify the existing project-owner notification email and redeploy the current
@@ -1428,6 +1479,16 @@ Commit the validated change, push it, create a pull request, and merge it.
 
 ### Commands and results
 
+- 2026-09-01 query-aligned notification validation: `azd version`, `azd auth login
+  --check-status`, and `azd env get-values` confirmed AZD 1.30.0 and the approved
+  subscription, tenant, `mcpa2a` environment, and Sweden Central location. `azd provision
+  --preview --no-prompt` succeeded in 57 seconds with no creates or deletes; reported
+  modifications are the environment's documented Azure normalization drift. `azd package
+  --all --no-prompt`, Bicep compilation, Python compilation, JavaScript syntax validation,
+  `git diff --check`, and the complete 107-test suite passed. All nine applicable policy
+  assignments were reviewed. No infrastructure or RBAC changes are present; static review
+  reconfirmed resource-scoped Communication Services, ACR, Foundry, Function, storage,
+  Durable Task Scheduler, Key Vault, monitoring, and Cosmos assignments.
 - 2026-09-01 Azure-themed notification deployment: `azd provision --no-prompt` confirmed
   no infrastructure changes and the `web` and `tools` AZD tags remained unique. Live
   `AcrPull` was confirmed before ACR run `dt1a` published

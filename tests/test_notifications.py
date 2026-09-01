@@ -112,6 +112,39 @@ def test_notification_template_marks_accounts_without_a_service_association():
     assert "No linked Azure service recorded" in plain_text
 
 
+def test_notification_template_uses_query_findings_and_tier_aligned_action():
+    account = dict(generate_accounts(1)[0])
+    account.update(
+        {
+            "public_network_access": True,
+            "blob_public_access_enabled": True,
+            "shared_key_access_enabled": True,
+        }
+    )
+    finding = (
+        "41.2 TB is eligible for Archive, producing $532.18 net monthly savings "
+        "after $18.04 retrieval and operation costs."
+    )
+    question = "How much can we save by tiering <cold> data?"
+
+    subject, html_body, plain_text = render_notification(
+        [account],
+        question=question,
+        tool="cost.tier_savings",
+        findings={account["account_id"]: finding},
+    )
+
+    assert subject == "Agent investigation: How much can we save by tiering <cold> data?"
+    assert "How much can we save by tiering &lt;cold&gt; data?" in html_body
+    assert f"Question: {question}" in plain_text
+    assert finding in html_body
+    assert finding in plain_text
+    assert "Query finding" in html_body
+    assert "Validate the proposed target tier against access patterns" in html_body
+    assert "Disable public access" not in html_body
+    assert "Migrate access to managed identity" not in html_body
+
+
 def test_notification_sender_uses_dual_format_message_and_fixed_recipient():
     accounts = generate_accounts(2)
     client = FakeEmailClient()
@@ -149,8 +182,9 @@ def test_notification_api_resolves_accounts_and_rejects_untrusted_input(monkeypa
     selected = web_app.ACCOUNTS[:2]
     captured = []
 
-    def fake_send(accounts):
+    def fake_send(accounts, **kwargs):
         captured.extend(accounts)
+        assert kwargs == {"question": None, "tool": None, "findings": None}
         return {
             "operation_id": "operation-api",
             "status": "Succeeded",
@@ -188,6 +222,70 @@ def test_notification_api_resolves_accounts_and_rejects_untrusted_input(monkeypa
     ).status_code == 422
 
 
+def test_agent_notification_recomputes_and_sends_exact_query_findings(monkeypatch):
+    monkeypatch.setenv("AUTH_DISABLED", "true")
+    from web import app as web_app
+
+    question = "How much can we save by tiering cold data?"
+    investigation = web_app.ENGINE.answer(question)
+    selected_reasons = investigation["account_reasons"][:2]
+    selected_ids = [item["account_id"] for item in selected_reasons]
+    captured = {}
+
+    def fake_send(accounts, **kwargs):
+        captured["accounts"] = accounts
+        captured.update(kwargs)
+        return {
+            "operation_id": "operation-agent",
+            "status": "Succeeded",
+            "recipient": "nrp@microsoft.com",
+            "account_count": len(accounts),
+        }
+
+    monkeypatch.setattr(web_app, "send_project_owner_notification", fake_send)
+    client = TestClient(web_app.app)
+    response = client.post(
+        "/api/notifications/project-owners",
+        json={
+            "account_ids": selected_ids,
+            "investigation": {"question": question, "filters": {}},
+        },
+    )
+
+    assert response.status_code == 202
+    assert captured["question"] == question
+    assert captured["tool"] == "cost.tier_savings"
+    assert captured["findings"] == {
+        item["account_id"]: item["reason"] for item in selected_reasons
+    }
+    assert [account["account_id"] for account in captured["accounts"]] == selected_ids
+
+
+def test_agent_notification_rejects_accounts_outside_recomputed_result(monkeypatch):
+    monkeypatch.setenv("AUTH_DISABLED", "true")
+    from web import app as web_app
+
+    question = "How much can we save by tiering cold data?"
+    result_ids = {
+        item["account_id"] for item in web_app.ENGINE.answer(question)["account_reasons"]
+    }
+    mismatched_id = next(
+        account["account_id"] for account in web_app.ACCOUNTS if account["account_id"] not in result_ids
+    )
+
+    client = TestClient(web_app.app)
+    response = client.post(
+        "/api/notifications/project-owners",
+        json={
+            "account_ids": [mismatched_id],
+            "investigation": {"question": question, "filters": {}},
+        },
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"]["errors"] == [mismatched_id]
+
+
 def test_notification_ui_and_infrastructure_cover_every_account_surface():
     root = Path(__file__).parents[1]
     app_script = (root / "src" / "web" / "static" / "app.js").read_text(encoding="utf-8")
@@ -197,10 +295,16 @@ def test_notification_ui_and_infrastructure_cover_every_account_surface():
     pyproject = (root / "pyproject.toml").read_text(encoding="utf-8")
 
     assert app_script.count("e(NotificationToolbar") == 6
-    for surface in ("platform", "risk", "agent", "savings", "findings", "posture"):
+    for surface in ("platform", "risk", "savings", "findings", "posture"):
         assert f'notifyProjectOwners("{surface}", ids)' in app_script
         assert f'toggleAccountSelection("{surface}"' in app_script
         assert f'toggleVisibleAccountSelection("{surface}", ids, checked)' in app_script
+    assert 'notifyProjectOwners("agent", ids, {' in app_script
+    assert 'toggleAccountSelection("agent"' in app_script
+    assert 'toggleVisibleAccountSelection("agent", ids, checked)' in app_script
+    assert "question: response.question" in app_script
+    assert "filters: response.scope.filters || {}" in app_script
+    assert "investigation: investigation || undefined" in app_script
     assert 'fetch("/api/notifications/project-owners"' in app_script
     assert 'disabled: props.busy || props.selectedIds.length === 0' in app_script
     assert "function AccountCheckbox(props)" in app_script

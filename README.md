@@ -57,7 +57,10 @@ as the canonical MCP URL; `/mcp` redirects to the mounted transport path.
   server-side to `nrp@microsoft.com`. The dual-format notification uses an email-safe
   Microsoft Azure theme and identifies each account's recorded Azure service associations
   (Databricks, Fabric, SAP, Data Factory, Storage SFTP, Application Insights, Functions,
-  and Log Analytics) in the review table.
+  and Log Analytics) in the review table. Notifications launched from Agent Investigation
+  also include the canonical question and the exact deterministic account findings shown in
+  the UI; the server recomputes that context against current inventory and rejects stale
+  selections rather than substituting unrelated security recommendations.
 - Administrator-only tenant discovery that runs read-only Azure CLI commands across all
   authorized subscriptions and imports tenant, management-group, subsidiary/business-unit,
   environment, storage account, region, tier, SKU, access/network posture, and
